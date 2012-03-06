@@ -3,3 +3,5 @@ openrural/local_settings.py
 *.pyc
 src/
 build/
+aws.sh
+fabsecrets.py
