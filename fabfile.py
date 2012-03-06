@@ -7,6 +7,7 @@ import tempfile
 from getpass import getpass
 from fabric.api import *
 from fabric.contrib.files import exists, upload_template, append
+from fabric.colors import yellow
 
 from argyle import system
 from argyle.supervisor import supervisor_command
@@ -478,3 +479,20 @@ def load_geo_files():
     manage('import_nc_zips')
     manage('import_county_streets 37047')
     manage('import_columbus_county')
+
+
+@task
+def develop(repo, no_index=False):
+    repo = os.path.abspath(repo)
+    sdists = os.path.join(PROJECT_ROOT, 'requirements', 'sdists')
+    sdists = '--no-index --find-links=file://%s' % sdists
+    for name in ('ebpub', 'ebdata', 'obadmin'):
+        print(yellow('Installing {0}'.format(name)))
+        package = os.path.join(repo, name)
+        os.chdir(package)
+        cmd = ['pip install']
+        if no_index:
+            cmd.append(sdists)
+        cmd.append('-r requirements.txt')
+        local(' '.join(cmd))
+        local('python setup.py develop --no-deps')
