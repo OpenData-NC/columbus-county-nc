@@ -496,3 +496,14 @@ def develop(repo, no_index=False):
         cmd.append('-r requirements.txt')
         local(' '.join(cmd))
         local('python setup.py develop --no-deps')
+
+
+@task
+def package_openblock(repo):
+    repo = os.path.abspath(repo)
+    sdists = os.path.join(PROJECT_ROOT, 'requirements', 'sdists')
+    for name in ('ebpub', 'ebdata', 'obadmin'):
+        print(yellow('Packaging {0}'.format(name)))
+        package = os.path.join(repo, name)
+        os.chdir(package)
+        local('python setup.py --quiet sdist --formats=zip --dist-dir=%s' % sdists)
