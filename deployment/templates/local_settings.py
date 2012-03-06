@@ -1,25 +1,25 @@
-from openrural.settings_%(deployment_tag)s import *
+from openrural.settings_{{ deployment_tag }} import *
 
 DEBUG = False
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': '%(database_name)s',
-        'USER': '%(database_user)s',
-        'PASSWORD': '%(database_password)s',
-        'HOST': '%(database_host)s',
+        'NAME': '{{ database_name }}',
+        'USER': '{{ database_user }}',
+        'PASSWORD': '{{ database_password }}',
+        'HOST': '{{ database_host }}',
         'PORT': '',
     }
 }
 
-MEDIA_ROOT = "%(media_root)s"
+MEDIA_ROOT = "{{ media_root }}"
 
-STATIC_ROOT = "%(static_root)s"
+STATIC_ROOT = "{{ static_root }}"
 
 ADMIN_MEDIA_PREFIX = "/media/admin/"
 
-DJANGO_STATIC_SAVE_PREFIX = "%(static_root)s"
+DJANGO_STATIC_SAVE_PREFIX = "{{ static_root }}"
 DJANGO_STATIC_NAME_PREFIX = "/static"
 
 # Set both of these to distinct, secret strings that include two instances

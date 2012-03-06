@@ -53,13 +53,6 @@ Create a local settings file::
 
     $ cp openrural/local_settings.py.example openrural/local_settings.py
 
-Edit ``local_settings.py`` and extend from the project settings module you want to work on::
-
-    1c1
-    < from openrural.settings import *
-    ---
-    > from openrural.settings_whiteville import *
-
 Point Django do your local settings and initialize the database::
 
     $ export DJANGO_SETTINGS_MODULE=openrural.local_settings
@@ -80,3 +73,40 @@ To import data for Columbus County, NC::
 
 Where 37047 is the U.S. Census county ID for the county you want to import
 (37047 = Columbus County, NC).
+
+Server Provisioning and Deployment
+----------------------------------
+
+First, add your AWS credentials to your shell environment::
+
+    export AWS_ACCESS_KEY_ID=
+    export AWS_SECRET_ACCESS_KEY=
+
+It easiest to store this in a file and source it ``source aws.sh``.
+
+Server Provisioning
+*******************
+
+Use fabric to create a new environment::
+
+    $ pip install -r requirements/deploy.txt
+    $ fab new_instance:us-east-1d,columbusco,staging
+
+Next we bootstrap the server with::
+
+    $ fab staging:columbusco bootstrap deploy
+
+If the nginx configuration is setup to use htpasswd, setup a new user::
+
+    $ fab staging set_htpasswd:<username>,<password>
+
+Deployment
+**********
+
+For regular deployments, simply run::
+
+    $ fab staging deploy
+
+You can reset your local database with::
+
+    $ fab staging reset_local_db:columbusco_devel

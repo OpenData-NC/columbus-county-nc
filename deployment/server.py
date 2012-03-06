@@ -5,24 +5,49 @@ import subprocess
 
 from fabric.api import *
 from fabric.contrib import files
-from fabulaws.ec2 import UbuntuInstance
-from fabulaws.ubuntu.packages import ShorewallMixin
+
+from fabulaws.decorators import uses_fabric
+from fabulaws.ec2 import EC2Instance
+from fabulaws.ubuntu.instances import UbuntuInstance
+from fabulaws.ubuntu.packages.postgres import PostgresMixin
+from fabulaws.ubuntu.packages.python import PythonMixin
+
+__all__ = [
+    'ServerInstance',
+    'DbMixin',
+    'WebMixin', 
+    'OpenRuralInstance',
+]
 
 
-class OpenRuralInstance(ShorewallMixin, UbuntuInstance):
+class ServerInstance(UbuntuInstance):
     # from http://uec-images.ubuntu.com/releases/10.04/release/
     ami_map = {
+        # 10.04
         't1.micro': 'ami-ad36fbc4', # us-east-1 10.04 64-bit w/EBS root store
         'm1.small': 'ami-6936fb00', # us-east-1 10.04 32-bit w/instance root store
+        'c1.medium': 'ami-6936fb00', # us-east-1 10.04 32-bit w/instance root store
         'm1.large': 'ami-1136fb78', # us-east-1 10.04 64-bit w/instance root store
+        # 11.04:
+        # 't1.micro': 'ami-fd589594', # us-east-1 11.04 64-bit w/EBS root store
+        # 'm1.small': 'ami-e358958a', # us-east-1 11.04 32-bit w/instance root store
+        # 'c1.medium': 'ami-e358958a', # us-east-1 11.04 32-bit w/instance root store
+        # 'm1.large': 'ami-fd589594', # us-east-1 11.04 64-bit w/instance root store
+        # 11.10
+        #'t1.micro': 'ami-bf62a9d6', # us-east-1 11.10 64-bit w/EBS root store
+        #'m1.small': 'ami-3962a950', # us-east-1 11.10 32-bit w/instance root store
+        #'c1.medium': 'ami-3962a950', # us-east-1 11.10 32-bit w/instance root store
+        #'m1.large': 'ami-c162a9a8', # us-east-1 11.10 64-bit w/instance root store
     }
+    key_prefix = 'openrural-'
     admin_groups = ['admin', 'sudo']
     deployment_dir = os.path.dirname(__file__)
+    project_root = os.path.dirname(deployment_dir)
     run_upgrade = True
 
     def __init__(self, *args, **kwargs):
-        self.deploy_user = kwargs.pop('deploy_user')
         self.instance_type = kwargs.pop('instance_type')
+        self.deploy_user = kwargs.pop('deploy_user')
         if 'terminate' not in kwargs:
             kwargs['terminate'] = False
         if self.instance_type not in self.ami_map:
@@ -30,17 +55,9 @@ class OpenRuralInstance(ShorewallMixin, UbuntuInstance):
             raise ValueError('Unsupported instance_type "%s". Pick one of: %s'
                              '' % (self.instance_type, supported_types))
         self.ami = self.ami_map[self.instance_type]
-        super(OpenRuralInstance, self).__init__(*args, **kwargs)
-
-    def setup(self):
-        """
-        Creates necessary directories, installs required packages, and copies
-        the required SSH keys to the server.
-        """
-        super(OpenRuralInstance, self).setup()
-        self.create_users()
-        with self:
-            self._setup_sudoers()
+        super(ServerInstance, self).__init__(*args, **kwargs)
+        self.home = '/home/%s' % self.deploy_user
+        self.security_groups = ['openrural-web-sg'] # mixins add other groups
 
     def _get_users(self):
         """
@@ -51,13 +68,8 @@ class OpenRuralInstance(ShorewallMixin, UbuntuInstance):
                  for n in os.listdir(users_dir)]
         return users
 
-    def create_users(self):
-        """
-        Creates sysadmin users on the remote server.
-        """
-        super(OpenRuralInstance, self).create_users(self._get_users())
-
-    def _setup_sudoers(self):
+    @uses_fabric
+    def setup_sudoers(self):
         """
         Creates the sudoers file on the server, based on the supplied template.
         """
@@ -67,12 +79,59 @@ class OpenRuralInstance(ShorewallMixin, UbuntuInstance):
         sudo('chown root:root /etc/sudoers.new')
         sudo('mv /etc/sudoers.new /etc/sudoers')
 
+    @uses_fabric
+    def create_deployer(self):
+        """
+        Creates a deployment user with a directory for Apache configurations.
+        """
+        user = self.deploy_user
+        sudo('useradd -d {0} -m -s /bin/bash {1}'.format(self.home, user))
+        sudo('mkdir {0}/.ssh'.format(self.home), user=user)
 
-class OpenRuralWebInstance(OpenRuralInstance):
+    @uses_fabric
+    def update_deployer_keys(self):
+        """
+        Replaces deployer keys with the current sysadmin users keys.
+        """
+        user = self.deploy_user
+        file_ = '{0}/.ssh/authorized_keys2'.format(self.home)
+        if files.exists(file_):
+            sudo('rm {0}'.format(file_), user=user)
+        sudo('touch {0}'.format(file_), user=user)
+        for _, key_file in self._get_users():
+            files.append(file_, open(key_file).read().strip(), use_sudo=True)
 
-    security_groups = ['openrural-web-sg']
-    shorewall_open_ports = ['SSH', 'HTTP', 'HTTPS']
-    key_prefix = 'openrural-web-'
+    def setup(self):
+        """
+        Creates sysadmin users and secures the required directories.
+        """
+        super(ServerInstance, self).setup()
+        self.create_users(self._get_users())
+        self.setup_sudoers()
+        # needed for SSH agent forwarding during replication setup:
+        # self.reset_authentication()
+        # self.secure_directories(self.secure_dirs, self.secure_root)
+        self.create_deployer()
+        self.update_deployer_keys()
+        self.upgrade_packages()
+
+
+class DbMixin(PostgresMixin):
+    """Mixin that creates a database based on the Fabric env."""
+
+    # use the PPA so we get PostgreSQL 9.1
+    # postgresql_ppa = 'ppa:pitti/postgresql'
+    postgresql_packages = ['postgresql', 'libpq-dev']
+    # postgresql_tune = True
+    # postgresql_shmmax = 536870912 # 512 MB
+    # postgresql_shmmax = 2147483648 # 2048 MB
+    postgresql_networks = []
+
+    @uses_fabric
+    def pg_cmd(self, action):
+        """Run the specified action (e.g., start, stop, restart) on the postgresql server."""
+
+        sudo('service postgresql-8.4 %s' % action)
 
     def setup(self):
         """
@@ -80,28 +139,43 @@ class OpenRuralWebInstance(OpenRuralInstance):
         the required SSH keys to the server.
         """
 
-        super(OpenRuralWebInstance, self).setup()
-        self.create_deployer()
-        self.update_deployer_keys()
+        super(DbMixin, self).setup()
+        self.create_db_user(env.database_user, password=env.database_password)
+        self.create_db(env.database_name, owner=env.database_user)
 
-    def create_deployer(self):
-        """
-        Creates a deployment user with a directory for Apache configurations.
-        """
-        with self:
-            user = self.deploy_user
-            sudo('useradd -d /home/{0} -m -s /bin/bash {0}'.format(user))
-            sudo('mkdir /home/{0}/.ssh'.format(user), user=user)
 
-    def update_deployer_keys(self):
-        """
-        Replaces deployer keys with the current sysadmin users keys.
-        """
-        with self:
-            user = self.deploy_user
-            file_ = '/home/{0}/.ssh/authorized_keys2'.format(user)
-            #sudo('rm /home/{0}/.ssh/authorized_keys*'.format(user), user=user)
-            sudo('touch {0}'.format(file_), user=user)
-            for _, key_file in self._get_users():
-                files.append(file_, open(key_file).read(), use_sudo=True)
+class WebMixin(PythonMixin):
+    """Mixin that creates a web application server."""
 
+    python_packages = ['python2.6', 'python2.6-dev']
+    python_pip_version = '1.0.1'
+    python_virtualenv_version = '1.7'
+
+    def install_system_packages(self):
+        """Installs the required system packages."""
+
+        # Install required system packages for deployment, plus some extras
+        # Install pip, and use it to install virtualenv
+        packages_file = os.path.join(self.project_root, 'requirements', 'packages.txt')
+        self.install_packages_from_file(packages_file)
+
+    @uses_fabric
+    def create_webserver_user(self):
+        """Create a user for gunicorn, celery, etc."""
+
+        if env.webserver_user != env.deploy_user: # deploy_user already exists
+            sudo('useradd --system %(webserver_user)s' % env)
+
+    def setup(self):
+        """
+        Creates necessary directories, installs required packages, and copies
+        the required SSH keys to the server.
+        """
+
+        super(WebMixin, self).setup()
+        self.install_system_packages()
+        self.create_webserver_user()
+
+
+class OpenRuralInstance(WebMixin, DbMixin, ServerInstance):
+    pass
