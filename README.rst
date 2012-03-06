@@ -94,7 +94,7 @@ Use fabric to create a new environment::
 
 Next we bootstrap the server with::
 
-    $ fab staging:columbusco bootstrap deploy
+    $ fab staging:columbusco bootstrap deploy load_geo_files
 
 If the nginx configuration is setup to use htpasswd, setup a new user::
 
