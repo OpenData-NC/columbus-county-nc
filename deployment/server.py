@@ -25,7 +25,7 @@ class ServerInstance(UbuntuInstance):
     ami_map = {
         # 10.04
         't1.micro': 'ami-ad36fbc4', # us-east-1 10.04 64-bit w/EBS root store
-        'm1.small': 'ami-6936fb00', # us-east-1 10.04 32-bit w/instance root store
+        'm1.small': 'ami-929644fb', # us-east-1 10.04 32-bit w/instance root store
         'c1.medium': 'ami-6936fb00', # us-east-1 10.04 32-bit w/instance root store
         'm1.large': 'ami-1136fb78', # us-east-1 10.04 64-bit w/instance root store
         # 11.04:
