@@ -133,6 +133,38 @@ class DbMixin(PostgresMixin):
 
         sudo('service postgresql-8.4 %s' % action)
 
+    @uses_fabric
+    def create_postgis_template(self):
+        """Create the Postgres postgis template database."""
+
+        share_dir = run('pg_config --sharedir').strip()
+        env.postgis_path = '%s/contrib' % share_dir
+        sudo('createdb -E UTF8 %(template_db)s' % env, user='postgres')
+        sudo('createlang -d %(template_db)s plpgsql' % env, user='postgres')
+        # Allows non-superusers the ability to create from this template
+        sudo('psql -d postgres -c "UPDATE pg_database SET datistemplate=\'true\' WHERE datname=\'%(template_db)s\';"' % env, user='postgres')
+        # Loading the PostGIS SQL routines
+        sudo('psql -d %(template_db)s -f %(postgis_path)s/postgis.sql' % env, user='postgres')
+        sudo('psql -d %(template_db)s -f %(postgis_path)s/spatial_ref_sys.sql' % env, user='postgres')
+        # Enabling users to alter spatial tables.
+        sudo('psql -d %(template_db)s -c "GRANT ALL ON geometry_columns TO PUBLIC;"' % env, user='postgres')
+        #sudo('psql -d %(template_db)s -c "GRANT ALL ON geography_columns TO PUBLIC;"' % env, user='postgres')
+        sudo('psql -d %(template_db)s -c "GRANT ALL ON spatial_ref_sys TO PUBLIC;"' % env, user='postgres')
+
+    @uses_fabric
+    def create_db(self, name, owner=None, encoding=u'UTF-8', template=None):
+        """Create a Postgres database."""
+
+        flags = []
+        if encoding:
+            flags.append(u'-E %s' % encoding)
+        if owner:
+            flags.append(u'-O %s' % owner)
+        if template:
+            flags.append(u'-T %s' % template)
+        flags.append(name)
+        sudo('createdb %s' % ' '.join(flags), user='postgres')
+
     def setup(self):
         """
         Creates necessary directories, installs required packages, and copies
@@ -140,8 +172,10 @@ class DbMixin(PostgresMixin):
         """
 
         super(DbMixin, self).setup()
+        self.create_postgis_template()
         self.create_db_user(env.database_user, password=env.database_password)
-        self.create_db(env.database_name, owner=env.database_user)
+        self.create_db(env.database_name, owner=env.database_user,
+                       template=env.template_db)
 
 
 class WebMixin(PythonMixin):
@@ -177,5 +211,5 @@ class WebMixin(PythonMixin):
         self.create_webserver_user()
 
 
-class OpenRuralInstance(WebMixin, DbMixin, ServerInstance):
+class OpenRuralInstance(DbMixin, WebMixin, ServerInstance):
     pass

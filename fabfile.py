@@ -33,6 +33,7 @@ env.deploy_user = 'openrural'
 env.webserver_user = 'openrural-web'
 env.database_user = 'openrural'
 env.database_host = 'localhost'
+env.template_db = 'template_postgis'
 env.home = '/home/openrural'
 env.repo = u'git@github.com:openrural/columbus-county-nc.git'
 env.shell = '/bin/bash -c'
@@ -191,6 +192,8 @@ def setup_dirs():
     sudo('mkdir -p %(services)s/supervisor' % env, user=env.deploy_user)
     sudo('mkdir -p %(services)s/gunicorn' % env, user=env.deploy_user)
     sudo('mkdir -p %(media_root)s' % env)
+    sudo('mkdir -p %(static_root)s' % env)
+    sudo('chmod a+w %(static_root)s' % env )
     sudo('chown %(webserver_user)s %(media_root)s' % env)
 
 
@@ -429,7 +432,7 @@ def deploy():
     update_requirements()
     update_local_settings()
     syncdb()
-    collectstatic()
+    # collectstatic()
     supervisor('restart')
 
 
