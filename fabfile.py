@@ -471,3 +471,10 @@ def reset_local_db(db_name):
     )
     cmd += 'psql {0}'.format(db_name)
     local(cmd)
+
+
+@task
+def load_geo_files():
+    manage('import_nc_zips')
+    manage('import_county_streets 37047')
+    manage('import_columbus_county')
