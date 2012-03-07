@@ -20,7 +20,7 @@ STATIC_ROOT = "{{ static_root }}"
 ADMIN_MEDIA_PREFIX = "/media/admin/"
 
 DJANGO_STATIC_SAVE_PREFIX = "{{ static_root }}"
-DJANGO_STATIC_NAME_PREFIX = "/static"
+DJANGO_STATIC_NAME_PREFIX = "/static/"
 
 # Set both of these to distinct, secret strings that include two instances
 # of '%%s' each. Example: 'j8#%%s%%s' -- but don't use that, because it's not

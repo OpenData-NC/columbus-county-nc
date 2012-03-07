@@ -102,4 +102,4 @@ CACHES = {
     }
 }
 
-STATIC_URL = ''
+STATIC_URL = '/'
