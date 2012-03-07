@@ -483,7 +483,6 @@ def load_geo_files():
 
 @task
 def develop(repo, no_index=False):
-    require('environment', provided_by=env.environments)
     repo = os.path.abspath(repo)
     sdists = os.path.join(PROJECT_ROOT, 'requirements', 'sdists')
     sdists = '--no-index --find-links=file://%s' % sdists
