@@ -67,7 +67,6 @@ def _get_servers(deployment, environment):
     }
     servers = ec2_instances(filters=env.filters, cls=OpenRuralInstance,
                             inst_kwargs=inst_kwargs)
-    print ec2_instances()
     return [server.hostname for server in servers]
 
 
@@ -476,6 +475,7 @@ def reset_local_db(db_name):
 
 @task
 def load_geo_files():
+    require('environment', provided_by=env.environments)
     manage('import_nc_zips')
     manage('import_county_streets 37047')
     manage('import_columbus_county')
@@ -483,6 +483,7 @@ def load_geo_files():
 
 @task
 def develop(repo, no_index=False):
+    require('environment', provided_by=env.environments)
     repo = os.path.abspath(repo)
     sdists = os.path.join(PROJECT_ROOT, 'requirements', 'sdists')
     sdists = '--no-index --find-links=file://%s' % sdists
@@ -500,6 +501,7 @@ def develop(repo, no_index=False):
 
 @task
 def package_openblock(repo):
+    require('environment', provided_by=env.environments)
     repo = os.path.abspath(repo)
     sdists = os.path.join(PROJECT_ROOT, 'requirements', 'sdists')
     for name in ('ebpub', 'ebdata', 'obadmin'):
@@ -507,3 +509,11 @@ def package_openblock(repo):
         package = os.path.join(repo, name)
         os.chdir(package)
         local('python setup.py --quiet sdist --formats=zip --dist-dir=%s' % sdists)
+
+
+@task
+def reset_db():
+    require('environment', provided_by=env.environments)
+    sudo('dropdb %(database_name)s' % env, user='postgres')
+    sudo('createdb -E UTF-8 -T template_postgis -O %(database_user)s %(database_name)s' % env, user='postgres')
+    syncdb()
