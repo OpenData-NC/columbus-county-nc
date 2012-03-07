@@ -103,3 +103,5 @@ CACHES = {
 }
 
 STATIC_URL = '/'
+
+MAP_BASELAYER_TYPE = 'google.streets'
