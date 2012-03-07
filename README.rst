@@ -8,8 +8,8 @@ Local Development Setup
 
 Clone Open Rural and create a new virtualenv::
 
-    $ git clone git://github.com/openrural/openrural-nc.git
-    $ cd openrural-nc/
+    $ git clone git://github.com/openrural/columbus-county-nc.git
+    $ cd columbus-county-nc/
     $ mkvirtualenv --distribute -p python2.6 openrural
 
 If you're on Ubuntu 11.04, install `GDAL the hard way <http://openblockproject.org/docs/install/common_install_problems.html#gdal-the-hard-way>`_. The commands are::
@@ -71,7 +71,7 @@ To import data for Columbus County, NC::
 
     $ django-admin.py import_nc_zips
     $ django-admin.py import_county_streets 37047
-    $ django-admin.py import import_columbus_county
+    $ django-admin.py import_columbus_county
 
 Where 37047 is the U.S. Census county ID for the county you want to import
 (37047 = Columbus County, NC).
