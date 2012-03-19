@@ -37,6 +37,7 @@ env.database_host = 'localhost'
 env.template_db = 'template_postgis'
 env.home = '/home/openrural'
 env.repo = u'git@github.com:openrural/columbus-county-nc.git'
+env.openblock_repo = u'git://github.com/openrural/openblock.git'
 env.shell = '/bin/bash -c'
 env.python = '/usr/bin/python2.6'
 env.placements = ['us-east-1a', 'us-east-1b', 'us-east-1d']
@@ -78,6 +79,7 @@ def _setup_path():
     env.virtualenv_root = os.path.join(env.root, 'env')
     env.media_root = os.path.join(env.root, 'media_root')
     env.static_root = os.path.join(env.root, 'static_root')
+    env.openblock_root = os.path.join(env.root, 'openblock')
     env.services = os.path.join(env.home, 'services')
     env.database_name = '%s_%s' % (env.project, env.environment)
     env.vhost = '%s_%s' % (env.project, env.environment)
@@ -112,6 +114,10 @@ def _load_passwords(names, length=20, generate=False):
         else:
             passwd = getpass('Please enter %s: ' % name)
         setattr(env, name, passwd)
+
+
+def _vexe(name):
+    return os.path.join(env.virtualenv_root, 'bin', name)
 
 
 @task
@@ -482,18 +488,20 @@ def load_geo_files():
 
 
 @task
-def develop(repo, no_index=False):
+def develop(repo, index=False):
+    requirements = os.path.join(PROJECT_ROOT, 'requirements')
     repo = os.path.abspath(repo)
-    sdists = os.path.join(PROJECT_ROOT, 'requirements', 'sdists')
+    sdists = os.path.join(requirements, 'sdists')
     sdists = '--no-index --find-links=file://%s' % sdists
     for name in ('ebpub', 'ebdata', 'obadmin'):
         print(yellow('Installing {0}'.format(name)))
         package = os.path.join(repo, name)
         os.chdir(package)
         cmd = ['pip install']
-        if no_index:
+        if index:
             cmd.append(sdists)
-        cmd.append('-r requirements.txt')
+        path = os.path.join(requirements, name)
+        cmd.append('-r %s.txt' % path)
         local(' '.join(cmd))
         local('python setup.py develop --no-deps')
 
@@ -508,6 +516,33 @@ def package_openblock(repo):
         package = os.path.join(repo, name)
         os.chdir(package)
         local('python setup.py --quiet sdist --formats=zip --dist-dir=%s' % sdists)
+
+
+@task
+def deploy_openblock(branch='openrural'):
+    require('environment', provided_by=env.environments)
+    if not exists(env.openblock_root):
+        cmd = 'git clone %(openblock_repo)s %(openblock_root)s' % env
+        sudo(cmd, user=env.deploy_user)
+    with cd(env.openblock_root):
+        sudo('git pull', user=env.deploy_user)
+        sudo('git checkout %s' % branch, user=env.deploy_user)
+    for name in ('ebpub', 'ebdata', 'obadmin'):
+        with settings(warn_only=True):
+            sudo('%s uninstall -y -E %s %s' % (_vexe('pip'),
+                                               env.virtualenv_root, name))
+        print(yellow('Installing {0}'.format(name)))
+        package = os.path.join(env.openblock_root, name)
+        with cd(package):
+            sudo('%s setup.py develop --no-deps' % _vexe('python'),
+                 user=env.deploy_user)
+    requirements = os.path.join(env.code_root, 'requirements')
+    for file_name in ['ebpub.txt', 'ebdata.txt', 'obadmin.txt', 'openrural.txt']:
+        apps = os.path.join(requirements, file_name)
+        cmd = '%s install --requirement %s' % (_vexe('pip'), apps)
+        sudo(cmd, user=env.deploy_user)
+    syncdb()
+    supervisor('restart')
 
 
 @task

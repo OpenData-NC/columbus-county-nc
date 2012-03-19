@@ -25,6 +25,16 @@ If you're on Ubuntu 11.04, install `GDAL the hard way <http://openblockproject.o
                                 --include-dirs=/usr/include/gdal \
                                 install
 
+If you're developing OpenBlock, you should install the development version::
+
+    $ mkvirtualenv --distribute -p python2.6 openrural
+    $ pip install -r requirements/deploy.txt
+    $ fab develop:../openblock,index=True
+    $ pip install --no-index \
+                  --find-links=file:$PWD/requirements/sdists/ \
+                  -r requirements/openrural.txt
+    $ add2virtualenv .
+
 Install the OpenRural packages::
 
     $ cd openrural-nc/
@@ -34,16 +44,6 @@ Install the OpenRural packages::
                   -r requirements/ebdata.txt \
                   -r requirements/ebpub.txt \
                   -r requirements/obadmin.txt \
-                  -r requirements/openrural.txt
-    $ add2virtualenv .
-
-If you're developing OpenBlock, you should install the development version::
-
-    $ mkvirtualenv --distribute -p python2.6 openrural
-    $ pip install -r requirements/deploy.txt
-    $ fab develop:../openblock,no_index=True
-    $ pip install --no-index \
-                  --find-links=file:$PWD/requirements/sdists/ \
                   -r requirements/openrural.txt
     $ add2virtualenv .
 
