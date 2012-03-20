@@ -6,46 +6,13 @@ This is the official Columbus County OpenRural repository.
 Local Development Setup
 -----------------------
 
-Clone Open Rural and create a new virtualenv::
-
+    $ git clone git://github.com:openrural/openblock.git
     $ git clone git://github.com/openrural/columbus-county-nc.git
     $ cd columbus-county-nc/
-    $ mkvirtualenv --distribute -p python2.6 openrural
-
-If you're on Ubuntu 11.04, install `GDAL the hard way <http://openblockproject.org/docs/install/common_install_problems.html#gdal-the-hard-way>`_. The commands are::
-
-    $ gdal-config --version
-    1.6.3
-    $ pip install --no-install "GDAL>=1.6,<1.7a"  # adjust version as needed
-    $ rm -f $VIRTUAL_ENV/build/GDAL/setup.cfg
-    $ cd $VIRTUAL_ENV/build/GDAL
-    $ python setup.py build_ext --gdal-config=gdal-config \
-                                --library-dirs=/usr/lib \
-                                --libraries=gdal1.6.0 \
-                                --include-dirs=/usr/include/gdal \
-                                install
-
-If you're developing OpenBlock, you should install the development version::
-
-    $ mkvirtualenv --distribute -p python2.6 openrural
-    $ pip install -r requirements/deploy.txt
-    $ fab develop:../openblock,index=True
-    $ pip install --no-index \
-                  --find-links=file:$PWD/requirements/sdists/ \
-                  -r requirements/openrural.txt
+    $ mkvirtualenv --distribute -p python2.6 columbusco
     $ add2virtualenv .
-
-Install the OpenRural packages::
-
-    $ cd openrural-nc/
     $ pip install -r requirements/deploy.txt
-    $ pip install --no-index \
-                  --find-links=file:$PWD/requirements/sdists/ \
-                  -r requirements/ebdata.txt \
-                  -r requirements/ebpub.txt \
-                  -r requirements/obadmin.txt \
-                  -r requirements/openrural.txt
-    $ add2virtualenv .
+    $ fab update_ve:True
 
 Create a PostgreSQL database for development::
 
@@ -63,6 +30,45 @@ Point Django do your local settings and initialize the database::
 If everything went smoothly, you can now runserver::
 
     $ django-admin.py runserver
+
+Manual Setup
+------------
+
+Only run these if the above instructions failed.
+
+If you're on Ubuntu 11.04, install `GDAL the hard way <http://openblockproject.org/docs/install/common_install_problems.html#gdal-the-hard-way>`_. The commands are::
+
+    $ gdal-config --version
+    1.6.3
+    $ pip install --no-install "GDAL>=1.6,<1.7a"  # adjust version as needed
+    $ rm -f $VIRTUAL_ENV/build/GDAL/setup.cfg
+    $ cd $VIRTUAL_ENV/build/GDAL
+    $ python setup.py build_ext --gdal-config=gdal-config \
+                                --library-dirs=/usr/lib \
+                                --libraries=gdal1.6.0 \
+                                --include-dirs=/usr/include/gdal \
+                                install
+
+If you're developing OpenBlock, you should install the development version::
+
+    $ pip install -r requirements/deploy.txt
+    $ fab develop:../openblock
+    $ pip install --no-index \
+                  --find-links=file:$PWD/requirements/sdists/ \
+                  -r requirements/openrural.txt
+    $ add2virtualenv .
+
+Install the OpenRural packages::
+
+    $ cd openrural-nc/
+    $ pip install -r requirements/deploy.txt
+    $ pip install --no-index \
+                  --find-links=file:$PWD/requirements/sdists/ \
+                  -r requirements/ebdata.txt \
+                  -r requirements/ebpub.txt \
+                  -r requirements/obadmin.txt \
+                  -r requirements/openrural.txt
+    $ add2virtualenv .
 
 Columbus County, NC
 -------------------

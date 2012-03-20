@@ -435,6 +435,7 @@ def deploy():
 
     require('environment', provided_by=env.environments)
     update_source()
+    update_openblock()
     update_requirements()
     update_local_settings()
     syncdb()
@@ -489,21 +490,59 @@ def load_geo_files():
 
 @task
 def develop(repo, index=False):
-    requirements = os.path.join(PROJECT_ROOT, 'requirements')
     repo = os.path.abspath(repo)
-    sdists = os.path.join(requirements, 'sdists')
-    sdists = '--no-index --find-links=file://%s' % sdists
     for name in ('ebpub', 'ebdata', 'obadmin'):
         print(yellow('Installing {0}'.format(name)))
         package = os.path.join(repo, name)
         os.chdir(package)
-        cmd = ['pip install']
-        if index:
-            cmd.append(sdists)
-        path = os.path.join(requirements, name)
-        cmd.append('-r %s.txt' % path)
-        local(' '.join(cmd))
         local('python setup.py develop --no-deps')
+
+
+def _pip(package='', filename=None, sdists=True):
+    requirements = os.path.join(PROJECT_ROOT, 'requirements')
+    sdists = os.path.join(requirements, 'sdists')
+    sdists = '--no-index --find-links=file://%s' % sdists
+    cmd = ['pip install']
+    if sdists:
+        cmd.append(sdists)
+    if filename:
+        path = os.path.join(requirements, filename)
+        cmd.append('-r %s' % path)
+    if package:
+        cmd.append(package)
+    local(' '.join(cmd))
+
+
+@task
+def update_ve(bootstrap=False, openblock='../openblock'):
+    _pip(filename='deploy.txt', sdists=False)
+    if bootstrap:
+        build_local_gdal()
+        os.chdir(PROJECT_ROOT)
+        develop(openblock)
+        os.chdir(PROJECT_ROOT)
+    _pip(filename='ebpub.txt')
+    _pip(filename='ebdata.txt')
+    _pip(filename='obadmin.txt')
+    _pip(filename='openrural.txt')
+
+
+@task
+def build_local_gdal():
+    ve_root = os.environ['VIRTUAL_ENV']
+    with settings(warn_only=True):
+        local('pip uninstall -y GDAL')
+    _pip('--no-install "GDAL>=1.6,<1.7a"')
+    gdal = os.path.join(ve_root, 'build', 'GDAL')
+    local('rm -f %s' % os.path.join(gdal, 'setup.cfg'))
+    os.chdir(gdal)
+    cmd = ['python setup.py build_ext',
+           '--gdal-config=gdal-config',
+           '--library-dirs=/usr/lib',
+           '--libraries=gdal1.6.0',
+           '--include-dirs=/usr/include/gdal',
+           'install']
+    local(' '.join(cmd))
 
 
 @task
@@ -519,30 +558,31 @@ def package_openblock(repo):
 
 
 @task
-def deploy_openblock(branch='openrural'):
+def update_openblock(branch='openrural'):
     require('environment', provided_by=env.environments)
+    new_install = False
     if not exists(env.openblock_root):
+        new_install = True
         cmd = 'git clone %(openblock_repo)s %(openblock_root)s' % env
         sudo(cmd, user=env.deploy_user)
     with cd(env.openblock_root):
         sudo('git pull', user=env.deploy_user)
         sudo('git checkout %s' % branch, user=env.deploy_user)
-    for name in ('ebpub', 'ebdata', 'obadmin'):
-        with settings(warn_only=True):
-            sudo('%s uninstall -y -E %s %s' % (_vexe('pip'),
-                                               env.virtualenv_root, name))
-        print(yellow('Installing {0}'.format(name)))
-        package = os.path.join(env.openblock_root, name)
-        with cd(package):
-            sudo('%s setup.py develop --no-deps' % _vexe('python'),
-                 user=env.deploy_user)
+    if new_install:
+        for name in ('ebpub', 'ebdata', 'obadmin'):
+            with settings(warn_only=True):
+                sudo('%s uninstall -y -E %s %s' % (_vexe('pip'),
+                                                   env.virtualenv_root, name))
+            print(yellow('Installing {0}'.format(name)))
+            package = os.path.join(env.openblock_root, name)
+            with cd(package):
+                sudo('%s setup.py develop --no-deps' % _vexe('python'),
+                     user=env.deploy_user)
     requirements = os.path.join(env.code_root, 'requirements')
     for file_name in ['ebpub.txt', 'ebdata.txt', 'obadmin.txt', 'openrural.txt']:
         apps = os.path.join(requirements, file_name)
         cmd = '%s install --requirement %s' % (_vexe('pip'), apps)
         sudo(cmd, user=env.deploy_user)
-    syncdb()
-    supervisor('restart')
 
 
 @task
