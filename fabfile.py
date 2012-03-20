@@ -578,11 +578,6 @@ def update_openblock(branch='openrural'):
             with cd(package):
                 sudo('%s setup.py develop --no-deps' % _vexe('python'),
                      user=env.deploy_user)
-    requirements = os.path.join(env.code_root, 'requirements')
-    for file_name in ['ebpub.txt', 'ebdata.txt', 'obadmin.txt', 'openrural.txt']:
-        apps = os.path.join(requirements, file_name)
-        cmd = '%s install --requirement %s' % (_vexe('pip'), apps)
-        sudo(cmd, user=env.deploy_user)
 
 
 @task
