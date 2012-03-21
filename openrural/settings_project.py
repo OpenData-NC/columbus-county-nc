@@ -24,6 +24,7 @@ INSTALLED_APPS = (
     'openrural.error_log',
     'gunicorn',
     'seacucumber',
+    'openrural.data_dashboard',
 ) + INSTALLED_APPS
 TEMPLATE_DIRS = (os.path.join(PROJECT_DIR, 'templates'), ) + TEMPLATE_DIRS
 ROOT_URLCONF = 'openrural.urls'

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block fulltitle %}OpenRural: Data Dashboard{% endblock %}
+
+{% block content %}
+<h1>Data Dashboard</h1>
+<table>
+    <tr>
+        <th>Name</th>
+    </tr>
+    {% for schema in schemas %}
+        <tr>
+            <td>{{ schema.name }}</td>
+        </tr>
+    {% endfor %}
+</table>
+{% endblock %}
