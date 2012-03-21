@@ -84,7 +84,7 @@ Deployment
 
 For regular deployments, simply run::
 
-    $ fab staging deploy
+    $ fab staging:columbusco deploy
 
 You can reset your local database with::
 
