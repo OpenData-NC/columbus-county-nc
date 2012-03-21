@@ -306,10 +306,8 @@ def update_requirements():
                  '--libraries=gdal1.6.0 '
                  '--include-dirs=/usr/include/gdal '
                  'install' % env, user=env.deploy_user)
-    # force reinstallation of OpenBlock every time
-    with settings(warn_only=True):
-        sudo('pip uninstall -y -E %(virtualenv_root)s ebpub ebdata obadmin' % env)
-    for file_name in ['ebpub.txt', 'ebdata.txt', 'obadmin.txt', 'openrural.txt']:
+    files = ('ebpub.txt', 'ebdata.txt', 'obadmin.txt', 'openrural.txt')
+    for file_name in files:
         apps = os.path.join(requirements, file_name)
         cmd = base_cmd + ['--requirement %s' % apps]
         sudo(' '.join(cmd), user=env.deploy_user)
