@@ -37,6 +37,7 @@ env.database_host = 'localhost'
 env.template_db = 'template_postgis'
 env.home = '/home/openrural'
 env.repo = u'git@github.com:openrural/columbus-county-nc.git'
+env.openblock_repo = u'git://github.com/openrural/openblock.git'
 env.shell = '/bin/bash -c'
 env.python = '/usr/bin/python2.6'
 env.placements = ['us-east-1a', 'us-east-1b', 'us-east-1d']
@@ -78,6 +79,7 @@ def _setup_path():
     env.virtualenv_root = os.path.join(env.root, 'env')
     env.media_root = os.path.join(env.root, 'media_root')
     env.static_root = os.path.join(env.root, 'static_root')
+    env.openblock_root = os.path.join(env.root, 'openblock')
     env.services = os.path.join(env.home, 'services')
     env.database_name = '%s_%s' % (env.project, env.environment)
     env.vhost = '%s_%s' % (env.project, env.environment)
@@ -112,6 +114,10 @@ def _load_passwords(names, length=20, generate=False):
         else:
             passwd = getpass('Please enter %s: ' % name)
         setattr(env, name, passwd)
+
+
+def _vexe(name):
+    return os.path.join(env.virtualenv_root, 'bin', name)
 
 
 @task
@@ -429,6 +435,7 @@ def deploy():
 
     require('environment', provided_by=env.environments)
     update_source()
+    update_openblock()
     update_requirements()
     update_local_settings()
     syncdb()
@@ -482,20 +489,60 @@ def load_geo_files():
 
 
 @task
-def develop(repo, no_index=False):
+def develop(repo, index=False):
     repo = os.path.abspath(repo)
-    sdists = os.path.join(PROJECT_ROOT, 'requirements', 'sdists')
-    sdists = '--no-index --find-links=file://%s' % sdists
     for name in ('ebpub', 'ebdata', 'obadmin'):
         print(yellow('Installing {0}'.format(name)))
         package = os.path.join(repo, name)
         os.chdir(package)
-        cmd = ['pip install']
-        if no_index:
-            cmd.append(sdists)
-        cmd.append('-r requirements.txt')
-        local(' '.join(cmd))
         local('python setup.py develop --no-deps')
+
+
+def _pip(package='', filename=None, sdists=True):
+    requirements = os.path.join(PROJECT_ROOT, 'requirements')
+    sdists = os.path.join(requirements, 'sdists')
+    sdists = '--no-index --find-links=file://%s' % sdists
+    cmd = ['pip install']
+    if sdists:
+        cmd.append(sdists)
+    if filename:
+        path = os.path.join(requirements, filename)
+        cmd.append('-r %s' % path)
+    if package:
+        cmd.append(package)
+    local(' '.join(cmd))
+
+
+@task
+def update_ve(bootstrap=False, openblock='../openblock'):
+    _pip(filename='deploy.txt', sdists=False)
+    if bootstrap:
+        build_local_gdal()
+        os.chdir(PROJECT_ROOT)
+        develop(openblock)
+        os.chdir(PROJECT_ROOT)
+    _pip(filename='ebpub.txt')
+    _pip(filename='ebdata.txt')
+    _pip(filename='obadmin.txt')
+    _pip(filename='openrural.txt')
+
+
+@task
+def build_local_gdal():
+    ve_root = os.environ['VIRTUAL_ENV']
+    with settings(warn_only=True):
+        local('pip uninstall -y GDAL')
+    _pip('--no-install "GDAL>=1.6,<1.7a"')
+    gdal = os.path.join(ve_root, 'build', 'GDAL')
+    local('rm -f %s' % os.path.join(gdal, 'setup.cfg'))
+    os.chdir(gdal)
+    cmd = ['python setup.py build_ext',
+           '--gdal-config=gdal-config',
+           '--library-dirs=/usr/lib',
+           '--libraries=gdal1.6.0',
+           '--include-dirs=/usr/include/gdal',
+           'install']
+    local(' '.join(cmd))
 
 
 @task
@@ -508,6 +555,29 @@ def package_openblock(repo):
         package = os.path.join(repo, name)
         os.chdir(package)
         local('python setup.py --quiet sdist --formats=zip --dist-dir=%s' % sdists)
+
+
+@task
+def update_openblock(branch='openrural'):
+    require('environment', provided_by=env.environments)
+    new_install = False
+    if not exists(env.openblock_root):
+        new_install = True
+        cmd = 'git clone %(openblock_repo)s %(openblock_root)s' % env
+        sudo(cmd, user=env.deploy_user)
+    with cd(env.openblock_root):
+        sudo('git pull', user=env.deploy_user)
+        sudo('git checkout %s' % branch, user=env.deploy_user)
+    if new_install:
+        for name in ('ebpub', 'ebdata', 'obadmin'):
+            with settings(warn_only=True):
+                sudo('%s uninstall -y -E %s %s' % (_vexe('pip'),
+                                                   env.virtualenv_root, name))
+            print(yellow('Installing {0}'.format(name)))
+            package = os.path.join(env.openblock_root, name)
+            with cd(package):
+                sudo('%s setup.py develop --no-deps' % _vexe('python'),
+                     user=env.deploy_user)
 
 
 @task

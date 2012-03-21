@@ -1,10 +1,9 @@
 importlib==1.0.2
 setuptools-git==0.4.2
-ebdata==1.2.0dev
-ebpub==1.2.0dev
-obadmin==1.2.0dev
+# ebdata==1.2.0dev
+# ebpub==1.2.0dev
+# obadmin==1.2.0dev
 gunicorn==0.13.4
 # seacucumber does not work with boto 2.1 yet
 boto==2.0
 seacucumber==1.2
-PIL==1.1.7
