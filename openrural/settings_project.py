@@ -116,10 +116,3 @@ LOGGING['handlers']['gelf'] = {
         'environment': 'unknown', # overridden in local_settings.py
     },
 }
-
-LOGGING['handlers']['file'] = {
-        'level': 'DEBUG',
-        'class': 'logging.FileHandler',
-        'formatter': 'debug',
-        'filename': os.path.join(PROJECT_DIR, 'openrural.log'),
-}
