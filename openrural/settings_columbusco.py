@@ -50,3 +50,10 @@ METRO_LIST = (
     },
 )
 
+LOGGING['handlers']['gelf']['extra_fields']['environment'] = 'staging'
+LOGGING['loggers']['openrural'] = {'handlers': ['gelf'],
+                                   'level': 'DEBUG'}
+LOGGING['loggers']['ebpub'] = {'handlers': ['gelf'],
+                               'level': 'DEBUG'}
+LOGGING['loggers']['ebdata'] = {'handlers': ['gelf'],
+                                'level': 'DEBUG'}
