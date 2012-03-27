@@ -105,3 +105,21 @@ CACHES = {
 STATIC_URL = '/'
 
 MAP_BASELAYER_TYPE = 'google.streets'
+
+# Graylog2 logging handler
+LOGGING['handlers']['gelf'] = {
+    'class': 'openrural.error_log.handlers.CustomGELFHandler',
+    'host': 'monitor2.caktusgroup.com',
+    'port': 12201,
+    'extra_fields': {
+        'deployment': 'columbusco',
+        'environment': 'unknown', # overridden in local_settings.py
+    },
+}
+
+LOGGING['handlers']['file'] = {
+        'level': 'DEBUG',
+        'class': 'logging.FileHandler',
+        'formatter': 'debug',
+        'filename': os.path.join(PROJECT_DIR, 'openrural.log'),
+}
