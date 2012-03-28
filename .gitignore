@@ -5,3 +5,4 @@ src/
 build/
 aws.sh
 fabsecrets.py
+openrural.log

@@ -13,7 +13,7 @@ from ebpub.db.models import NewsItem, Schema, SchemaField
 from ebdata.retrieval.scrapers.base import BaseScraper
 from ebpub.utils.script_utils import add_verbosity_options, setup_logging_from_opts
 
-logger = logging.getLogger('openrural.retrieval.whiteville_resturants')
+logger = logging.getLogger('openrural.retrieval.whiteville_props')
 
 class PropertyTransactions(BaseScraper):
     schema_slug = 'property-transactions'
@@ -26,14 +26,19 @@ class PropertyTransactions(BaseScraper):
         self.schema = Schema.objects.get(slug=self.schema_slug)
         self.num_added = 0
 
-    def update(self, csvreader, layer):
-        feature_by_prop = {}
-        for feature in layer:
-            feature_by_prop[int(feature.get('PROP'))] = feature
+    def update(self, csvreader, struct_layer, parcel_layer):
+        struct_feature_by_prop = {}
+        for feature in struct_layer:
+            struct_feature_by_prop[int(feature.get('PROP'))] = feature
+
+        parcel_feature_by_prop = {}
+        for feature in parcel_layer:
+            parcel_feature_by_prop[int(feature.get('PROP'))] = feature
 
         for item in csvreader:
             item_date = self.parse_date(item['SaleDate'])
-            feature = feature_by_prop.get(int(item['Prop']))
+            struct_feature = struct_feature_by_prop.get(int(item['Prop']))
+            parcel_feature = parcel_feature_by_prop.get(int(item['Prop']))
 
             owner_address = item['Address1']
             for i in range(2, 4):
@@ -42,7 +47,8 @@ class PropertyTransactions(BaseScraper):
                     owner_address = '%s / %s' % (owner_address, item_field)
             owner_address = '%s %s' % (owner_address, item['ZipCode'])
 
-            if item_date and feature:
+            if item_date and parcel_feature:
+
                 attrs = {
                     'pin': item['PIN'],
                     'owner_name': item['Owner'],
@@ -52,32 +58,45 @@ class PropertyTransactions(BaseScraper):
                     'total_val': int(item['TotalVal']),
                     'sale_amt': int(item['SaleAmt']),
                     'year_built': int(item['YrBlt']),
-                    'prop_card': str(feature['PROPCARD']),
+                    'prop_card': str(struct_feature['PROPCARD']) if struct_feature else '',
                 }
-                location_name = '%s %s %s' % (feature['FULLADD'], feature['CITY'], feature['ZIP'])
+
+                transformed_point = parcel_feature.geom.transform(4326, True)
+                if struct_feature:
+                    location_name = '%s %s %s' % (struct_feature['FULLADD'], struct_feature['CITY'], struct_feature['ZIP'])
+                else:
+                    location_name = 'Property %s (address unknown)' % item['Prop']
+
                 self.create_newsitem(
                     attrs,
                     title='Property %s' % item['Prop'],
-                    url=feature['PHOTO_URL'],
+                    url=struct_feature['PHOTO_URL'] if struct_feature else '',
                     item_date=item_date,
-                    location=feature.geom.transform(4326, True).geos,
+                    location=transformed_point.geos,
                     location_name=location_name.strip(),
                     zipcode=item['ZipCode']
                 )
 
-    def stats(self, csvreader, layer):
-        feature_by_prop = defaultdict(list)
-        feature_count = len(layer)
-        for feature in layer:
+    def stats(self, csvreader, struct_layer, parcel_layer):
+        struct_feature_by_prop = defaultdict(list)
+        struct_feature_count = len(struct_layer)
+        for feature in struct_layer:
             propval = int(feature.get('PROP'))
-            feature_by_prop[propval].append(feature)
+            struct_feature_by_prop[propval].append(feature)
 
-        import pdb; pdb.set_trace()
+        parcel_feature_by_prop = defaultdict(list)
+        parcel_feature_count = len(parcel_layer)
+        for feature in parcel_layer:
+            propval = int(feature.get('PROP'))
+            parcel_feature_by_prop[propval].append(feature)
+
         zero_date_count = 0
         invalid_date_count = 0
-        props_missing_from_shapefile = 0
+        props_missing_from_struct_shapefile = 0
+        props_missing_from_parcel_shpaefile = 0
         item_count = 0
-        valid_date_but_no_feature = 0
+        valid_date_but_no_struct_feature = 0
+        valid_date_but_no_parcel_feature = 0
         valid_date_but_multi_feature = 0
         valid_date_and_single_feature = 0
         item_by_prop = defaultdict(list)
@@ -95,35 +114,38 @@ class PropertyTransactions(BaseScraper):
                     invalid_date_count += 1
 
             if item_date:
-                if propval not in feature_by_prop:
-                    valid_date_but_no_feature += 1
+                if propval not in parcel_feature_by_prop:
+                    valid_date_but_no_parcel_feature += 1
+
+                if propval not in struct_feature_by_prop:
+                    valid_date_but_no_struct_feature += 1
                 else:
-                    features = feature_by_prop[propval]
+                    features = struct_feature_by_prop[propval]
                     if len(features) == 1:
                         valid_date_and_single_feature += 1
                     else:
                         valid_date_but_multi_feature += 1
 
-        csv_props_missing_from_shapefile = []
+        csv_props_missing_from_struct_shapefile = []
         for k in item_by_prop.keys():
-            if k not in feature_by_prop:
-                csv_props_missing_from_shapefile.append(k)
+            if k not in struct_feature_by_prop:
+                csv_props_missing_from_struct_shapefile.append(k)
 
-        shapefile_props_missing_from_csv = []
-        for k in feature_by_prop.keys():
-            if k not in item_by_prop:
-                shapefile_props_missing_from_csv.append(k)
+        csv_props_missing_from_parcel_shapefile = []
+        for k in item_by_prop.keys():
+            if k not in parcel_feature_by_prop:
+                csv_props_missing_from_parcel_shapefile.append(k)
 
-        self.logger.info('Shapefile has %s features with %s distinct properties.', feature_count, len(feature_by_prop))
+        self.logger.info('Struct shapefile has %s features with %s distinct properties.', struct_feature_count, len(struct_feature_by_prop))
+        self.logger.info('Parcel shapefile has %s features with %s distinct properties.', parcel_feature_count, len(parcel_feature_by_prop))
         self.logger.info('CSV file has %s rows, with %s distinct properties.', item_count, len(item_by_prop))
         self.logger.info('CSV file has %s "0" dates, and %s invalid dates.', zero_date_count, invalid_date_count)
-        self.logger.info('CSV file references %s properties not found in shapefile; '
-            'shapefile references %s properties not found in CSV.' % (len(csv_props_missing_from_shapefile),
-            len(shapefile_props_missing_from_csv)))
+        self.logger.info('CSV file references %s properties not found in struct shapefile. ', len(csv_props_missing_from_struct_shapefile))
+        self.logger.info('CSV file references %s properties not found in parcel shapefile. ', len(csv_props_missing_from_parcel_shapefile))
 
         valid_date_count = item_count - invalid_date_count - zero_date_count
-        self.logger.info('%s CSV rows with valid dates. %s have no mapping, %s have multiple mappings, %s have a single mapping.' % \
-            (valid_date_count, valid_date_but_no_feature, valid_date_but_multi_feature, valid_date_and_single_feature))
+        self.logger.info('%s CSV rows with valid dates. %s have no parcel mapping, %s have no struct mapping, %s have multiple mappings, %s have a single mapping.' % \
+            (valid_date_count, valid_date_but_no_parcel_feature, valid_date_but_no_struct_feature, valid_date_but_multi_feature, valid_date_and_single_feature))
 
 
     def parse_date(self, string_value, rownum=None):
@@ -252,18 +274,19 @@ def main():
     add_verbosity_options(parser)
     opts, args = parser.parse_args(sys.argv)
     setup_logging_from_opts(opts, logger)
-    if len(args) != 3:
-        parser.error("Please specify a CSV file and shapefile to import")
-    csv_name, shp_name = args[1], args[2]
+    if len(args) != 4:
+        parser.error("Please specify a CSV file, structures shapefile, and parcel shapefile to import")
+    csv_name, struct_shp_name, parcel_shp_name = args[1:]
     csvreader = csv.DictReader(open(csv_name))
-    layer = DataSource(shp_name)[0]
+    struct_layer = DataSource(struct_shp_name)[0]
+    parcel_layer = DataSource(parcel_shp_name)[0]
 
     prop_trans = PropertyTransactions(clear=opts.clear)
 
     if opts.stats:
-        prop_trans.stats(csvreader, layer)
+        prop_trans.stats(csvreader, struct_layer, parcel_layer)
     else:
-        prop_trans.update(csvreader, layer)
+        prop_trans.update(csvreader, struct_layer, parcel_layer)
 
 
 if __name__ == '__main__':
