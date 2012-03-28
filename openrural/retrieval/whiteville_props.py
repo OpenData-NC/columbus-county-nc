@@ -13,7 +13,7 @@ from ebpub.db.models import NewsItem, Schema, SchemaField
 from ebdata.retrieval.scrapers.base import BaseScraper
 from ebpub.utils.script_utils import add_verbosity_options, setup_logging_from_opts
 
-logger = logging.getLogger('openrural.retrieval.whiteville_resturants')
+logger = logging.getLogger('openrural.retrieval.whiteville_props')
 
 class PropertyTransactions(BaseScraper):
     schema_slug = 'property-transactions'
