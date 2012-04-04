@@ -8,7 +8,7 @@ Local Development Setup
 
 To setup OpenRural, you need to clone OpenBlock along side OpenRural::
 
-    $ git clone git://github.com:openrural/openblock.git
+    $ git clone git://github.com/openrural/openblock.git
     $ git clone git://github.com/openrural/columbus-county-nc.git
 
 OpenRural runs a modifed branch of OpenBlock, so switch to that branch::
