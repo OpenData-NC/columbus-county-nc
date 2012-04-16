@@ -27,7 +27,7 @@ class Run(models.Model):
 class Stat(models.Model):
     run = models.ForeignKey(Run, related_name='stats')
     name = models.CharField(max_length=255)
-    value = models.IntegerField(default=0)
+    value = models.CharField(default='', max_length=255)
 
 
 class Geocode(models.Model):

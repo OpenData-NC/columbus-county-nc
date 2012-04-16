@@ -38,6 +38,13 @@ class DashboardMixin(object):
 
     def end_run(self):
         self.logger.info('Ending...')
+        geocoded = self.counter['Geocoded']
+        success = self.counter['Geocoded Success']
+        if geocoded > 0:
+            rate = float(success) / geocoded
+        else:
+            rate = 0.0
+        self.counter['Geocoded Success Rate'] = '{0:.2%}'.format(rate)
         for name, value in self.counter.iteritems():
             self.run.stats.create(name=name, value=value)
         self.run.end_date = datetime.datetime.now()
@@ -94,6 +101,7 @@ class DashboardMixin(object):
         except (geocoder.GeocodingException, geocoder.ParsingError, NoReverseMatch) as e:
             self.geocode_log.success = False
             self.geocode_log.name = type(e).__name__
+            self.counter['Geocode Error - %s' % type(e).__name__] += 1
             self.geocode_log.description = traceback.format_exc()
             self.logger.error(unicode(e))
             return None
