@@ -21,7 +21,6 @@ TIME_ZONE = 'US/Eastern'
 PROJECT_DIR = os.path.normpath(os.path.dirname(__file__))
 INSTALLED_APPS = (
     'openrural',
-    'openrural.error_log',
     'gunicorn',
     'seacucumber',
     'openrural.data_dashboard',
@@ -109,7 +108,7 @@ MAP_BASELAYER_TYPE = 'google.streets'
 
 # Graylog2 logging handler
 LOGGING['handlers']['gelf'] = {
-    'class': 'openrural.error_log.handlers.CustomGELFHandler',
+    'class': 'openrural.data_dashboard.handlers.CustomGELFHandler',
     'host': 'monitor2.caktusgroup.com',
     'port': 12201,
     'extra_fields': {
