@@ -1,6 +1,6 @@
 from django.db import models
 
-from ebpub.db.models import Schema
+from ebpub.db.models import Schema, NewsItem
 
 
 class Scraper(models.Model):
@@ -28,3 +28,22 @@ class Stat(models.Model):
     run = models.ForeignKey(Run, related_name='stats')
     name = models.CharField(max_length=255)
     value = models.IntegerField(default=0)
+
+
+class Geocode(models.Model):
+    run = models.ForeignKey(Run, related_name='geocodes')
+    news_item = models.ForeignKey(NewsItem, related_name='geocodes', null=True,
+                                  blank=True)
+    date = models.DateTimeField(auto_now_add=True, db_index=True)
+    scraper = models.CharField(max_length=255, db_index=True)
+    location = models.CharField(max_length=1024)
+    zipcode = models.CharField(max_length=16, blank=True)
+    success = models.BooleanField(default=True)
+    name = models.CharField(max_length=255, blank=True, db_index=True)
+    description = models.TextField(blank=True)
+
+    def __unicode__(self):
+        if self.name:
+            return "{0}: {1}".format(self.name, self.location)
+        else:
+            return self.location

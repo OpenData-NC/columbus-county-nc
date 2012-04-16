@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 
 from ebpub import geocoder
 
-from openrural.error_log.models import Geocode
+from openrural.data_dashboard.models import Geocode
 
 
 __all__ = ('GoogleMapsLink', 'GeocodeForm')

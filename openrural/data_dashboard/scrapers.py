@@ -9,20 +9,23 @@ import collections
 
 import ebdata.retrieval.log  # sets up base handlers.
 from ebdata.retrieval.scrapers.base import BaseScraper
+from ebpub import geocoder
 from ebpub.geocoder import GeocodingException, ParsingError, AmbiguousResult
 
-from openrural.data_dashboard.models import Scraper, Run
+from django.core.urlresolvers import NoReverseMatch
+
+from openrural.data_dashboard.models import Scraper, Run, Geocode
 
 
 class DashboardMixin(object):
-    """Scraper mixin with specific overrides to hook into data dashboard"""
+    """Scraper mixin with specific overrides to hook into Data Dashboard"""
 
-    geocoder_type = 'openblock'
+    geocoder = geocoder.SmartGeocoder()
 
     def __init__(self, *args, **kwargs):
         clear = kwargs.pop('clear', False)
         # use defaultdict here (Python 2.6 doesn't have collections.Counter)
-        self.counter = collections.defaultdict(lambda x: 0)
+        self.counter = collections.defaultdict(lambda: 0)
         super(DashboardMixin, self).__init__(*args, **kwargs)
         # create data_dashboard-specific logger here, otherwise eb.*
         # loggers get hijacked by ebdata.retrieval.log
@@ -53,6 +56,53 @@ class DashboardMixin(object):
         except (KeyboardInterrupt, SystemExit):
             self.logger.warning('KeyboardInterrupt or SystemExit')
         self.end_run()
+
+    def create_newsitem(self, attributes, **kwargs):
+        """Override to associate NewsItem to Geocode object"""
+        news_item = super(DashboardMixin, self).create_newsitem(attributes,
+                                                                **kwargs)
+        self.geocode_log.news_item = news_item
+        self.geocode_log.save()
+        return news_item
+
+    def geocode(self, location_name, zipcode=None, **kwargs):
+        self.geocode_log = Geocode(
+            run=self.run,
+            scraper=self.schema_slugs[0],
+            location=location_name,
+            zipcode=zipcode or '',
+        )
+        self.counter['Geocoded'] += 1
+        try:
+            location = self.geocoder.geocode(location_name)
+            self.counter['Geocoded Success'] += 1
+            return location
+        except geocoder.AmbiguousResult as result:
+            # try to resolve based on zipcode...
+            if zipcode is None:
+                self.logger.info(
+                    "Ambiguous results for address %s. (no zipcode to resolve dispute)" %
+                    (location_name, ))
+                return None
+            in_zip = [r for r in result.choices if r['zip'] == zipcode]
+            if len(in_zip) == 0:
+                self.logger.info(
+                    "Ambiguous results for address %s, but none in specified zipcode %s" %
+                    (location_name, zipcode))
+                return None
+            elif len(in_zip) > 1:
+                self.logger.info(
+                    "Ambiguous results for address %s in zipcode %s, guessing first." %
+                    (location_name, zipcode))
+                return in_zip[0]
+            else:
+                return in_zip[0]
+        except (geocoder.GeocodingException, geocoder.ParsingError, NoReverseMatch) as e:
+            self.geocode_log.success = False
+            self.geocode_log.name = type(e).__name__
+            self.geocode_log.description = traceback.format_exc()
+            self.logger.error(unicode(e))
+            return None
 
     @property
     def num_added(self):

@@ -38,5 +38,6 @@ def view_run(request, scraper_slug, run_id):
     crumbs.append(('Run %d' % run.pk,
                    reverse('view_run', args=[scraper_slug, run_id])))
     context = {'run': run,
+               'stats': run.stats.order_by('name'),
                'breadcrumbs': crumbs}
     return render(request, 'data_dashboard/view_run.html', context)
