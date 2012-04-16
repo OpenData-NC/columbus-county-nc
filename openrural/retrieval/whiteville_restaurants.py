@@ -2,7 +2,6 @@
 
 import sys
 import csv
-import logging
 import datetime
 import traceback
 from optparse import OptionParser
@@ -26,6 +25,7 @@ from ebdata.retrieval.scrapers.newsitem_list_detail import NewsItemListDetailScr
 from ebdata.retrieval.utils import convert_entities
 
 from openrural.error_log import models as error_log
+from openrural.data_dashboard.scrapers import DashboardMixin
 
 
 FACILITY_STATUS_CODES = {
@@ -51,24 +51,15 @@ FACILITY_STATUS_CODES = {
 }
 
 
-logger = logging.getLogger('openrural.retrieval.whiteville_resturants')
+class RestaurantInspections(DashboardMixin, NewsItemListDetailScraper):
 
-class RestaurantInspections(NewsItemListDetailScraper):
-
+    logname = 'restaurant-inspections'
     schema_slugs = ('restaurant-inspections',)
     geocoder = geocoder.SmartGeocoder()
 
     def __init__(self, *args, **kwargs):
-        clear = kwargs.pop('clear', False)
         super(RestaurantInspections, self).__init__(*args, **kwargs)
-        if clear:
-            self._create_schema()
-        # these are incremented by NewsItemListDetailScraper
-        self.num_added = 0
-        self.num_changed = 0
-        self.num_skipped = 0
         self.batch = error_log.GeocodeBatch.objects.create(scraper=self.schema_slugs[0])
-        self.geocode_log = None
 
     def update(self, csvreader):
         insp_dict = defaultdict(list)
@@ -79,11 +70,7 @@ class RestaurantInspections(NewsItemListDetailScraper):
         for key, val in insp_dict.items():
             self.parse_insp_list(val)
 
-        self.batch.end_time = datetime.datetime.now()
-        self.batch.num_added = self.num_added
-        self.batch.num_changed = self.num_changed
-        self.batch.num_skipped = self.num_skipped
-        self.batch.save()
+        self.end()
 
     def parse_insp_list(self, rows):
         row = rows[0]
@@ -233,13 +220,13 @@ def main():
     parser = OptionParser()
     parser.add_option('-c', '--clear', help='Clear schema',
                       action="store_true", dest="clear")
-    add_verbosity_options(parser)
+    # add_verbosity_options(parser)
     opts, args = parser.parse_args(sys.argv)
-    setup_logging_from_opts(opts, logger)
+    # setup_logging_from_opts(opts, logger)
     if len(args) != 2:
         parser.error("Please specify a CSV file to import")
     csvreader = csv.DictReader(open(args[1]))
-    RestaurantInspections(clear=opts.clear).update(csvreader)
+    RestaurantInspections(clear=opts.clear).run(csvreader)
 
 
 if __name__ == '__main__':
