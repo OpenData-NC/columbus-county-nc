@@ -1,6 +1,7 @@
 from django.contrib import admin
+from django.db import models
 
-from openrural.data_dashboard.models import Scraper, Run, Stat
+from openrural.data_dashboard.models import Scraper, Run, Stat, Geocode
 from openrural.data_dashboard.forms import GeocodeForm, GoogleMapsLink
 
 

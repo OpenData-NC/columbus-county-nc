@@ -1,18 +1,12 @@
-
-import json
-import urllib
-import urllib2
 import logging
 import datetime
 import traceback
 import collections
 
-import ebdata.retrieval.log  # sets up base handlers.
-from ebdata.retrieval.scrapers.base import BaseScraper
+from django.core.urlresolvers import NoReverseMatch
+
 from ebpub import geocoder
 from ebpub.geocoder import GeocodingException, ParsingError, AmbiguousResult
-
-from django.core.urlresolvers import NoReverseMatch
 
 from openrural.data_dashboard.models import Scraper, Run, Geocode
 
