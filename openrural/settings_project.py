@@ -117,3 +117,6 @@ LOGGING['handlers']['gelf'] = {
         'environment': 'unknown', # overridden in local_settings.py
     },
 }
+LOGGING['formatters']['basic'] = {
+    'format': '%(asctime)s %(name)-20s %(levelname)-8s %(message)s',
+}
