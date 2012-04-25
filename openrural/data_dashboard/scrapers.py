@@ -1,3 +1,4 @@
+import pprint
 import logging
 import datetime
 import traceback
@@ -7,6 +8,7 @@ from django.core.urlresolvers import NoReverseMatch
 
 from ebpub import geocoder
 from ebpub.geocoder import GeocodingException, ParsingError, AmbiguousResult
+from ebpub.geocoder.base import full_geocode
 
 from openrural.data_dashboard.models import Scraper, Run, Geocode
 
@@ -62,49 +64,44 @@ class DashboardMixin(object):
         """Override to associate NewsItem to Geocode object"""
         news_item = super(DashboardMixin, self).create_newsitem(attributes,
                                                                 **kwargs)
+        if self.geocode_log is None:
+            self.geocode_log = Geocode(
+                run=self.run,
+                scraper=self.schema_slugs[0],
+                location=news_item.location_name,
+                name='No Geocode',
+                success=False,
+            )
         self.geocode_log.news_item = news_item
         self.geocode_log.save()
         return news_item
 
-    def geocode(self, location_name, zipcode=None, **kwargs):
+    def geocode(self, location_name, **kwargs):
+        self.counter['Geocoded'] += 1
         self.geocode_log = Geocode(
             run=self.run,
             scraper=self.schema_slugs[0],
             location=location_name,
-            zipcode=zipcode or '',
         )
-        self.counter['Geocoded'] += 1
+        self.geocode_log.description = pprint.pformat(kwargs)
         try:
-            location = self.geocoder.geocode(location_name)
-            self.counter['Geocoded Success'] += 1
-            return location
-        except geocoder.AmbiguousResult as result:
-            # try to resolve based on zipcode...
-            if zipcode is None:
-                self.logger.info(
-                    "Ambiguous results for address %s. (no zipcode to resolve dispute)" %
-                    (location_name, ))
-                return None
-            in_zip = [r for r in result.choices if r['zip'] == zipcode]
-            if len(in_zip) == 0:
-                self.logger.info(
-                    "Ambiguous results for address %s, but none in specified zipcode %s" %
-                    (location_name, zipcode))
-                return None
-            elif len(in_zip) > 1:
-                self.logger.info(
-                    "Ambiguous results for address %s in zipcode %s, guessing first." %
-                    (location_name, zipcode))
-                return in_zip[0]
-            else:
-                return in_zip[0]
+            result = full_geocode(location_name, guess=True, **kwargs)
         except (geocoder.GeocodingException, geocoder.ParsingError, NoReverseMatch) as e:
             self.geocode_log.success = False
             self.geocode_log.name = type(e).__name__
-            self.counter['Geocode Error - %s' % type(e).__name__] += 1
-            self.geocode_log.description = traceback.format_exc()
+            self.counter['Geocode Exception - %s' % type(e).__name__] += 1
+            self.geocode_log.description += '\n\n%s' % traceback.format_exc()
             self.logger.error(unicode(e))
             return None
+        self.geocode_log.description += '\n\n%s' % pprint.pformat(result)
+        if result['ambiguous'] is True:
+            self.geocode_log.success = False
+            self.geocode_log.name = 'Ambiguous %s' % result['type']
+            self.counter['Geocode Exception - %s' % self.geocode_log.name] += 1
+            self.logger.error('Ambiguous result for %s' % location_name)
+            return None
+        self.counter['Geocoded Success'] += 1
+        return result['result']
 
     @property
     def num_added(self):
