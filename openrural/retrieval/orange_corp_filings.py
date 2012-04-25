@@ -12,7 +12,7 @@ from openrural.retrieval.base.scraperwiki import ScraperWikiScraper
 from openrural.data_dashboard.scrapers import DashboardMixin
 
 
-class Scraper(DashboardMixin, ScraperWikiScraper):
+class CorporationsScraper(DashboardMixin, ScraperWikiScraper):
 
     # scraper settings
     logname = 'corporations-scraper'
@@ -117,7 +117,7 @@ def main():
                       action="store_true", dest="clear")
     add_verbosity_options(parser)
     opts, args = parser.parse_args(sys.argv)
-    Scraper(clear=opts.clear).run()
+    CorporationsScraper(clear=opts.clear).run()
 
 
 if __name__ == '__main__':
