@@ -16,8 +16,6 @@ from openrural.data_dashboard.models import Scraper, Run, Geocode
 class DashboardMixin(object):
     """Scraper mixin with specific overrides to hook into Data Dashboard"""
 
-    geocoder = geocoder.SmartGeocoder()
-
     def __init__(self, *args, **kwargs):
         clear = kwargs.pop('clear', False)
         # use defaultdict here (Python 2.6 doesn't have collections.Counter)
@@ -102,6 +100,16 @@ class DashboardMixin(object):
             return None
         self.counter['Geocoded Success'] += 1
         return result['result']
+
+    def update_existing(self, newsitem, new_values, new_attributes):
+        new_values.pop('convert_to_block', None)
+        new_values.pop('city', None)
+        new_values.pop('state', None)
+        new_values.pop('zipcode', None)
+        return super(DashboardMixin, self).update_existing(newsitem,
+                                                           new_values,
+                                                           new_attributes)
+
 
     @property
     def num_added(self):
