@@ -6,3 +6,4 @@ build/
 aws.sh
 fabsecrets.py
 openrural.log
+shapefiles/

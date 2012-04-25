@@ -8,7 +8,7 @@ Local Development Setup
 
 To setup OpenRural, you need to clone OpenBlock along side OpenRural::
 
-    $ git clone git://github.com:openrural/openblock.git
+    $ git clone git://github.com/openrural/openblock.git
     $ git clone git://github.com/openrural/columbus-county-nc.git
 
 OpenRural runs a modifed branch of OpenBlock, so switch to that branch::
@@ -46,12 +46,14 @@ Columbus County, NC
 
 To import data for Columbus County, NC::
 
-    $ django-admin.py import_nc_zips
-    $ django-admin.py import_county_streets 37047
-    $ django-admin.py import_columbus_county
+    $ django-admin.py import_columbus_county --dir=shapefiles
 
-Where 37047 is the U.S. Census county ID for the county you want to import
-(37047 = Columbus County, NC).
+The --dir option specified to import_columbus_county directs the command to look
+for the necessary shapefiles in the specified directory. If that directory does not
+exist, then it will be created, the files will be downloaded into that directory,
+and they will be left there for later use. If --dir is not specified then the files
+will be downloaded to a temporary directory which will be deleted before the command
+finishes.
 
 Server Provisioning and Deployment
 ----------------------------------

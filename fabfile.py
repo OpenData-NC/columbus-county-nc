@@ -481,8 +481,6 @@ def reset_local_db(db_name):
 @task
 def load_geo_files():
     require('environment', provided_by=env.environments)
-    manage('import_nc_zips')
-    manage('import_county_streets 37047')
     manage('import_columbus_county')
 
 
@@ -556,7 +554,7 @@ def package_openblock(repo):
 
 
 @task
-def update_openblock(branch='openrural'):
+def update_openblock(branch=None):
     require('environment', provided_by=env.environments)
     new_install = False
     if not exists(env.openblock_root):
@@ -565,7 +563,8 @@ def update_openblock(branch='openrural'):
         sudo(cmd, user=env.deploy_user)
     with cd(env.openblock_root):
         sudo('git pull', user=env.deploy_user)
-        sudo('git checkout %s' % branch, user=env.deploy_user)
+        if branch:
+            sudo('git checkout %s' % branch, user=env.deploy_user)
     if new_install:
         for name in ('ebpub', 'ebdata', 'obadmin'):
             with settings(warn_only=True):

@@ -190,6 +190,7 @@ class PropertyTransactions(BaseScraper):
             is_public=True,
             has_newsitem_detail=True,
             short_source="Columbus County GIS department",
+            allow_charting=True,
         )
 
         SchemaField.objects.create(
