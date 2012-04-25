@@ -8,3 +8,7 @@ gunicorn==0.13.4
 boto==2.0
 seacucumber==1.2
 graypy==0.2.3
+celery==2.5.1
+django-celery==2.5.1
+django-picklefield==0.2.0
+kombu==2.1.2

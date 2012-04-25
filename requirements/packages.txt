@@ -8,6 +8,7 @@ nginx
 git-core
 subversion
 mercurial
+libevent-dev
 libgdal1-dev
 libgdal1-1.6.0
 libproj-dev
@@ -16,6 +17,7 @@ libxml2
 libxml2-dev
 libxslt1.1
 libxslt1-dev
+postfix
 postgresql-8.4-postgis
 postgresql-server-dev-8.4
 subversion
