@@ -33,3 +33,6 @@ PASSWORD_RESET_SALT = '%%s%%s'
 # staff privileges (including the ability to view non-public schemas).
 STAFF_COOKIE_NAME = 'obstaff_openrural'
 STAFF_COOKIE_VALUE = ''
+
+BROKER_URL = "amqp://{{ deploy_user }}:{{ broker_password }}@localhost:5672/{{ vhost }}"
+BROKER_CONNECTION_TIMEOUT = 15
