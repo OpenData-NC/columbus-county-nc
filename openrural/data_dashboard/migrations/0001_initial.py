@@ -6,6 +6,10 @@ from django.db import models
 
 class Migration(SchemaMigration):
 
+    depends_on = (
+        ("db", "0028_auto__add_unique_schemafield_name_schema__add_field_schema_edit_window"),
+    )
+
     def forwards(self, orm):
         
         # Adding model 'Scraper'
