@@ -6,7 +6,7 @@ from openrural.retrieval.corporations import CorporationsScraper
 
 class CorporationsTask(Task):
 
-    name = 'openrural.corporations'
+    name = 'openrural.corporations-scraper'
 
     def run(self):
         logger = self.get_logger()
