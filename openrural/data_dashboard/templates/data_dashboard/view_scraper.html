@@ -6,6 +6,20 @@
 
 {% block content %}
 <h1>{{ scraper }}</h1>
+
+{% if schema %}
+<table>
+    <tr>
+        <th>Name</th>
+        <td>{{ schema.plural_name|capfirst }}</td>
+    </tr>
+    <tr>
+        <th>News Items</th>
+        <td>{{ schema.newsitem_set.count }}</td>
+    </tr>
+</table>
+{% endif %}
+
 <form action='{% url "run_scraper" scraper.slug %}' method='post'>
     {% csrf_token %}
     <input type='submit' name='submit' value='Run' />

@@ -5,6 +5,7 @@ from django.http import Http404
 from django.views.decorators.http import require_POST
 
 from ebpub.db import breadcrumbs
+from ebpub.db.models import Schema
 
 from openrural.data_dashboard import models as dd
 from openrural.data_dashboard import tasks as dashboard_tasks
@@ -26,12 +27,17 @@ def dashboard(request):
 
 def view_scraper(request, scraper_slug):
     scraper = get_object_or_404(dd.Scraper, slug=scraper_slug)
+    try:
+        schema = Schema.objects.get(slug=scraper.schema)
+    except Schema.DoesNotExist:
+        schema = None
     crumbs = base_crumbs()
     crumbs.append((scraper_slug,
                    reverse('view_scraper', args=[scraper_slug])))
     context = {'scraper': scraper,
                'runs': scraper.runs.order_by('-date'),
-               'breadcrumbs': crumbs}
+               'breadcrumbs': crumbs,
+               'schema': schema}
     return render(request, 'data_dashboard/view_scraper.html', context)
 
 
