@@ -1,10 +1,15 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Max
 from django.core.urlresolvers import reverse
+from django.http import Http404
+from django.views.decorators.http import require_POST
 
 from ebpub.db import breadcrumbs
 
 from openrural.data_dashboard import models as dd
+from openrural.data_dashboard import tasks as dashboard_tasks
+
+from celery.registry import tasks
 
 
 def base_crumbs():
@@ -41,3 +46,15 @@ def view_run(request, scraper_slug, run_id):
                'stats': run.stats.order_by('name'),
                'breadcrumbs': crumbs}
     return render(request, 'data_dashboard/view_run.html', context)
+
+
+@require_POST
+def run_scraper(request, scraper_slug):
+    scraper = get_object_or_404(dd.Scraper, slug=scraper_slug)
+    slug = 'openrural.%s' % scraper.slug
+    try:
+        Task = tasks[slug]
+    except KeyError:
+        raise Http404('Task not found!')
+    Task.delay()
+    return redirect('view_scraper', scraper_slug=scraper.slug)

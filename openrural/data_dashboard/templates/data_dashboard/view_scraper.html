@@ -6,6 +6,10 @@
 
 {% block content %}
 <h1>{{ scraper }}</h1>
+<form action='{% url "run_scraper" scraper.slug %}' method='post'>
+    {% csrf_token %}
+    <input type='submit' name='submit' value='Run' />
+</form>
 <table>
     <tr>
         <th>Name</th>
