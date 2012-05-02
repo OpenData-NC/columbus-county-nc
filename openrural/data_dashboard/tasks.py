@@ -1,7 +1,7 @@
 from celery.task import Task
 from celery.registry import tasks
 
-from openrural.retrieval.orange_corp_filings import CorporationsScraper
+from openrural.retrieval.corporations import CorporationsScraper
 
 
 class CorporationsTask(Task):
