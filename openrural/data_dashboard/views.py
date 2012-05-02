@@ -30,7 +30,7 @@ def view_scraper(request, scraper_slug):
     crumbs.append((scraper_slug,
                    reverse('view_scraper', args=[scraper_slug])))
     context = {'scraper': scraper,
-               'runs': scraper.runs.order_by('-end_date'),
+               'runs': scraper.runs.order_by('-date'),
                'breadcrumbs': crumbs}
     return render(request, 'data_dashboard/view_scraper.html', context)
 
