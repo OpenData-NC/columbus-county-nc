@@ -6,7 +6,7 @@ from openrural.data_dashboard import tasks as dashboard_tasks
 
 
 class Command(BaseCommand):
-    help = 'Inspect .dbf files'
+    help = 'Run celery task from management command'
 
     def handle(self, *args, **options):
         task_name = args[0]
