@@ -8,10 +8,10 @@ class CorporationsTask(Task):
 
     name = 'openrural.corporations-scraper'
 
-    def run(self):
+    def run(self, clear=False):
         logger = self.get_logger()
         logger.info("Starting corporations task")
-        CorporationsScraper(clear=False).run()
+        CorporationsScraper(clear=clear).run()
         logger.info("Stopping corporations task")
 
 
