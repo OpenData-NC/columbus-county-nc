@@ -23,7 +23,7 @@ class DashboardMixin(object):
         super(DashboardMixin, self).__init__(*args, **kwargs)
         # create data_dashboard-specific logger here, otherwise eb.*
         # loggers get hijacked by ebdata.retrieval.log
-        logger_name = 'data_dashboard.scraper.%s' % self.logname
+        logger_name = 'data_dashboard.%s' % self.logname
         self.logger = logging.getLogger(logger_name)
         if clear and hasattr(self, '_create_schema'):
             self._create_schema()
