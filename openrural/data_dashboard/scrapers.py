@@ -9,6 +9,7 @@ from django.core.urlresolvers import NoReverseMatch
 from ebpub import geocoder
 from ebpub.geocoder import GeocodingException, ParsingError, AmbiguousResult
 from ebpub.geocoder.base import full_geocode
+from ebpub.db.models import Schema
 
 from openrural.data_dashboard.models import Scraper, Run, Geocode
 
@@ -25,6 +26,9 @@ class DashboardMixin(object):
         # loggers get hijacked by ebdata.retrieval.log
         logger_name = 'data_dashboard.scraper.%s' % self.logname
         self.logger = logging.getLogger(logger_name)
+        # reset schema if it doesn't exist (first run)
+        if not Schema.objects.filter(slug=self.schema_slugs[0]).exists():
+            clear = True
         if clear and hasattr(self, '_create_schema'):
             self._create_schema()
         self.geocode_log = None
@@ -48,6 +52,7 @@ class DashboardMixin(object):
         for name, value in self.counter.iteritems():
             self.run.stats.create(name=name, value=value)
         self.run.end_date = datetime.datetime.now()
+        self.run.status = 'success'
         self.run.save()
 
     def run(self, *args, **kwargs):
