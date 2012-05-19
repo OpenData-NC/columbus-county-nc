@@ -149,5 +149,6 @@ LOGGING['loggers']['ebpub'] = {'propagate': True}
 LOGGING['loggers']['ebdata'] = {'propagate': True}
 LOGGING['loggers']['eb'] = {'propagate': True}
 LOGGING['loggers']['data_dashboard'] = {'propagate': True}
+LOGGING['loggers']['django'] = {'propagate': True, 'level': 'INFO'}
 
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
