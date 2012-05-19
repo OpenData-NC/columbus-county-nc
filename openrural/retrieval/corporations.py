@@ -27,7 +27,7 @@ class CorporationsScraper(DashboardMixin, ScraperWikiScraper):
 
     def save(self, old_record, data, detail_record):
         date, time = data['DateFormed'].split('T', 1)
-        item_date = datetime.datetime.strptime(date, "%Y-%m-%d")
+        item_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
         attrs = {
             'citizenship': data['Citizenship'],
             'type': data['Type'],
