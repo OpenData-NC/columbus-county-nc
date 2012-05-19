@@ -51,7 +51,7 @@ env.server_ports = {
 }
 env.branches = {
     'staging': 'master',
-    'production': 'data-dashboard',
+    'production': 'master',
 }
 env.instance_types = {
     'staging': 'm1.small',
@@ -152,14 +152,14 @@ def new_instance(placement, deployment, environment, count=1, **kwargs):
 
 
 @task
-def staging(deployment):
+def staging(deployment=env.deployments[0]):
     env.deployment_tag = deployment
     env.environment = 'staging'
     _setup_path()
 
 
 @task
-def production(deployment):
+def production(deployment=env.deployments[0]):
     env.deployment_tag = deployment
     env.environment = 'production'
     _setup_path()
@@ -583,9 +583,11 @@ def update_openblock(branch=None):
 @task
 def reset_db():
     require('environment', provided_by=env.environments)
+    supervisor_command('stop %(environment)s:*' % env)
     sudo('dropdb %(database_name)s' % env, user='postgres')
     sudo('createdb -E UTF-8 -T template_postgis -O %(database_user)s %(database_name)s' % env, user='postgres')
     syncdb()
+    supervisor_command('start %(environment)s:*' % env)
 
 
 @task
