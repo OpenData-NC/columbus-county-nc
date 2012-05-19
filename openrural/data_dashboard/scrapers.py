@@ -138,9 +138,9 @@ class DashboardMixin(object):
         self.stats['Changed'] = x
 
     @property
-    def num_changed(self):
+    def num_skipped(self):
         return self.stats['Skipped']
 
     @num_added.setter
-    def num_changed(self, x):
+    def num_skipped(self, x):
         self.stats['Skipped'] = x
