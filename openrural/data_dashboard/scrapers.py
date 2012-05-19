@@ -61,7 +61,10 @@ class DashboardMixin(object):
         for name, value in self.stats.iteritems():
             self.run.stats.create(name=name, value=value)
         self.run.end_date = datetime.datetime.now()
-        self.run.status = 'success'
+        if self.stats['num_added'] > 0 or self.stats['num_changed'] > 0:
+            self.run.status = 'updated'
+        else:
+            self.run.status = 'skipped'
         self.run.save()
 
     def run(self, *args, **kwargs):

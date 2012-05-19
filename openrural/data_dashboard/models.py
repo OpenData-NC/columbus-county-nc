@@ -14,7 +14,8 @@ class Scraper(models.Model):
 class Run(models.Model):
     STATUS_CHOICES = (('initialized', 'Initialized'),
                       ('running', 'Running'),
-                      ('success', 'Success'),
+                      ('updated', 'Updated'),
+                      ('skipped', 'Skipped'),
                       ('failed', 'Failed'))
 
     scraper = models.ForeignKey(Scraper, related_name='runs')
