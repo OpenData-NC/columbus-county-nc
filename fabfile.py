@@ -586,3 +586,9 @@ def reset_db():
     sudo('dropdb %(database_name)s' % env, user='postgres')
     sudo('createdb -E UTF-8 -T template_postgis -O %(database_user)s %(database_name)s' % env, user='postgres')
     syncdb()
+
+
+@task
+def scrapers(name):
+    require('environment', provided_by=env.environments)
+    manage('scrapers %s' % name)
