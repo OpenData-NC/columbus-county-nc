@@ -15,7 +15,7 @@ from openrural.data_dashboard.scrapers import DashboardMixin
 class CorporationsScraper(DashboardMixin, ScraperWikiScraper):
 
     # scraper settings
-    logname = 'corporations-scraper'
+    logname = 'corporations'
     schema_slugs = ('corporations',)
 
     # ScraperWiki settings
