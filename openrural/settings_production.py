@@ -10,10 +10,5 @@ LOGGING['handlers']['gelf'] = {
         'environment': 'unknown', # overridden in local_settings.py
     },
 }
-
-LOGGING['loggers']['openrural'] = {'handlers': ['gelf'],
-                                   'level': 'DEBUG'}
-LOGGING['loggers']['ebpub'] = {'handlers': ['gelf'],
-                               'level': 'DEBUG'}
-LOGGING['loggers']['ebdata'] = {'handlers': ['gelf'],
-                                'level': 'DEBUG'}
+LOGGING['loggers'][''] = {'handlers': ['gelf'], 'level': 'DEBUG',
+                          'propagate': True}

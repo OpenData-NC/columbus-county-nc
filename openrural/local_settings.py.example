@@ -14,17 +14,11 @@ DATABASES = {
 }
 
 # enable for local logging
-# add 'gelf' to handlers for Graylog2 support
 # LOGGING['handlers']['file'] = {
 #         'level': 'DEBUG',
 #         'class': 'logging.FileHandler',
-#         'formatter': 'debug',
+#         'formatter': 'basic',
 #         'filename': os.path.join(PROJECT_DIR, 'openrural.log'),
 # }
-# LOGGING['handlers']['gelf']['extra_fields']['environment'] = 'USERNAME-devel'
-# LOGGING['loggers']['openrural'] = {'handlers': ['file'],
-#                                    'level': 'DEBUG'}
-# LOGGING['loggers']['ebpub'] = {'handlers': ['file'],
-#                                'level': 'DEBUG'}
-# LOGGING['loggers']['ebdata'] = {'handlers': ['file'],
-#                                 'level': 'DEBUG'}
+# LOGGING['loggers'][''] = {'handlers': ['file'], 'level': 'DEBUG',
+#                           'propagate': True}

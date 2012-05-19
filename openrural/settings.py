@@ -142,5 +142,12 @@ MAP_BASELAYER_TYPE = 'google.streets'
 LOGGING['formatters']['basic'] = {
     'format': '%(asctime)s %(name)-20s %(levelname)-8s %(message)s',
 }
+LOGGING['loggers'][''] = {'handlers': ['null'], 'level': 'INFO',
+                          'propagate': True}
+LOGGING['loggers']['openrural'] = {'propagate': True}
+LOGGING['loggers']['ebpub'] = {'propagate': True}
+LOGGING['loggers']['ebdata'] = {'propagate': True}
+LOGGING['loggers']['eb'] = {'propagate': True}
+LOGGING['loggers']['data_dashboard'] = {'propagate': True}
 
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
