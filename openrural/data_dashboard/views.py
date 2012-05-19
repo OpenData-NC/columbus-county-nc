@@ -1,3 +1,5 @@
+import time
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Max
 from django.core.urlresolvers import reverse
@@ -63,4 +65,5 @@ def run_scraper(request, scraper_slug):
     except KeyError:
         raise Http404('Task not found!')
     Task.delay()
+    time.sleep(1)
     return redirect('view_scraper', scraper_slug=scraper.slug)

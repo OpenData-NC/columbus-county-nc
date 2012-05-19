@@ -20,7 +20,7 @@ class DashboardMixin(object):
     def __init__(self, *args, **kwargs):
         clear = kwargs.pop('clear', False)
         # use defaultdict here (Python 2.6 doesn't have collections.Counter)
-        self.counter = collections.defaultdict(lambda: 0)
+        self.stats = collections.defaultdict(lambda: 0)
         super(DashboardMixin, self).__init__(*args, **kwargs)
         # create data_dashboard-specific logger here, otherwise eb.*
         # loggers get hijacked by ebdata.retrieval.log
@@ -42,14 +42,14 @@ class DashboardMixin(object):
 
     def end_run(self):
         self.logger.info('Ending...')
-        geocoded = self.counter['Geocoded']
-        success = self.counter['Geocoded Success']
+        geocoded = self.stats['Geocoded']
+        success = self.stats['Geocoded Success']
         if geocoded > 0:
             rate = float(success) / geocoded
         else:
             rate = 0.0
-        self.counter['Geocoded Success Rate'] = '{0:.2%}'.format(rate)
-        for name, value in self.counter.iteritems():
+        self.stats['Geocoded Success Rate'] = '{0:.2%}'.format(rate)
+        for name, value in self.stats.iteritems():
             self.run.stats.create(name=name, value=value)
         self.run.end_date = datetime.datetime.now()
         self.run.status = 'success'
@@ -85,7 +85,7 @@ class DashboardMixin(object):
         return news_item
 
     def geocode(self, location_name, **kwargs):
-        self.counter['Geocoded'] += 1
+        self.stats['Geocoded'] += 1
         self.geocode_log = Geocode(
             run=self.run,
             scraper=self.schema_slugs[0],
@@ -97,7 +97,7 @@ class DashboardMixin(object):
         except (geocoder.GeocodingException, geocoder.ParsingError, NoReverseMatch) as e:
             self.geocode_log.success = False
             self.geocode_log.name = type(e).__name__
-            self.counter['Geocode Exception - %s' % type(e).__name__] += 1
+            self.stats['Geocode Exception - %s' % type(e).__name__] += 1
             self.geocode_log.description += '\n\n%s' % traceback.format_exc()
             self.logger.error(unicode(e))
             return None
@@ -105,10 +105,10 @@ class DashboardMixin(object):
         if result['ambiguous'] is True:
             self.geocode_log.success = False
             self.geocode_log.name = 'Ambiguous %s' % result['type']
-            self.counter['Geocode Exception - %s' % self.geocode_log.name] += 1
+            self.stats['Geocode Exception - %s' % self.geocode_log.name] += 1
             self.logger.error('Ambiguous result for %s' % location_name)
             return None
-        self.counter['Geocoded Success'] += 1
+        self.stats['Geocoded Success'] += 1
         return result['result']
 
     def update_existing(self, newsitem, new_values, new_attributes):
@@ -123,24 +123,24 @@ class DashboardMixin(object):
 
     @property
     def num_added(self):
-        return self.counter['Added']
+        return self.stats['Added']
 
     @num_added.setter
     def num_added(self, x):
-        self.counter['Added'] = x
+        self.stats['Added'] = x
 
     @property
     def num_changed(self):
-        return self.counter['Changed']
+        return self.stats['Changed']
 
     @num_added.setter
     def num_changed(self, x):
-        self.counter['Changed'] = x
+        self.stats['Changed'] = x
 
     @property
     def num_changed(self):
-        return self.counter['Skipped']
+        return self.stats['Skipped']
 
     @num_added.setter
     def num_changed(self, x):
-        self.counter['Skipped'] = x
+        self.stats['Skipped'] = x
