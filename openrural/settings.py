@@ -137,7 +137,7 @@ CACHES = {
     }
 }
 
-MAP_BASELAYER_TYPE = 'google.streets'
+MAP_BASELAYER_TYPE = 'osm.mapnik'
 
 LOGGING['formatters']['basic'] = {
     'format': '%(asctime)s %(name)-20s %(levelname)-8s %(message)s',
