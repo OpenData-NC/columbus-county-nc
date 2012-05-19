@@ -34,5 +34,7 @@ PASSWORD_RESET_SALT = '%%s%%s'
 STAFF_COOKIE_NAME = 'obstaff_openrural'
 STAFF_COOKIE_VALUE = ''
 
+LOGGING['handlers']['gelf']['extra_fields']['environment'] = '{{ environment }}'
+
 BROKER_URL = "amqp://{{ deploy_user }}:{{ broker_password }}@localhost:5672/{{ vhost }}"
 BROKER_CONNECTION_TIMEOUT = 15
