@@ -144,13 +144,13 @@ LOGGING['formatters']['basic'] = {
 }
 LOGGING['loggers'][''] = {'handlers': ['null'], 'level': 'INFO',
                           'propagate': True}
-LOGGING['loggers']['openrural'] = {'propagate': True}
-LOGGING['loggers']['ebpub'] = {'propagate': True}
-LOGGING['loggers']['ebdata'] = {'propagate': True}
-LOGGING['loggers']['eb'] = {'propagate': True}
-LOGGING['loggers']['data_dashboard'] = {'propagate': True}
+LOGGING['loggers']['openrural'] = {'propagate': True, 'level': 'DEBUG'}
+LOGGING['loggers']['ebpub'] = {'propagate': True, 'level': 'DEBUG'}
+LOGGING['loggers']['ebdata'] = {'propagate': True, 'level': 'DEBUG'}
+LOGGING['loggers']['eb'] = {'propagate': True, 'level': 'DEBUG'}
+LOGGING['loggers']['data_dashboard'] = {'propagate': True, 'level': 'DEBUG'}
 LOGGING['loggers']['django'] = {'propagate': True, 'level': 'INFO'}
-LOGGING['loggers']['celery'] = {'propagate': True, 'level': 'DEBUG'}
+LOGGING['loggers']['celery'] = {'propagate': True, 'level': 'INFO'}
 CELERYD_HIJACK_ROOT_LOGGER = False
 
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
