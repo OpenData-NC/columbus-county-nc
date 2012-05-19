@@ -1,12 +1,14 @@
-from celery.task import Task
+from celery.task import Task, PeriodicTask
 from celery.registry import tasks
+from datetime import timedelta
 
 from openrural.retrieval.corporations import CorporationsScraper
 
 
-class CorporationsTask(Task):
+class CorporationsTask(PeriodicTask):
 
     name = 'openrural.corporations'
+    run_every = timedelta(hours=6)
 
     def run(self, clear=False):
         logger = self.get_logger()
