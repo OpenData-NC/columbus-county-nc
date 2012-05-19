@@ -14,6 +14,9 @@ from ebpub.db.models import Schema
 from openrural.data_dashboard.models import Scraper, Run, Geocode
 
 
+LEGACY_COUNTERS = ('num_added', 'num_changed', 'num_skipped')
+
+
 class DashboardMixin(object):
     """Scraper mixin with specific overrides to hook into Data Dashboard"""
 
@@ -21,6 +24,9 @@ class DashboardMixin(object):
         clear = kwargs.pop('clear', False)
         # use defaultdict here (Python 2.6 doesn't have collections.Counter)
         self.stats = collections.defaultdict(lambda: 0)
+        # legacy support for counters
+        for name in LEGACY_COUNTERS:
+            setattr(self, name, 0)
         super(DashboardMixin, self).__init__(*args, **kwargs)
         # create data_dashboard-specific logger here, otherwise eb.*
         # loggers get hijacked by ebdata.retrieval.log
@@ -49,6 +55,9 @@ class DashboardMixin(object):
         else:
             rate = 0.0
         self.stats['Geocoded Success Rate'] = '{0:.2%}'.format(rate)
+        # save legacy counters
+        for name in LEGACY_COUNTERS:
+            self.stats[name] = getattr(self, name)
         for name, value in self.stats.iteritems():
             self.run.stats.create(name=name, value=value)
         self.run.end_date = datetime.datetime.now()
@@ -119,28 +128,3 @@ class DashboardMixin(object):
         return super(DashboardMixin, self).update_existing(newsitem,
                                                            new_values,
                                                            new_attributes)
-
-
-    @property
-    def num_added(self):
-        return self.stats['Added']
-
-    @num_added.setter
-    def num_added(self, x):
-        self.stats['Added'] = x
-
-    @property
-    def num_changed(self):
-        return self.stats['Changed']
-
-    @num_added.setter
-    def num_changed(self, x):
-        self.stats['Changed'] = x
-
-    @property
-    def num_skipped(self):
-        return self.stats['Skipped']
-
-    @num_added.setter
-    def num_skipped(self, x):
-        self.stats['Skipped'] = x
