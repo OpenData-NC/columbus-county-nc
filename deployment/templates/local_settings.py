@@ -1,4 +1,4 @@
-from openrural.settings_{{ deployment_tag }} import *
+from openrural.settings_{{ environment }} import *
 
 DEBUG = False
 
