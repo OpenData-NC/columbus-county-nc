@@ -120,3 +120,5 @@ LOGGING['handlers']['gelf'] = {
 LOGGING['formatters']['basic'] = {
     'format': '%(asctime)s %(name)-20s %(levelname)-8s %(message)s',
 }
+
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
