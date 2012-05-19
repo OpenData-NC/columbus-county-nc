@@ -1,4 +1,4 @@
-from openrural.settings_{{ deployment_tag }} import *
+from openrural.settings_{{ environment }} import *
 
 DEBUG = False
 
@@ -33,3 +33,8 @@ PASSWORD_RESET_SALT = '%%s%%s'
 # staff privileges (including the ability to view non-public schemas).
 STAFF_COOKIE_NAME = 'obstaff_openrural'
 STAFF_COOKIE_VALUE = ''
+
+LOGGING['handlers']['gelf']['extra_fields']['environment'] = '{{ environment }}'
+
+BROKER_URL = "amqp://{{ deploy_user }}:{{ broker_password }}@localhost:5672/{{ vhost }}"
+BROKER_CONNECTION_TIMEOUT = 15

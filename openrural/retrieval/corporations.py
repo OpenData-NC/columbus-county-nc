@@ -6,29 +6,28 @@ from optparse import OptionParser
 
 from ebpub import geocoder
 from ebpub.db.models import NewsItem, Schema, SchemaField
-from ebpub.utils.script_utils import add_verbosity_options, setup_logging_from_opts
-import ebdata.retrieval.log  # sets up base handlers.
-# Note there's an undocumented assumption in ebdata that we want to
-# put unescape html before putting it in the db.  Maybe wouldn't have
-# to do this if we used the scraper framework in ebdata?
+from ebpub.utils.script_utils import add_verbosity_options
 
-from openrural.retrieval.scraperwiki import ScraperWikiScraper
-
-SCHEMA_SLUG = 'corporations'
+from openrural.retrieval.base.scraperwiki import ScraperWikiScraper
+from openrural.data_dashboard.scrapers import DashboardMixin
 
 
-class Scraper(ScraperWikiScraper):
+class CorporationsScraper(DashboardMixin, ScraperWikiScraper):
 
+    # scraper settings
+    logname = 'corporations'
+    schema_slugs = ('corporations',)
+
+    # ScraperWiki settings
     scraper_name = "nc_secretary_of_state_corporation_filings"
-    list_filter = {'Status': 'Current-Active', 'PrinCounty': 'Orange'}
+    list_filter = {'Status': 'Current-Active', 'PrinCounty': 'Columbus'}
     ordering = 'DateFormed ASC'
 
-    schema_slugs = ('corporations',)
     has_detail = False
 
     def save(self, old_record, data, detail_record):
         date, time = data['DateFormed'].split('T', 1)
-        item_date = datetime.datetime.strptime(date, "%Y-%m-%d")
+        item_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
         attrs = {
             'citizenship': data['Citizenship'],
             'type': data['Type'],
@@ -54,6 +53,10 @@ class Scraper(ScraperWikiScraper):
             title=data['CorpName'],
             item_date=item_date,
             location_name=address,
+            city=address_parts['city'],
+            state=address_parts['state'],
+            zipcode=address_parts['zip'],
+            convert_to_block=True,
         )
 
     def existing_record(self, record):
@@ -66,13 +69,13 @@ class Scraper(ScraperWikiScraper):
 
     def _create_schema(self):
         try:
-            Schema.objects.get(slug=SCHEMA_SLUG).delete()
+            Schema.objects.get(slug=self.schema_slugs[0]).delete()
         except Schema.DoesNotExist:
             pass
         schema = Schema.objects.create(
             name='Corporation',
             plural_name='corporations',
-            slug=SCHEMA_SLUG,
+            slug=self.schema_slugs[0],
             last_updated=datetime.datetime.now(),
             is_public=True,
             indefinite_article='a',
@@ -114,9 +117,7 @@ def main():
                       action="store_true", dest="clear")
     add_verbosity_options(parser)
     opts, args = parser.parse_args(sys.argv)
-    scraper = Scraper(clear=opts.clear)
-    setup_logging_from_opts(opts, scraper.logger)
-    scraper.update()
+    CorporationsScraper(clear=opts.clear).run()
 
 
 if __name__ == '__main__':

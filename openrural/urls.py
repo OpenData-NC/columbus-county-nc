@@ -22,11 +22,9 @@ from obadmin import admin
 admin.autodiscover()
 
 urlpatterns = patterns(
-
     '',
-
     (r'^admin/', include(admin.site.urls)),
-
+    (r'^data-dashboard/', include('openrural.data_dashboard.urls')),
     # ebpub provides all the UI for an openblock site.
     (r'^', include('ebpub.urls')),
 )

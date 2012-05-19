@@ -11,6 +11,7 @@ from fabulaws.ec2 import EC2Instance
 from fabulaws.ubuntu.instances import UbuntuInstance
 from fabulaws.ubuntu.packages.postgres import PostgresMixin
 from fabulaws.ubuntu.packages.python import PythonMixin
+from fabulaws.ubuntu.packages.rabbitmq import RabbitMqOfficialMixin
 
 __all__ = [
     'ServerInstance',
@@ -25,7 +26,7 @@ class ServerInstance(UbuntuInstance):
     ami_map = {
         # 10.04
         't1.micro': 'ami-ad36fbc4', # us-east-1 10.04 64-bit w/EBS root store
-        'm1.small': 'ami-929644fb', # us-east-1 10.04 32-bit w/instance root store
+        'm1.small': 'ami-0fac7566', # us-east-1 10.04 32-bit w/instance root store
         'c1.medium': 'ami-6936fb00', # us-east-1 10.04 32-bit w/instance root store
         'm1.large': 'ami-1136fb78', # us-east-1 10.04 64-bit w/instance root store
         # 11.04:
@@ -211,5 +212,17 @@ class WebMixin(PythonMixin):
         self.create_webserver_user()
 
 
-class OpenRuralInstance(DbMixin, WebMixin, ServerInstance):
+class QueueMixin(RabbitMqOfficialMixin):
+    """Mixin that creates a RabbitMQ user and host based on the Fabric env."""
+
+    def setup(self):
+        """Create the RabbitMQ user and vhost."""
+
+        super(QueueMixin, self).setup()
+        self.create_mq_user(env.deploy_user, env.broker_password)
+        self.create_mq_vhost(env.vhost)
+        self.set_mq_vhost_permissions(env.vhost, env.deploy_user, '".*" ".*" ".*"')
+
+
+class OpenRuralInstance(DbMixin, QueueMixin, WebMixin, ServerInstance):
     pass

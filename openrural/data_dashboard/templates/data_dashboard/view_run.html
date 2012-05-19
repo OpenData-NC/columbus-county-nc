@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load data_dashboard_tags %}
+
+{% block fulltitle %}OpenRural: {{ scraper }}{% endblock %}
+
+{% block content %}
+<h1>{{ run.scraper }}</h1>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Value</th>
+    </tr>
+    {% for stat in stats %}
+        <tr>
+            <td>{{ stat.name }}</td>
+            <td>{{ stat.value }}</td>
+        </tr>
+    {% endfor %}
+</table>
+{% if run.status_description %}
+<pre>
+{{ run.status_description }}
+</pre>
+{% endif %}
+{% endblock %}

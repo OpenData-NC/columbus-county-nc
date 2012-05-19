@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load url from future %}
+
+{% block fulltitle %}OpenRural: Data Dashboard{% endblock %}
+
+{% block content %}
+<h1>Data Dashboard</h1>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Schema</th>
+        <th>Last Run</th>
+    </tr>
+    {% for scraper in scrapers %}
+        <tr>
+            <td><a href='{% url "view_scraper" scraper.slug %}'>{{ scraper.slug }}</a></td>
+            <td>{{ scraper.schema }}</td>
+            <td>{{ scraper.last_run }}</td>
+        </tr>
+    {% endfor %}
+</table>
+{% endblock %}

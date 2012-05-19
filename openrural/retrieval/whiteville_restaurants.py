@@ -2,30 +2,18 @@
 
 import sys
 import csv
-import logging
 import datetime
-import traceback
 from optparse import OptionParser
 from collections import defaultdict
 
-from django.conf import settings
-from django.contrib.gis.geos import Point
 from django.template import defaultfilters as filters
 from django.core.serializers.json import DjangoJSONEncoder
-from django.core.urlresolvers import NoReverseMatch
 
-from ebpub import geocoder
-from ebpub.db.models import NewsItem, Schema, SchemaField
-from ebpub.utils.logutils import log_exception
-from ebpub.utils.script_utils import add_verbosity_options, setup_logging_from_opts
-import ebdata.retrieval.log  # sets up base handlers.
+from ebpub.db.models import Schema, SchemaField
+from ebpub.utils.script_utils import add_verbosity_options
 from ebdata.retrieval.scrapers.newsitem_list_detail import NewsItemListDetailScraper
-# Note there's an undocumented assumption in ebdata that we want to
-# put unescape html before putting it in the db.  Maybe wouldn't have
-# to do this if we used the scraper framework in ebdata?
-from ebdata.retrieval.utils import convert_entities
 
-from openrural.error_log import models as error_log
+from openrural.data_dashboard.scrapers import DashboardMixin
 
 
 FACILITY_STATUS_CODES = {
@@ -51,24 +39,10 @@ FACILITY_STATUS_CODES = {
 }
 
 
-logger = logging.getLogger('openrural.retrieval.whiteville_resturants')
+class RestaurantInspections(DashboardMixin, NewsItemListDetailScraper):
 
-class RestaurantInspections(NewsItemListDetailScraper):
-
+    logname = 'restaurant-scraper'
     schema_slugs = ('restaurant-inspections',)
-    geocoder = geocoder.SmartGeocoder()
-
-    def __init__(self, *args, **kwargs):
-        clear = kwargs.pop('clear', False)
-        super(RestaurantInspections, self).__init__(*args, **kwargs)
-        if clear:
-            self._create_schema()
-        # these are incremented by NewsItemListDetailScraper
-        self.num_added = 0
-        self.num_changed = 0
-        self.num_skipped = 0
-        self.batch = error_log.GeocodeBatch.objects.create(scraper=self.schema_slugs[0])
-        self.geocode_log = None
 
     def update(self, csvreader):
         insp_dict = defaultdict(list)
@@ -78,12 +52,6 @@ class RestaurantInspections(NewsItemListDetailScraper):
 
         for key, val in insp_dict.items():
             self.parse_insp_list(val)
-
-        self.batch.end_time = datetime.datetime.now()
-        self.batch.num_added = self.num_added
-        self.batch.num_changed = self.num_changed
-        self.batch.num_skipped = self.num_skipped
-        self.batch.save()
 
     def parse_insp_list(self, rows):
         row = rows[0]
@@ -118,7 +86,7 @@ class RestaurantInspections(NewsItemListDetailScraper):
             'form_item': form_item_text,
             'comments': i_json,
         })
-        news_item = self.create_newsitem(
+        self.create_newsitem(
             attrs,
             title=title,
             item_date=item_date,
@@ -127,47 +95,6 @@ class RestaurantInspections(NewsItemListDetailScraper):
             state=row['STATE_CODE'],
             zipcode=row['ADDR_ZIP5'],
         )
-        self.geocode_log.news_item = news_item
-        self.geocode_log.save()
-
-    def geocode(self, location_name, zipcode=None, **kwargs):
-        self.geocode_log = error_log.Geocode(
-            batch=self.batch,
-            scraper=self.schema_slugs[0],
-            location=location_name,
-            zipcode=zipcode or '',
-        )
-        self.batch.num_geocoded += 1
-        try:
-            location = self.geocoder.geocode(location_name)
-            self.batch.num_geocoded_success += 1
-            return location
-        except geocoder.AmbiguousResult as result:
-            # try to resolve based on zipcode...
-            if zipcode is None:
-                self.logger.info(
-                    "Ambiguous results for address %s. (no zipcode to resolve dispute)" %
-                    (location_name, ))
-                return None
-            in_zip = [r for r in result.choices if r['zip'] == zipcode]
-            if len(in_zip) == 0:
-                self.logger.info(
-                    "Ambiguous results for address %s, but none in specified zipcode %s" %
-                    (location_name, zipcode))
-                return None
-            elif len(in_zip) > 1:
-                self.logger.info(
-                    "Ambiguous results for address %s in zipcode %s, guessing first." %
-                    (location_name, zipcode))
-                return in_zip[0]
-            else:
-                return in_zip[0]
-        except (geocoder.GeocodingException, geocoder.ParsingError, NoReverseMatch) as e:
-            self.geocode_log.success = False
-            self.geocode_log.name = type(e).__name__
-            self.geocode_log.description = traceback.format_exc()
-            self.logger.error(unicode(e))
-            return None
 
     def _create_schema(self):
         try:
@@ -235,11 +162,10 @@ def main():
                       action="store_true", dest="clear")
     add_verbosity_options(parser)
     opts, args = parser.parse_args(sys.argv)
-    setup_logging_from_opts(opts, logger)
     if len(args) != 2:
         parser.error("Please specify a CSV file to import")
     csvreader = csv.DictReader(open(args[1]))
-    RestaurantInspections(clear=opts.clear).update(csvreader)
+    RestaurantInspections(clear=opts.clear).run(csvreader)
 
 
 if __name__ == '__main__':

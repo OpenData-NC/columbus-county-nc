@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load data_dashboard_tags %}
+{% load url from future %}
+
+{% block fulltitle %}OpenRural: {{ scraper }}{% endblock %}
+
+{% block content %}
+<h1>{{ scraper }}</h1>
+
+{% if schema %}
+<table>
+    <tr>
+        <th>Name</th>
+        <td>{{ schema.plural_name|capfirst }}</td>
+    </tr>
+    <tr>
+        <th>News Items</th>
+        <td>{{ schema.newsitem_set.count }}</td>
+    </tr>
+</table>
+{% endif %}
+
+<form action='{% url "run_scraper" scraper.slug %}' method='post'>
+    {% csrf_token %}
+    <input type='submit' name='submit' value='Run' />
+</form>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>End Date</th>
+        <th>Duration</th>
+    </tr>
+    {% for run in runs %}
+        <tr>
+            <td>{{ run.id }}</td>
+            <td>{{ run.date }}</td>
+            <td>{{ run.get_status_display }}</td>
+            <td>
+            {% if run.end_date %}
+                <a href='{% url "view_run" scraper.slug run.pk %}'>{{ run.end_date }}</a>
+            {% endif %}
+            </td>
+            <td>{{ run.duration|duration }}</td>
+        </tr>
+    {% endfor %}
+</table>
+{% endblock %}

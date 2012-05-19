@@ -51,12 +51,13 @@ env.server_ports = {
 }
 env.branches = {
     'staging': 'master',
-    'production': 'master',
+    'production': 'data-dashboard',
 }
 env.instance_types = {
     'staging': 'm1.small',
-    'production': 't1.micro',
+    'production': 'm1.small',
 }
+env.password_names = ['database_password', 'broker_password']
 
 
 def _get_servers(deployment, environment):
@@ -139,7 +140,7 @@ def new_instance(placement, deployment, environment, count=1, **kwargs):
     env.environment = environment
     env.database_password = None
     servers = []
-    _load_passwords(['database_password'])
+    _load_passwords(env.password_names)
     _setup_path()
     for x in range(count):
         instance_type = env.instance_types[env.environment]
@@ -158,8 +159,10 @@ def staging(deployment):
 
 
 @task
-def production():
-    abort('No production environment has been configured.')
+def production(deployment):
+    env.deployment_tag = deployment
+    env.environment = 'production'
+    _setup_path()
 
 
 @task
@@ -318,7 +321,7 @@ def update_local_settings():
     """ create local_settings.py on the remote host """
 
     require('environment', provided_by=env.environments)
-    _load_passwords(['database_password'])
+    _load_passwords(env.password_names)
     destination = os.path.join(env.project_root, 'local_settings.py')
     _upload_template('local_settings.py', destination, context=env,
                      user=env.deploy_user, use_jinja=True,
@@ -446,7 +449,7 @@ def update_passwords():
     """Manually copy the current master database to the slaves."""
 
     require('environment', provided_by=env.environments)
-    passnames = ['database_password']
+    passnames = [env.password_names]
     _load_passwords(passnames)
     with cd(env.home):
         for passname in passnames:
@@ -583,3 +586,9 @@ def reset_db():
     sudo('dropdb %(database_name)s' % env, user='postgres')
     sudo('createdb -E UTF-8 -T template_postgis -O %(database_user)s %(database_name)s' % env, user='postgres')
     syncdb()
+
+
+@task
+def scrapers(name):
+    require('environment', provided_by=env.environments)
+    manage('scrapers %s' % name)
