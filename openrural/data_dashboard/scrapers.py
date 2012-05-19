@@ -52,10 +52,15 @@ class DashboardMixin(object):
 
     def run(self, *args, **kwargs):
         self.start_run()
+        self.run.status = 'running'
+        self.run.save()
         try:
             self.update(*args, **kwargs)
-        except (KeyboardInterrupt, SystemExit):
-            self.logger.warning('KeyboardInterrupt or SystemExit')
+        except Exception, e:
+            self.logger.exception(e)
+            self.run.status = 'failed'
+            self.run.status_description = traceback.format_exc()
+            self.run.save()
         self.end_run()
 
     def create_newsitem(self, attributes, **kwargs):

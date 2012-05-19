@@ -12,9 +12,17 @@ class Scraper(models.Model):
 
 
 class Run(models.Model):
+    STATUS_CHOICES = (('initialized', 'Initialized'),
+                      ('running', 'Running'),
+                      ('success', 'Success'),
+                      ('failed', 'Failed'))
+
     scraper = models.ForeignKey(Scraper, related_name='runs')
     date = models.DateTimeField(auto_now_add=True, db_index=True)
     end_date = models.DateTimeField(db_index=True, blank=True, null=True)
+    status = models.CharField(max_length=32, choices=STATUS_CHOICES,
+                              default='initialized')
+    status_description = models.TextField(blank=True)
 
     def duration(self):
         return self.end_date - self.date

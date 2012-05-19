@@ -17,4 +17,9 @@
         </tr>
     {% endfor %}
 </table>
+{% if run.status_description %}
+<pre>
+{{ run.status_description }}
+</pre>
+{% endif %}
 {% endblock %}
