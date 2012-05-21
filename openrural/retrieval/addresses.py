@@ -4,6 +4,8 @@ import sys
 import datetime
 from optparse import OptionParser
 
+from django.template.defaultfilters import title
+
 from ebpub import geocoder
 from ebpub.db.models import NewsItem, Schema, SchemaField
 from ebpub.utils.script_utils import add_verbosity_options
@@ -25,11 +27,11 @@ class AddressScraper(DashboardMixin, ShapefileScraper):
     def save(self, old_record, data, detail_record):
         item_date = datetime.date.today()
         attrs = {
-            'city': str(data['CITY']),
+            'city': title(str(data['CITY'])),
             'zipcode': str(data['ZIP']),
             'property_id': int(str(data['PROP'])),
         }
-        address = str(data['FULLADD'])
+        address = title(str(data['FULLADD']))
         full_address = '%s, %s, NC %s' % (address, attrs['city'],
                                           attrs['zipcode'])
         item = self.create_or_update(
