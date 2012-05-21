@@ -3,6 +3,7 @@ from celery.registry import tasks
 from datetime import timedelta
 
 from openrural.retrieval.corporations import CorporationsScraper
+from openrural.retrieval.addresses import AddressesScraper
 
 
 class CorporationsTask(PeriodicTask):
@@ -17,4 +18,18 @@ class CorporationsTask(PeriodicTask):
         logger.info("Stopping corporations task")
 
 
+class AddressesTask(PeriodicTask):
+
+    name = 'openrural.addresses'
+    run_every = timedelta(days=1)
+
+    # we always want to reimport all addresses, so set clear=True
+    def run(self, clear=True):
+        logger = self.get_logger()
+        logger.info("Starting address task")
+        AddressesScraper(clear=clear).run()
+        logger.info("Stopping address task")
+
+
 tasks.register(CorporationsTask)
+tasks.register(AddressesTask)

@@ -14,7 +14,7 @@ from openrural.retrieval.base.shapefile import ShapefileScraper
 from openrural.data_dashboard.scrapers import DashboardMixin
 
 
-class AddressScraper(DashboardMixin, ShapefileScraper):
+class AddressesScraper(DashboardMixin, ShapefileScraper):
 
     # scraper settings
     logname = 'addresses'
