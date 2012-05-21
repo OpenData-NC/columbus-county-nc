@@ -54,6 +54,28 @@ class AddressesScraper(DashboardMixin, ShapefileScraper):
         except IndexError:
             return None
 
+    def create_newsitem(self, attributes, **kwargs):
+        convert_to_block = kwargs.pop('convert_to_block', False)
+        location, location_name = self.geocode_if_needed(
+            kwargs.get('location', None),
+            kwargs.get('location_name', None),
+            zipcode=kwargs.pop('zipcode', None),
+            city=kwargs.pop('city', None),
+            state=kwargs.pop('state', None),
+            convert_to_block=convert_to_block,
+            )
+        if self.geocode_log is None:
+            self.geocode_log = Geocode(
+                run=self.run,
+                scraper=self.schema_slugs[0],
+                location=location_name,
+                name='No Geocode',
+                success=False,
+            )
+        self.geocode_log.save()
+        self.logger.debug('Skipping news item creation... (faster)')
+        self.num_added += 1
+
     def _create_schema(self):
         try:
             Schema.objects.get(slug=self.schema_slugs[0]).delete()
@@ -97,7 +119,7 @@ def main():
                       action="store_true", dest="clear")
     add_verbosity_options(parser)
     opts, args = parser.parse_args(sys.argv)
-    AddressScraper(clear=opts.clear).run()
+    AddressesScraper(clear=opts.clear).run()
 
 
 if __name__ == '__main__':
