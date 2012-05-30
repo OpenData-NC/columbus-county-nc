@@ -55,6 +55,11 @@ and they will be left there for later use. If --dir is not specified then the fi
 will be downloaded to a temporary directory which will be deleted before the command
 finishes.
 
+By default the import_columbus_county command uses the county GIS department's road
+centerliens file to generate blocks. If you would prefer to use census (Tiger) data,
+pass --tiger to the command.
+
+
 Server Provisioning and Deployment
 ----------------------------------
 

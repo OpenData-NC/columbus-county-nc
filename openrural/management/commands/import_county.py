@@ -204,11 +204,10 @@ class CountyImporter(object):
             fix_cities=True,
             encoding='utf8',
             filter_bounds=self.county_location.location)
-        num_created = importer.save()
-        print "Created %d blocks" % num_created
+        num_created, num_updated = importer.save()
+        print "Created %d blocks, updated %d" % (num_created, num_updated)
 
-        #########################
-
+    def populate_streets(self):
         print "Populating streets and fixing addresses, these can take several minutes..."
 
         # Note these scripts should be run ONCE, in this order,
@@ -225,6 +224,7 @@ class CountyImporter(object):
         self.augment_cities()
         self.import_zips()
         self.import_blocks()
+        self.populate_streets()
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
