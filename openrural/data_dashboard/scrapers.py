@@ -10,6 +10,7 @@ from ebpub import geocoder
 from ebpub.geocoder import GeocodingException, ParsingError, AmbiguousResult
 from ebpub.geocoder.base import full_geocode
 from ebpub.db.models import Schema
+from ebdata.nlp.addresses import parse_addresses
 
 from openrural.data_dashboard.models import Scraper, Run, Geocode
 
@@ -124,6 +125,17 @@ class DashboardMixin(object):
             return None
         self.stats['Geocoded Success'] += 1
         return result['result']
+
+    def geocode_if_needed(self, point, location_name, address_text='',
+                          **kwargs):
+        if location_name:
+            addresses = parse_addresses(location_name)
+            if len(addresses)> 1:
+                self.logger.debug('Parsed multiple addresses %s' % addresses)
+        return super(DashboardMixin, self).geocode_if_needed(point,
+                                                             location_name,
+                                                             address_text='',
+                                                             **kwargs)
 
     def update_existing(self, newsitem, new_values, new_attributes):
         new_values.pop('convert_to_block', None)
