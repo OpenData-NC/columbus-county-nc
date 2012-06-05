@@ -56,7 +56,6 @@ class CorporationsScraper(DashboardMixin, ScraperWikiScraper):
             city=address_parts['city'],
             state=address_parts['state'],
             zipcode=address_parts['zip'],
-            convert_to_block=True,
         )
 
     def existing_record(self, record):
