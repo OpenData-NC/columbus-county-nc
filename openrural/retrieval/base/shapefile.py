@@ -46,5 +46,7 @@ class ShapefileScraper(newsitem_list_detail.NewsItemListDetailScraper):
     def parse_list(self, layer):
         for feature in layer:
             self.stats['Downloaded'] += 1
+            self.logger_extra['Row'] = "%s-%s" % (self.logger_extra['Run'],
+                                                  self.stats['Downloaded'])
             self.geocode_log = None
             yield feature

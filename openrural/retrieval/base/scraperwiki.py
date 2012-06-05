@@ -55,5 +55,7 @@ class ScraperWikiScraper(newsitem_list_detail.NewsItemListDetailScraper):
     def parse_list(self, data):
         for row in json.loads(data):
             self.stats['Downloaded'] += 1
+            self.logger_extra['Row'] = "%s-%s" % (self.logger_extra['Run'],
+                                                  self.stats['Downloaded'])
             self.geocode_log = None
             yield row

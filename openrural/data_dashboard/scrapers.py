@@ -32,7 +32,9 @@ class DashboardMixin(object):
         # create data_dashboard-specific logger here, otherwise eb.*
         # loggers get hijacked by ebdata.retrieval.log
         logger_name = 'data_dashboard.scraper.%s' % self.logname
-        self.logger = logging.getLogger(logger_name)
+        logger = logging.getLogger(logger_name)
+        self.logger_extra = {'Schema': self.schema_slugs[0]}
+        self.logger = logging.LoggerAdapter(logger, self.logger_extra)
         # reset schema if it doesn't exist (first run)
         if not Schema.objects.filter(slug=self.schema_slugs[0]).exists():
             clear = True
@@ -46,6 +48,7 @@ class DashboardMixin(object):
         self.scraper, _ = Scraper.objects.get_or_create(slug=self.logname,
                                                         schema=schema_slug)
         self.run = self.scraper.runs.create()
+        self.logger_extra['Run'] = self.run.pk
 
     def end_run(self):
         self.logger.info('Ending...')
