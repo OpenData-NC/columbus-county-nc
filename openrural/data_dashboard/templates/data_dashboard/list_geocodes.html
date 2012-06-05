@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load data_dashboard_tags %}
+
+{% block fulltitle %}OpenRural: {{ scraper }}{% endblock %}
+
+{% block content %}
+<h1>{{ run.scraper }} Geocode Results</h1>
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Location</th>
+        <th>Name</th>
+    </tr>
+    {% for geocode in geocodes %}
+        <tr>
+            <td>{{ geocode.date }}</td>
+            <td><a href='{{ geocode.news_item.get_absolute_url }}'>{{ geocode.location }}</a></td>
+            <td>{{ geocode.name }}</td>
+        </tr>
+    {% endfor %}
+</table>
+{% endblock %}

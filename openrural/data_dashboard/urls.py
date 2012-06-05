@@ -10,4 +10,6 @@ urlpatterns = patterns('',
         name='run_scraper'),
     url(r'^(?P<scraper_slug>[-\w]+)/(?P<run_id>[\d]+)/$',
         dd.view_run, name='view_run'),
+    url(r'^(?P<scraper_slug>[-\w]+)/(?P<run_id>[\d]+)/geocodes/$',
+        dd.list_geocodes, name='list_geocodes'),
 )
