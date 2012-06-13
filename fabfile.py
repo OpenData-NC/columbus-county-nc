@@ -41,21 +41,24 @@ env.openblock_repo = u'git://github.com/openrural/openblock.git'
 env.shell = '/bin/bash -c'
 env.python = '/usr/bin/python2.6'
 env.placements = ['us-east-1a', 'us-east-1b', 'us-east-1d']
-env.environments = ['staging', 'production']
+env.environments = ['staging', 'production', 'sandbox']
 env.deployments = ['columbusco',]
 env.deployment_dir = os.path.join(os.path.dirname(__file__), 'deployment')
 env.templates_dir = os.path.join(env.deployment_dir, 'templates')
 env.server_ports = {
     'staging': 8000,
     'production': 8001,
+    'sandbox': 8002,
 }
 env.branches = {
     'staging': 'master',
     'production': 'master',
+    'sandbox': 'master',
 }
 env.instance_types = {
     'staging': 'm1.small',
     'production': 'm1.small',
+    'sandbox': 'm1.small',
 }
 env.password_names = ['database_password', 'broker_password']
 
@@ -162,6 +165,13 @@ def staging(deployment=env.deployments[0]):
 def production(deployment=env.deployments[0]):
     env.deployment_tag = deployment
     env.environment = 'production'
+    _setup_path()
+
+
+@task
+def sandbox(deployment=env.deployments[0]):
+    env.deployment_tag = deployment
+    env.environment = 'sandbox'
     _setup_path()
 
 
