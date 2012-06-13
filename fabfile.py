@@ -459,10 +459,9 @@ def update_passwords():
     """Manually copy the current master database to the slaves."""
 
     require('environment', provided_by=env.environments)
-    passnames = [env.password_names]
-    _load_passwords(passnames)
+    _load_passwords(env.password_names)
     with cd(env.home):
-        for passname in passnames:
+        for passname in env.password_names:
             passwd = getattr(env, passname)
             sudo('echo "{0}" > {1}'.format(passwd, passname), user=env.deploy_user)
             sudo('chmod 600 {0}'.format(passname), user=env.deploy_user)
