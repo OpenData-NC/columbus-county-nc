@@ -176,9 +176,10 @@ def setup_server(*roles):
             sudo('pg_dropcluster --stop %s main' % pg_version, user='postgres')
             sudo('pg_createcluster --start -e UTF-8 %s main' % pg_version,
                  user='postgres')
-        with settings(warn_only=True):
+            create_postgis_template()
             postgres.create_db_user(username=env.project_user)
-            postgres.create_db(name=env.db, owner=env.project_user)
+            create_db(name=env.db, owner=env.project_user,
+                      template='template_postgis')
     if 'app' in roles:
         # Create project directories and install Python requirements
         project_run('mkdir -p %(root)s' % env)
@@ -203,7 +204,7 @@ def setup_server(*roles):
             test_for_virtualenv = run('which virtualenv')
         if not test_for_virtualenv:
             sudo("pip install -U virtualenv")
-        project_run('virtualenv -p python2.6 --clear --distribute %s' % env.virtualenv_root)
+        project_run('virtualenv -p python2.6 --distribute %s' % env.virtualenv_root)
         path_file = os.path.join(env.virtualenv_root, 'lib', 'python2.6', 'site-packages', 'project.pth')
         files.append(path_file, env.code_root, use_sudo=True)
         sudo('chown %s:%s %s' % (env.project_user, env.project_user, path_file))
@@ -229,6 +230,33 @@ def upload_local_settings():
     upload_template('django/local.py', dest, use_sudo=True)
     with settings(warn_only=True):
         sudo('chown %s:%s %s' % (env.project_user, env.project_user, dest))
+
+
+@task
+def create_postgis_template():
+    """Create PostGIS template using Django's provided script."""
+    require('environment')
+    script = '/tmp/create_template_postgis-debian.sh'
+    if files.exists(script):
+        sudo('rm %s' % script)
+    sudo('wget -q -P /tmp https://docs.djangoproject.com/en/dev/_downloads/create_template_postgis-debian.sh')
+    sudo('chmod +x %s' % script)
+    sudo(script, user='postgres')
+    sudo('rm %s' % script)
+
+
+@task
+def create_db(name, owner=None, encoding=u'UTF-8', template=''):
+    """Create a Postgres database."""
+
+    flags = u''
+    if encoding:
+        flags = u'-E %s' % encoding
+    if owner:
+        flags = u'%s -O %s' % (flags, owner)
+    if template:
+        flags = u'-T %s' % template
+    sudo('createdb %s %s' % (flags, name), user='postgres')
 
 
 def project_run(cmd):
