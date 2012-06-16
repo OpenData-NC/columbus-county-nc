@@ -164,3 +164,6 @@ LOGGING['loggers']['celery'] = {'propagate': True, 'level': 'INFO'}
 CELERYD_HIJACK_ROOT_LOGGER = False
 
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
+ADMIN_MEDIA_PREFIX = "/media/admin/"
+DJANGO_STATIC_NAME_PREFIX = "/static/"
