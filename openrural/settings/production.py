@@ -1,4 +1,4 @@
-from openrural.settings import *
+from openrural.settings.base import *
 
 # Graylog2 logging handler
 LOGGING['handlers']['gelf'] = {

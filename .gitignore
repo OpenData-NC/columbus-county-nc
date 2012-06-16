@@ -7,3 +7,4 @@ aws.sh
 fabsecrets.py
 openrural.log
 shapefiles/
+local.py
