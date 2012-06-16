@@ -3,8 +3,8 @@ OpenRural: Columbus County, North Carolina
 
 This is the official Columbus County OpenRural repository.
 
-Local Development Setup
------------------------
+Ubuntu 11.04 - Local Development Setup
+--------------------------------------
 
 To setup OpenRural, you need to clone OpenBlock along side OpenRural::
 
@@ -19,22 +19,20 @@ OpenRural runs a modifed branch of OpenBlock, so switch to that branch::
 Now we can setup our local OpenRural Python environment::
 
     $ cd columbus-county-nc/
-    $ mkvirtualenv --distribute -p python2.6 columbusco
+    $ mkvirtualenv --distribute --python=python2.6 columbusco
     $ add2virtualenv .
-    $ pip install -r requirements/deploy.txt
+    $ $VIRTUAL_ENV/bin/pip install -q -r $PWD/requirements/dev.txt
     $ fab update_ve:True
 
-Create a PostgreSQL database for development::
+Then create a local settings file and set your ``DJANGO_SETTINGS_MODULE`` to use it::
+
+    cp openrural/settings/local.example.py openrural/settings/local.py
+    echo "export DJANGO_SETTINGS_MODULE=openrural.settings.local" >> $VIRTUAL_ENV/bin/postactivate
+    echo "unset DJANGO_SETTINGS_MODULE" >> $VIRTUAL_ENV/bin/postdeactivate
+
+Create a PostgreSQL database for development and initialize the database::
 
     $ createdb --template=template_postgis openblock_devel
-
-Create a local settings file::
-
-    $ cp openrural/local_settings.py.example openrural/local_settings.py
-
-Point Django do your local settings and initialize the database::
-
-    $ export DJANGO_SETTINGS_MODULE=openrural.local_settings
     $ django-admin.py syncdb --migrate
 
 If everything went smoothly, you can now runserver::
