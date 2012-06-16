@@ -26,7 +26,8 @@ env.shell = '/bin/bash -c'
 env.disable_known_hosts = True
 env.ssh_port = 2222
 env.forward_agent = True
-env.password_names = ['broker_password']
+env.password_names = ['broker_password', 'password_create_salt',
+                      'password_reset_salt']
 
 # Additional settings for argyle
 env.ARGYLE_TEMPLATE_DIRS = (
@@ -242,7 +243,7 @@ def upload_local_settings():
     """Upload local.py template to server."""
     require('environment')
     dest = os.path.join(env.project_root, 'settings', 'local.py')
-    _load_passwords(env.password_names)
+    _load_passwords(env.password_names, generate=True)
     upload_template('django/local.py', dest, use_sudo=True)
     with settings(warn_only=True):
         sudo('chown %s:%s %s' % (env.project_user, env.project_user, dest))

@@ -9,3 +9,6 @@ if 'gelf' in LOGGING['handlers']:
 
 BROKER_URL = "amqp://{{ project_user }}:{{ broker_password }}@localhost:5672/{{ vhost }}"
 BROKER_CONNECTION_TIMEOUT = 15
+
+PASSWORD_CREATE_SALT = '{{ password_create_salt }}%s%s'
+PASSWORD_RESET_SALT = '{{ password_reset_salt }}%s%s'
