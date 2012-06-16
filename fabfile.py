@@ -204,7 +204,7 @@ def setup_server(*roles):
             test_for_virtualenv = run('which virtualenv')
         if not test_for_virtualenv:
             sudo("pip install -U virtualenv")
-        project_run('virtualenv -p python2.6 --distribute %s' % env.virtualenv_root)
+        project_run('virtualenv -p python2.6 --clear --distribute %s' % env.virtualenv_root)
         path_file = os.path.join(env.virtualenv_root, 'lib', 'python2.6', 'site-packages', 'project.pth')
         files.append(path_file, env.code_root, use_sudo=True)
         sudo('chown %s:%s %s' % (env.project_user, env.project_user, path_file))
