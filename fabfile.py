@@ -8,6 +8,7 @@ from argyle.base import upload_template
 from argyle.postgres import create_db_user, create_db
 from argyle.supervisor import supervisor_command, upload_supervisor_app_conf
 from argyle.system import service_command, start_service, stop_service, restart_service
+from argyle import rabbitmq
 
 from fabric.api import cd, env, get, hide, local, put, require, run, settings, sudo, task
 from fabric.contrib import files, console
@@ -16,7 +17,7 @@ from fabric.colors import yellow
 # Directory structure
 PROJECT_ROOT = os.path.dirname(__file__)
 CONF_ROOT = os.path.join(PROJECT_ROOT, 'conf')
-SERVER_ROLES = ['app', 'lb', 'db']
+SERVER_ROLES = ['app', 'lb', 'db', 'queue']
 env.project = 'openrural'
 env.project_user = 'openrural'
 env.repo = u'git@github.com:openrural/columbus-county-nc.git'
@@ -25,7 +26,7 @@ env.shell = '/bin/bash -c'
 env.disable_known_hosts = True
 env.ssh_port = 2222
 env.forward_agent = True
-env.password_names = []
+env.password_names = ['broker_password']
 
 # Additional settings for argyle
 env.ARGYLE_TEMPLATE_DIRS = (
@@ -44,18 +45,19 @@ def _load_passwords(names, length=20, generate=False):
     """
     for name in names:
         filename = ''.join([env.home, name])
-        if generate:
-            passwd = _random_password(length=length)
-            sudo('touch %s' % filename, user=env.project_user)
-            sudo('chmod 600 %s' % filename, user=env.project_user)
-            with hide('running'):
-                sudo('echo "%s">%s' % (passwd, filename),
-                     user=env.project_user)
         if env.host_string and files.exists(filename):
             with hide('stdout'):
                 passwd = sudo('cat %s' % filename).strip()
         else:
-            passwd = getpass('Please enter %s: ' % name)
+            if generate:
+                passwd = _random_password(length=length)
+                sudo('touch %s' % filename, user=env.project_user)
+                sudo('chmod 600 %s' % filename, user=env.project_user)
+                with hide('running'):
+                    sudo('echo "%s">%s' % (passwd, filename),
+                         user=env.project_user)
+            else:
+                passwd = getpass('Please enter %s: ' % name)
         setattr(env, name, passwd)
 
 
@@ -171,6 +173,7 @@ def setup_server(*roles):
     if 'base' not in roles:
         roles.insert(0, 'base')
     install_packages(*roles)
+    _load_passwords(env.password_names, generate=True)
     if 'db' in roles:
         if console.confirm(u"Do you want to reset the Postgres cluster?.", default=False):
             # Ensure the cluster is using UTF-8
@@ -215,7 +218,6 @@ def setup_server(*roles):
         sudo('chown %s:%s %s' % (env.project_user, env.project_user, path_file))
         update_requirements()
         update_openblock()
-        _load_passwords(env.password_names, generate=True)
         upload_supervisor_app_conf(app_name=u'gunicorn')
         upload_supervisor_app_conf(app_name=u'group')
         # Restart services to pickup changes
@@ -224,6 +226,14 @@ def setup_server(*roles):
     if 'lb' in roles:
         nginx.remove_default_site()
         nginx.upload_nginx_site_conf(site_name=u'%(project)s-%(environment)s.conf' % env)
+    if 'queue' in roles:
+        with settings(warn_only=True):
+            rabbitmq.rabbitmq_command('delete_user %s' % env.project_user)
+        rabbitmq.create_user(env.project_user, env.broker_password)
+        with settings(warn_only=True):
+            rabbitmq.rabbitmq_command('delete_vhost %s' % env.vhost)
+        rabbitmq.create_vhost(env.vhost)
+        rabbitmq.set_vhost_permissions(env.vhost, env.project_user)
 
 
 @task
