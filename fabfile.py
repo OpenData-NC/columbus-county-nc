@@ -1,98 +1,36 @@
+import ConfigParser
 import os
 import random
 import string
-import logging
-import tempfile
 
-from getpass import getpass
-from fabric.api import *
-from fabric.contrib.files import exists, upload_template, append
+from argyle import rabbitmq, postgres, nginx, system
+from argyle.base import upload_template
+from argyle.postgres import create_db_user, create_db
+from argyle.supervisor import supervisor_command, upload_supervisor_app_conf
+from argyle.system import service_command, start_service, stop_service, restart_service
+
+from fabric.api import cd, env, get, hide, local, put, require, run, settings, sudo, task
+from fabric.contrib import files, console
 from fabric.colors import yellow
 
-from argyle import system
-from argyle.supervisor import supervisor_command
-
-from fabulaws.api import *
-
-from deployment.server import *
-
-try:
-    import fabsecrets
-except ImportError:
-    fabsecrets = None
-
-logger = logging.getLogger()
-logger.addHandler(logging.StreamHandler())
-logger.setLevel(logging.WARNING)
-
-fabulaws_logger = logging.getLogger('fabulaws')
-fabulaws_logger.setLevel(logging.DEBUG)
-
+# Directory structure
 PROJECT_ROOT = os.path.dirname(__file__)
+CONF_ROOT = os.path.join(PROJECT_ROOT, 'conf')
+SERVER_ROLES = ['app', 'lb', 'db']
 env.project = 'openrural'
-env.deploy_user = 'openrural'
-env.webserver_user = 'openrural-web'
-env.database_user = 'openrural'
-env.database_host = 'localhost'
-env.template_db = 'template_postgis'
-env.home = '/home/openrural'
+env.project_user = 'openrural'
 env.repo = u'git@github.com:openrural/columbus-county-nc.git'
 env.openblock_repo = u'git://github.com/openrural/openblock.git'
 env.shell = '/bin/bash -c'
-env.python = '/usr/bin/python2.6'
-env.placements = ['us-east-1a', 'us-east-1b', 'us-east-1d']
-env.environments = ['staging', 'production', 'sandbox']
-env.deployments = ['columbusco',]
-env.deployment_dir = os.path.join(os.path.dirname(__file__), 'deployment')
-env.templates_dir = os.path.join(env.deployment_dir, 'templates')
-env.server_ports = {
-    'staging': 8000,
-    'production': 8001,
-    'sandbox': 8002,
-}
-env.branches = {
-    'staging': 'master',
-    'production': 'master',
-    'sandbox': 'master',
-}
-env.instance_types = {
-    'staging': 'm1.small',
-    'production': 'm1.small',
-    'sandbox': 'm1.small',
-}
-env.password_names = ['database_password', 'broker_password']
+env.disable_known_hosts = True
+env.ssh_port = 2222
+env.forward_agent = True
+env.password_names = []
 
-
-def _get_servers(deployment, environment):
-    env.filters = {'tag:environment': environment,
-                   'tag:deployment': deployment}
-    inst_kwargs = {
-        'instance_type': env.instance_types[environment],
-        'deploy_user': env.deploy_user,
-    }
-    servers = ec2_instances(filters=env.filters, cls=OpenRuralInstance,
-                            inst_kwargs=inst_kwargs)
-    return [server.hostname for server in servers]
-
-
-def _setup_path():
-    env.root = os.path.join(env.home, 'www', env.environment)
-    env.log_dir = os.path.join(env.root, 'log')
-    env.code_root = os.path.join(env.root, 'code_root')
-    env.project_root = os.path.join(env.code_root, env.project)
-    env.virtualenv_root = os.path.join(env.root, 'env')
-    env.media_root = os.path.join(env.root, 'media_root')
-    env.static_root = os.path.join(env.root, 'static_root')
-    env.openblock_root = os.path.join(env.root, 'openblock')
-    env.services = os.path.join(env.home, 'services')
-    env.database_name = '%s_%s' % (env.project, env.environment)
-    env.vhost = '%s_%s' % (env.project, env.environment)
-    env.branch = env.branches[env.environment]
-    env.server_port = env.server_ports[env.environment]
-    env.local_settings = '%s.local_settings' % env.project
-    env.htpasswd = os.path.join(env.services, 'htpasswd')
-    if not env.hosts:
-        env.hosts = _get_servers(env.deployment_tag, env.environment)
+# Additional settings for argyle
+env.ARGYLE_TEMPLATE_DIRS = (
+    os.path.join(CONF_ROOT, 'templates')
+)
 
 
 def _random_password(length=8, chars=string.letters + string.digits):
@@ -100,19 +38,20 @@ def _random_password(length=8, chars=string.letters + string.digits):
 
 
 def _load_passwords(names, length=20, generate=False):
-    """Retrieve password from the user's home directory, or generate a new random one if none exists"""
-
+    """
+    Retrieve password from the user's home directory, or generate a new
+    random one if none exists
+    """
     for name in names:
-        filename = os.path.join(env.home, name)
+        filename = ''.join([env.home, name])
         if generate:
             passwd = _random_password(length=length)
-            sudo('touch %s' % filename, user=env.deploy_user)
-            sudo('chmod 600 %s' % filename, user=env.deploy_user)
+            sudo('touch %s' % filename, user=env.project_user)
+            sudo('chmod 600 %s' % filename, user=env.project_user)
             with hide('running'):
-                sudo('echo "%s">%s' % (passwd, filename), user=env.deploy_user)
-        if fabsecrets and hasattr(fabsecrets, name):
-            passwd = getattr(fabsecrets, name)
-        elif env.host_string and exists(filename):
+                sudo('echo "%s">%s' % (passwd, filename),
+                     user=env.project_user)
+        if env.host_string and files.exists(filename):
             with hide('stdout'):
                 passwd = sudo('cat %s' % filename).strip()
         else:
@@ -120,398 +59,338 @@ def _load_passwords(names, length=20, generate=False):
         setattr(env, name, passwd)
 
 
-def _vexe(name):
-    return os.path.join(env.virtualenv_root, 'bin', name)
+@task
+def vagrant():
+    env.environment = 'vagrant'
+    env.hosts = ['33.33.33.10', ]
+    env.branch = 'vagrant'
+    env.server_name = 'dev.example.com'
+    setup_path()
 
 
 @task
-def new_instance(placement, deployment, environment, count=1, **kwargs):
-    if placement not in env.placements:
-        abort('Choose a valid placement: %s' % ', '.join(env.placements))
-    if deployment not in env.deployments:
-        abort('Choose a valid deployment: %s' % ', '.join(env.deployments))
-    if environment not in env.environments:
-        abort('Choose a valid environment: %s' % ', '.join(env.environments))
-    count = int(count)
-    tags = {
-        'environment': environment,
-        'deployment': deployment,
-        'Name': '_'.join([deployment, environment]),
-    }
-    env.hosts = []
-    env.deployment_tag = deployment
-    env.environment = environment
-    env.database_password = None
-    servers = []
-    _load_passwords(env.password_names)
-    _setup_path()
-    for x in range(count):
-        instance_type = env.instance_types[env.environment]
-        cls = OpenRuralInstance
-        server = cls(instance_type=instance_type, placement=placement,
-                     tags=tags, deploy_user=env.deploy_user, **kwargs)
-        server.setup()
-        env.hosts.append(server.hostname)
-
-
-@task
-def staging(deployment=env.deployments[0]):
-    env.deployment_tag = deployment
+def staging():
     env.environment = 'staging'
-    _setup_path()
+    env.hosts = [] # FIXME: Add staging server hosts
+    env.branch = 'master'
+    env.server_name = '' # FIXME: Add staging server name
+    setup_path()
 
 
 @task
-def production(deployment=env.deployments[0]):
-    env.deployment_tag = deployment
+def production():
     env.environment = 'production'
-    _setup_path()
+    env.hosts = [] # FIXME: Add production hosts
+    env.branch = 'master'
+    env.server_name = '' # FIXME: Add production server name
+    setup_path()
+
+
+def setup_path():
+    env.home = '/home/%(project_user)s/' % env
+    env.root = os.path.join(env.home, 'www', env.environment)
+    env.code_root = os.path.join(env.root, env.project)
+    env.project_root = os.path.join(env.code_root, env.project)
+    env.virtualenv_root = os.path.join(env.root, 'env')
+    env.log_dir = os.path.join(env.root, 'log')
+    env.db = env.project
+    env.vhost = '%s_%s' % (env.project, env.environment)
+    env.settings = '%(project)s.settings.local' % env
+    env.openblock_root = os.path.join(env.root, 'openblock')
 
 
 @task
-def sandbox(deployment=env.deployments[0]):
-    env.deployment_tag = deployment
-    env.environment = 'sandbox'
-    _setup_path()
+def create_users():
+    """Create project user and developer users."""
+    ssh_dir = u"/home/%s/.ssh" % env.project_user
+    system.create_user(env.project_user, groups=['www-data', 'login', ])
+    sudo('mkdir -p %s' % ssh_dir)
+    user_dir = os.path.join(CONF_ROOT, "users")
+    for username in os.listdir(user_dir):
+        key_file = os.path.normpath(os.path.join(user_dir, username))
+        system.create_user(username, groups=['dev', 'login', ], key_file=key_file)
+        with open(key_file, 'rt') as f:
+            ssh_key = f.read()
+        # Add ssh key for project user
+        files.append('%s/authorized_keys' % ssh_dir, ssh_key, use_sudo=True)
+    files.append(u'/etc/sudoers', r'%dev ALL=(ALL) NOPASSWD:ALL', use_sudo=True)
+    sudo('chown -R %s:%s %s' % (env.project_user, env.project_user, ssh_dir))
 
 
 @task
-def update_sysadmin_users():
-    """Create sysadmin users on the server"""
-
-    require('environment', provided_by=env.environments)
-    instance_type = env.instance_types[env.environment]
-    servers = ec2_instances(filters=env.filters, cls=OpenRuralInstance,
-                            inst_kwargs={'deploy_user': env.deploy_user,
-                                         'instance_type': instance_type})
-    for server in servers:
-        server.create_users(server._get_users())
-        server.update_deployer_keys()
-
-
-@task
-def clone_repo():
-    """ clone a new copy of the hg repository """
-
-    with cd(env.root):
-        sshagent_run('git clone %(repo)s %(code_root)s' % env,
-                     user=env.deploy_user)
-    with cd(env.code_root):
-        sudo('git checkout %(branch)s' % env, user=env.deploy_user)
+def configure_ssh():
+    """
+    Change sshd_config defaults:
+    Change default port
+    Disable root login
+    Disable password login
+    Restrict to only login group
+    """
+    ssh_config = u'/etc/ssh/sshd_config'
+    files.sed(ssh_config, u"Port 22$", u"Port %s" % env.ssh_port, use_sudo=True)
+    files.sed(ssh_config, u"PermitRootLogin yes", u"PermitRootLogin no", use_sudo=True)
+    files.append(ssh_config, u"AllowGroups login", use_sudo=True)
+    files.append(ssh_config, u"PasswordAuthentication no", use_sudo=True)
+    service_command(u'ssh', u'reload')
 
 
 @task
-def setup_dirs():
-    """ create (if necessary) and make writable uploaded media, log, etc. directories """
-
-    require('environment', provided_by=env.environments)
-    sudo('mkdir -p %(log_dir)s' % env, user=env.deploy_user)
-    sudo('chmod a+w %(log_dir)s' % env )
-    sudo('mkdir -p %(services)s/nginx' % env, user=env.deploy_user)
-    sudo('mkdir -p %(services)s/supervisor' % env, user=env.deploy_user)
-    sudo('mkdir -p %(services)s/gunicorn' % env, user=env.deploy_user)
-    sudo('mkdir -p %(media_root)s' % env)
-    sudo('mkdir -p %(static_root)s' % env)
-    sudo('chmod a+w %(static_root)s' % env )
-    sudo('chown %(webserver_user)s %(media_root)s' % env)
+def install_packages(*roles):
+    """Install packages for the given roles."""
+    config_file = os.path.join(CONF_ROOT, u'packages.conf')
+    config = ConfigParser.SafeConfigParser()
+    config.read(config_file)
+    for role in roles:
+        if config.has_section(role):
+            # Get ppas
+            if config.has_option(role, 'ppas'):
+                for ppa in config.get(role, 'ppas').split(' '):
+                    system.add_ppa(ppa, update=False)
+            # Get sources
+            if config.has_option(role, 'sources'):
+                for section in config.get(role, 'sources').split(' '):
+                    source = config.get(section, 'source')
+                    key = config.get(section, 'key')
+                    system.add_apt_source(source=source, key=key, update=False)
+            sudo(u"apt-get update")
+            sudo(u"apt-get install -y %s" % config.get(role, 'packages'))
+            sudo(u"apt-get upgrade -y")
 
 
 @task
-def link_config_files():
-    """Include the nginx and supervisor config files via the Ubuntu standard inclusion directories"""
+def setup_server(*roles):
+    """Install packages and add configurations for server given roles."""
+    require('environment')
+    # Set server locale
+    sudo('/usr/sbin/update-locale LANG=en_US.UTF-8')
+    roles = list(roles)
+    if roles == ['all', ]:
+        roles = SERVER_ROLES
+    if 'base' not in roles:
+        roles.insert(0, 'base')
+    install_packages(*roles)
+    if 'db' in roles:
+        if console.confirm(u"Do you want to reset the Postgres cluster?.", default=False):
+            # Ensure the cluster is using UTF-8
+            pg_version = postgres.detect_version()
+            sudo('pg_dropcluster --stop %s main' % pg_version, user='postgres')
+            sudo('pg_createcluster --start -e UTF-8 %s main' % pg_version,
+                 user='postgres')
+        with settings(warn_only=True):
+            postgres.create_db_user(username=env.project_user)
+            postgres.create_db(name=env.db, owner=env.project_user)
+    if 'app' in roles:
+        # Create project directories and install Python requirements
+        project_run('mkdir -p %(root)s' % env)
+        project_run('mkdir -p %(log_dir)s' % env)
+        # FIXME: update to SSH as normal user and use sudo
+        # we ssh as the project_user here to maintain ssh agent
+        # forwarding, because it doesn't work with sudo. read:
+        # http://serverfault.com/questions/107187/sudo-su-username-while-keeping-ssh-key-forwarding
+        with settings(user=env.project_user):
+            # TODO: Add known hosts prior to clone.
+            # i.e. ssh -o StrictHostKeyChecking=no git@github.com
+            with settings(warn_only=True):
+                run('git clone %(repo)s %(code_root)s' % env)
+            with cd(env.code_root):
+                run('git checkout %(branch)s' % env)
+        # Install and create virtualenv
+        with settings(hide('everything'), warn_only=True):
+            test_for_pip = run('which pip')
+        if not test_for_pip:
+            sudo("easy_install -U pip")
+        with settings(hide('everything'), warn_only=True):
+            test_for_virtualenv = run('which virtualenv')
+        if not test_for_virtualenv:
+            sudo("pip install -U virtualenv")
+        project_run('virtualenv -p python2.6 --clear --distribute %s' % env.virtualenv_root)
+        path_file = os.path.join(env.virtualenv_root, 'lib', 'python2.6', 'site-packages', 'project.pth')
+        files.append(path_file, env.code_root, use_sudo=True)
+        sudo('chown %s:%s %s' % (env.project_user, env.project_user, path_file))
+        update_requirements()
+        update_openblock()
+        _load_passwords(env.password_names, generate=True)
+        upload_supervisor_app_conf(app_name=u'gunicorn')
+        upload_supervisor_app_conf(app_name=u'group')
+        # Restart services to pickup changes
+        supervisor_command('reload')
+        supervisor_command('restart %(environment)s:*' % env)
+    if 'lb' in roles:
+        nginx.remove_default_site()
+        nginx.upload_nginx_site_conf(site_name=u'%(project)s-%(environment)s.conf' % env)
 
+
+@task
+def upload_local_settings():
+    """Upload local.py template to server."""
+    require('environment')
+    dest = os.path.join(env.project_root, 'settings', 'local.py')
+    _load_passwords(env.password_names)
+    upload_template('django/local.py', dest, use_sudo=True)
     with settings(warn_only=True):
-        sudo('rm /etc/nginx/sites-enabled/default')
-        sudo('rm /etc/nginx/sites-enabled/%(project)s-*.conf' % env)
-        sudo('rm /etc/supervisor/conf.d/%(project)s-*.conf' % env)
-    sudo('ln -s /%(home)s/services/nginx/%(environment)s.conf /etc/nginx/sites-enabled/%(project)s-%(environment)s.conf' % env)
-    sudo('ln -s /%(home)s/services/supervisor/%(environment)s.conf /etc/supervisor/conf.d/%(project)s-%(environment)s.conf' % env)
+        sudo('chown %s:%s %s' % (env.project_user, env.project_user, dest))
 
 
-def _upload_template(filename, destination, **kwargs):
-    """Upload template and chown to given user"""
-    user = kwargs.pop('user')
-    kwargs['use_sudo'] = True
-    upload_template(filename, destination, **kwargs)
-    sudo('chown %(user)s:%(user)s %(dest)s' % {'user': user, 'dest': destination})
+def project_run(cmd):
+    """ Uses sudo to allow developer to run commands as project user."""
+    home = 'HOME=%s' % env.home
+    return sudo('%s %s' % (home, cmd), user=env.project_user)
 
 
-@task
-def upload_supervisor_conf():
-    """Upload Supervisor configuration from the template."""
-
-    require('environment', provided_by=env.environments)
-    template = os.path.join(env.templates_dir, 'supervisor.conf')
-    destination = os.path.join(env.services, 'supervisor', '%(environment)s.conf' % env)
-    _upload_template(template, destination, context=env, user=env.deploy_user)
-    supervisor_command('update')
+def venv(cmd):
+    """Run binaries from within the virtualenv root."""
+    if isinstance(cmd, list):
+        cmd = ' '.join(cmd)
+    return project_run('%s/bin/%s' % (env.virtualenv_root, cmd))
 
 
 @task
-def upload_nginx_conf():
-    """Upload Nginx configuration from the template."""
-
-    require('environment', provided_by=env.environments)
-    template = os.path.join(env.templates_dir, 'nginx.conf')
-    destination = os.path.join(env.services, 'nginx', '%(environment)s.conf' % env)
-    _upload_template(template, destination, context=env, user=env.deploy_user)
-    restart_nginx()
-
-
-@task
-def upload_gunicorn_conf():
-    """Upload Gunicorn configuration from the template."""
-
-    require('environment', provided_by=env.environments)
-    template = os.path.join(env.templates_dir, 'gunicorn.conf')
-    destination = os.path.join(env.services, 'gunicorn', '%(environment)s.py' % env)
-    _upload_template(template, destination, context=env, user=env.deploy_user)
-
-
-@task
-def update_services():
-    """ upload changes to services configurations as nginx """
-
-    upload_supervisor_conf()
-    upload_nginx_conf()
-    upload_gunicorn_conf()
-
-
-@task
-def set_htpasswd(user, passwd):
-    """Set htpasswd"""
-
-    require('environment', provided_by=env.environments)
-    cmd = 'htpasswd -cdb {0} {1} {2}'.format(env.htpasswd, user, passwd)
-    sudo(cmd, user=env.deploy_user)
-
-
-@task
-def create_virtualenv():
-    """ setup virtualenv on remote host """
-
-    require('virtualenv_root', provided_by=env.environments)
-    cmd = ['virtualenv', '--clear', '--distribute',
-           '--python=%(python)s' % env, env.virtualenv_root]
-    sudo(' '.join(cmd), user=env.deploy_user)
-
-
-@task
-def update_requirements():
-    """ update external dependencies on remote host """
-
-    require('code_root', provided_by=env.environments)
+def update_requirements(sdists=False):
+    """Update required Python libraries."""
+    require('environment')
     requirements = os.path.join(env.code_root, 'requirements')
-    sdists = os.path.join(requirements, 'sdists')
-    base_cmd = ['pip install']
-    base_cmd += ['-q -E %(virtualenv_root)s' % env]
-    base_cmd += ['--no-index --find-links=file://%s' % sdists]
+    base_cmd = ['pip install -q']
+    if sdists:
+        sdists = os.path.join(requirements, 'sdists')
+        base_cmd += ['--no-index --find-links=file://%s' % sdists]
+    else:
+        base_cmd += ['--use-mirrors']
     # install GDAL by hand, before anything else that might depend on it
-    cmd = base_cmd + ['--no-install "GDAL==1.6.1"']
-    sudo(' '.join(cmd), user=env.deploy_user)
+    venv(base_cmd + ['--no-install "GDAL==1.6.1"'])
     # this directory won't exist if GDAL was already installed
-    if exists('%(virtualenv_root)s/build/GDAL' % env):
-        sudo('rm -f %(virtualenv_root)s/build/GDAL/setup.cfg' % env, user=env.deploy_user)
+    if files.exists('%(virtualenv_root)s/build/GDAL' % env):
+        project_run('rm -f %(virtualenv_root)s/build/GDAL/setup.cfg' % env)
         with cd('%(virtualenv_root)s/build/GDAL' % env):
-            sudo('%(virtualenv_root)s/bin/python setup.py build_ext '
+            venv('python setup.py build_ext '
                  '--gdal-config=gdal-config '
                  '--library-dirs=/usr/lib '
                  '--libraries=gdal1.6.0 '
                  '--include-dirs=/usr/include/gdal '
-                 'install' % env, user=env.deploy_user)
-    files = ('ebpub.txt', 'ebdata.txt', 'obadmin.txt', 'openrural.txt')
-    for file_name in files:
-        apps = os.path.join(requirements, file_name)
-        cmd = base_cmd + ['--requirement %s' % apps]
-        sudo(' '.join(cmd), user=env.deploy_user)
+                 'install')
+    names = ('ebpub.txt', 'ebdata.txt', 'obadmin.txt', 'openrural.txt')
+    for name in names:
+        apps = os.path.join(requirements, name)
+        venv(base_cmd + ['--requirement %s' % apps])
 
 
 @task
-def update_local_settings():
-    """ create local_settings.py on the remote host """
-
-    require('environment', provided_by=env.environments)
-    _load_passwords(env.password_names)
-    destination = os.path.join(env.project_root, 'local_settings.py')
-    _upload_template('local_settings.py', destination, context=env,
-                     user=env.deploy_user, use_jinja=True,
-                     template_dir=env.templates_dir)
-
-
-@task
-def trust_github():
-    user = env.deploy_user
-    file_ = '{0}/.ssh/config'.format(env.home)
-    if exists(file_):
-        sudo('rm {0}'.format(file_), user=user)
-    sudo('touch {0}'.format(file_), user=user)
-    append(file_, "Host github.com\n\tStrictHostKeyChecking no\n", use_sudo=True)
-
-
-@task
-def bootstrap():
-    """ initialize remote host environment (virtualenv, deploy, update) """
-
-    require('environment', provided_by=env.environments)
-
-    sudo('mkdir -p %(root)s' % env, user=env.deploy_user)
-    trust_github()
-    clone_repo()
-    setup_dirs()
-    link_config_files()
-    update_services()
-    create_virtualenv()
-    update_requirements()
+def update_openblock(branch=None):
+    require('environment')
+    new_install = False
+    if not files.exists(env.openblock_root):
+        new_install = True
+        project_run('git clone %(openblock_repo)s %(openblock_root)s' % env)
+    with cd(env.openblock_root):
+        project_run('git pull')
+        if branch:
+            project_run('git checkout %s' % branch)
+    if new_install:
+        for name in ('ebpub', 'ebdata', 'obadmin'):
+            with settings(warn_only=True):
+                venv('pip uninstall -y %s' % name)
+            print(yellow('Installing {0}'.format(name)))
+            package = os.path.join(env.openblock_root, name)
+            with cd(package):
+                venv('python setup.py develop --no-deps')
 
 
 @task
-def update_source():
-    """Checkout the latest code from repo."""
-
-    require('environment', provided_by=env.environments)
-    with cd(env.code_root):
-        sshagent_run('git pull', user=env.deploy_user)
-        sudo('git checkout %(branch)s' % env, user=env.deploy_user)
+def manage_run(command):
+    """Run a Django management command on the remote server."""
+    require('environment')
+    manage_base = u"%(virtualenv_root)s/bin/django-admin.py " % env
+    if '--settings' not in command:
+        command = u"%s --settings=%s" % (command, env.settings)
+    project_run(u'%s %s' % (manage_base, command))
 
 
 @task
-def manage(cmd):
-    """Run the given management command on the remote server."""
-
-    require('environment', provided_by=env.environments)
-    env.command = cmd
-    base = ['PYTHONPATH=%(code_root)s ' % env,
-            'DJANGO_SETTINGS_MODULE=openrural.local_settings ' % env,
-            '%(virtualenv_root)s/bin/django-admin.py %(command)s' % env]
-    sudo(' '.join(base), user=env.deploy_user)
+def manage_shell():
+    """Drop into the remote Django shell."""
+    manage_run("shell")
 
 
 @task
 def syncdb():
     """Run syncdb and South migrations."""
-
-    require('environment', provided_by=env.environments)
-    manage('syncdb --noinput')
-    manage('migrate --noinput')
+    manage_run('syncdb --noinput')
+    manage_run('migrate --noinput')
 
 
 @task
 def collectstatic():
     """Collect static files."""
-
-    require('environment', provided_by=env.environments)
-    manage('collectstatic --noinput')
+    manage_run('collectstatic --noinput')
 
 
-@task
-def createsuperuser():
-    """Collect static files."""
-
-    require('environment', provided_by=env.environments)
-    manage('createsuperuser')
+def match_changes(branch, match):
+    changes = run("git diff {0} origin/{0} --stat | grep {1} | cat".format(branch, match))
+    return any(changes)
 
 
 @task
-def restart_nginx():
-    """Restart Nginx."""
-
-    require('environment', provided_by=env.environments)
-    system.restart_service('nginx')
-
-
-@task
-def supervisor(command, process=None):
-    """Restart Supervisor controlled process(es).  If no process is specified, all the given command is run on all processes."""
-
-    require('environment', provided_by=env.environments)
-    env.supervisor_command = command
-    if process:
-        env.supervisor_process = process
-        supervisor_command('%(supervisor_command)s %(environment)s:%(environment)s-%(supervisor_process)s' % env)
-    else:
-        supervisor_command('%(supervisor_command)s %(environment)s:*' % env)
-
-
-@task
-def restart_all():
-    """Restart Nginx and Supervisor controlled processes."""
-
-    restart_nginx()
-    supervisor('restart')
-
-
-@task
-def deploy():
+def deploy(branch=None):
     """Deploy to a given environment."""
-
-    require('environment', provided_by=env.environments)
-    update_source()
+    require('environment')
+    if branch is not None:
+        env.branch = branch
+    requirements = False
+    migrations = False
+    # Fetch latest changes
+    with cd(env.code_root):
+        with settings(user=env.project_user):
+            run('git fetch origin')
+        # Look for new requirements or migrations
+        requirements = match_changes(env.branch, "'requirements\/'")
+        migrations = match_changes(env.branch, "'\/migrations\/'")
+        if requirements or migrations:
+            supervisor_command('stop %(environment)s:*' % env)
+        with settings(user=env.project_user):
+            run("git reset --hard origin/%(branch)s" % env)
+    upload_local_settings()
     update_openblock()
-    update_requirements()
-    update_local_settings()
-    syncdb()
+    if requirements:
+        update_requirements()
+        # New requirements might need new tables/migrations
+        syncdb()
+    elif migrations:
+        syncdb()
     # collectstatic()
-    supervisor('restart')
+    supervisor_command('restart %(environment)s:*' % env)
 
 
 @task
-def update_passwords():
-    """Manually copy the current master database to the slaves."""
-
-    require('environment', provided_by=env.environments)
-    _load_passwords(env.password_names)
-    with cd(env.home):
-        for passname in env.password_names:
-            passwd = getattr(env, passname)
-            sudo('echo "{0}" > {1}'.format(passwd, passname), user=env.deploy_user)
-            sudo('chmod 600 {0}'.format(passname), user=env.deploy_user)
-
-
-@task
-def reset_local_db(db_name):
-    """ Replace the local database with the remote database """
-
-    require('environment', provided_by=env.environments)
-    answer = prompt('Are you sure you want to reset the local database {0} '
-                    'with a copy of the {1} database?'.format(db_name,
-                                                              env.environment),
-                    default='n')
-    if answer != 'y':
-        abort('Aborted.')
-    with settings(warn_only=True):
-        local('dropdb {0}'.format(db_name))
-    local('createdb {0}'.format(db_name))
-    cmd = 'ssh -C {user}@{host} pg_dump -Ox {db_name} | '.format(
-        user=env.deploy_user,
-        host=env.host_string,
-        db_name=env.database_name,
-    )
-    cmd += 'psql {0}'.format(db_name)
-    local(cmd)
+def get_db_dump(clean=True):
+    """Get db dump of remote enviroment."""
+    require('environment')
+    dump_file = '%(environment)s.sql' % env
+    temp_file = os.path.join(env.home, dump_file)
+    flags = '-Ox'
+    if clean:
+        flags += 'c'
+    sudo('pg_dump %s %s > %s' % (flags, env.db, temp_file), user=env.project_user)
+    get(temp_file, dump_file)
 
 
 @task
-def load_geo_files():
-    require('environment', provided_by=env.environments)
-    manage('import_columbus_county')
+def load_db_dump(dump_file):
+    """Load db dump on a remote environment."""
+    require('environment')
+    temp_file = os.path.join(env.home, '%(environment)s.sql' % env)
+    put(dump_file, temp_file, use_sudo=True)
+    sudo('psql -d %s -f %s' % (env.db, temp_file), user=env.project_user)
 
 
-@task
-def develop(repo, index=False):
-    repo = os.path.abspath(repo)
-    for name in ('ebpub', 'ebdata', 'obadmin'):
-        print(yellow('Installing {0}'.format(name)))
-        package = os.path.join(repo, name)
-        os.chdir(package)
-        local('python setup.py develop --no-deps')
+### Local Fabric Functionality ###
 
 
 def _pip(package='', filename=None, sdists=True):
+    """Install packages locally using pip"""
     requirements = os.path.join(PROJECT_ROOT, 'requirements')
-    sdists = os.path.join(requirements, 'sdists')
-    sdists = '--no-index --find-links=file://%s' % sdists
     cmd = ['pip install']
     if sdists:
+        sdists = os.path.join(requirements, 'sdists')
+        sdists = '--no-index --find-links=file://%s' % sdists
         cmd.append(sdists)
     if filename:
         path = os.path.join(requirements, filename)
@@ -521,22 +400,18 @@ def _pip(package='', filename=None, sdists=True):
     local(' '.join(cmd))
 
 
-@task
-def update_ve(bootstrap=False, openblock='../openblock'):
-    _pip(filename='deploy.txt', sdists=False)
-    if bootstrap:
-        build_local_gdal()
-        os.chdir(PROJECT_ROOT)
-        develop(openblock)
-        os.chdir(PROJECT_ROOT)
-    _pip(filename='ebpub.txt')
-    _pip(filename='ebdata.txt')
-    _pip(filename='obadmin.txt')
-    _pip(filename='openrural.txt')
+def _develop(repo, index=False):
+    """Install OpenBlock in development mode"""
+    repo = os.path.abspath(repo)
+    for name in ('ebpub', 'ebdata', 'obadmin'):
+        print(yellow('Installing {0}'.format(name)))
+        package = os.path.join(repo, name)
+        os.chdir(package)
+        local('python setup.py develop --no-deps')
 
 
-@task
-def build_local_gdal():
+def _build_local_gdal():
+    """Compile GDAL"""
     ve_root = os.environ['VIRTUAL_ENV']
     with settings(warn_only=True):
         local('pip uninstall -y GDAL')
@@ -554,52 +429,15 @@ def build_local_gdal():
 
 
 @task
-def package_openblock(repo):
-    require('environment', provided_by=env.environments)
-    repo = os.path.abspath(repo)
-    sdists = os.path.join(PROJECT_ROOT, 'requirements', 'sdists')
-    for name in ('ebpub', 'ebdata', 'obadmin'):
-        print(yellow('Packaging {0}'.format(name)))
-        package = os.path.join(repo, name)
-        os.chdir(package)
-        local('python setup.py --quiet sdist --formats=zip --dist-dir=%s' % sdists)
-
-
-@task
-def update_openblock(branch=None):
-    require('environment', provided_by=env.environments)
-    new_install = False
-    if not exists(env.openblock_root):
-        new_install = True
-        cmd = 'git clone %(openblock_repo)s %(openblock_root)s' % env
-        sudo(cmd, user=env.deploy_user)
-    with cd(env.openblock_root):
-        sudo('git pull', user=env.deploy_user)
-        if branch:
-            sudo('git checkout %s' % branch, user=env.deploy_user)
-    if new_install:
-        for name in ('ebpub', 'ebdata', 'obadmin'):
-            with settings(warn_only=True):
-                sudo('%s uninstall -y -E %s %s' % (_vexe('pip'),
-                                                   env.virtualenv_root, name))
-            print(yellow('Installing {0}'.format(name)))
-            package = os.path.join(env.openblock_root, name)
-            with cd(package):
-                sudo('%s setup.py develop --no-deps' % _vexe('python'),
-                     user=env.deploy_user)
-
-
-@task
-def reset_db():
-    require('environment', provided_by=env.environments)
-    supervisor_command('stop %(environment)s:*' % env)
-    sudo('dropdb %(database_name)s' % env, user='postgres')
-    sudo('createdb -E UTF-8 -T template_postgis -O %(database_user)s %(database_name)s' % env, user='postgres')
-    syncdb()
-    supervisor_command('start %(environment)s:*' % env)
-
-
-@task
-def scrapers(name):
-    require('environment', provided_by=env.environments)
-    manage('scrapers %s' % name)
+def update_ve(bootstrap=False, openblock='../openblock'):
+    """Update OpenRural requirements locally"""
+    _pip(filename='dev.txt', sdists=False)
+    if bootstrap:
+        _build_local_gdal()
+        os.chdir(PROJECT_ROOT)
+        _develop(openblock)
+        os.chdir(PROJECT_ROOT)
+    _pip(filename='ebpub.txt')
+    _pip(filename='ebdata.txt')
+    _pip(filename='obadmin.txt')
+    _pip(filename='openrural.txt')
