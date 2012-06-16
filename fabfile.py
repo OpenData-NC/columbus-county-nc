@@ -97,6 +97,8 @@ def setup_path():
     env.vhost = '%s_%s' % (env.project, env.environment)
     env.settings = '%(project)s.settings.local' % env
     env.openblock_root = os.path.join(env.root, 'openblock')
+    env.media_root = os.path.join(env.root, 'media_root')
+    env.static_root = os.path.join(env.root, 'static_root')
 
 
 @task
@@ -184,6 +186,9 @@ def setup_server(*roles):
         # Create project directories and install Python requirements
         project_run('mkdir -p %(root)s' % env)
         project_run('mkdir -p %(log_dir)s' % env)
+        project_run('mkdir -p %(media_root)s' % env)
+        project_run('mkdir -p %(static_root)s' % env)
+        sudo('chmod a+w %(static_root)s' % env )
         # FIXME: update to SSH as normal user and use sudo
         # we ssh as the project_user here to maintain ssh agent
         # forwarding, because it doesn't work with sudo. read:
