@@ -9,6 +9,17 @@ from ebpub.settings_default import *
 # CORE DJANGO SETTINGS #
 ########################
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'openrural',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
+    }
+}
+
 ADMINS = (
     ('Open Rural Team', 'openrural-team@caktusgroup.com'),
 )
