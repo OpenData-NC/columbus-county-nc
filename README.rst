@@ -39,6 +39,31 @@ If everything went smoothly, you can now runserver::
 
     $ django-admin.py runserver
 
+Vagrant Testing
+------------------------
+
+You can test the provisioning/deployment using `Vagrant <http://vagrantup.com/>`_.
+Using the Vagrantfile you can start up the VM. This requires the ``lucid32`` box::
+
+    vagrant up
+
+With the VM up and running you can create the necessary users as before.
+The location of the key file may vary on your system.::
+
+    fab -H 33.33.33.10 -u vagrant -i /opt/vagrant/embedded/gems/gems/vagrant-1.0.3/keys/vagrant create_users
+    fab vagrant setup_server:all
+    fab vagrant deploy
+
+It is not necessary to reconfigure the SSH settings on the vagrant box. This forwards
+port 80 in the VM to port 8080 on the host box. You can view the site
+by visiting localhost:8080 in your browser. You may also want to add::
+
+    33.33.33.10 dev.example.com
+
+to your hosts (/etc/hosts) file. You can stop the VM with ``vagrant halt`` and
+destroy the box completely to retest the provisioning with ``vagrant destroy``.
+For more information please review the Vagrant documentation.
+
 Columbus County, NC
 *******************
 
