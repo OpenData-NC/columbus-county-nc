@@ -220,9 +220,6 @@ def setup_server(*roles):
         update_openblock()
         upload_supervisor_app_conf(app_name=u'gunicorn')
         upload_supervisor_app_conf(app_name=u'group')
-        # Restart services to pickup changes
-        supervisor_command('reload')
-        supervisor_command('restart %(environment)s:*' % env)
     if 'lb' in roles:
         nginx.remove_default_site()
         nginx.upload_nginx_site_conf(site_name=u'%(project)s-%(environment)s.conf' % env)
@@ -234,6 +231,10 @@ def setup_server(*roles):
             rabbitmq.rabbitmq_command('delete_vhost %s' % env.vhost)
         rabbitmq.create_vhost(env.vhost)
         rabbitmq.set_vhost_permissions(env.vhost, env.project_user)
+        upload_supervisor_app_conf(app_name=u'celery')
+    # Restart services to pickup changes
+    supervisor_command('reload')
+    supervisor_command('restart %(environment)s:*' % env)
 
 
 @task
