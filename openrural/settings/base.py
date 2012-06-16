@@ -20,10 +20,9 @@ TIME_ZONE = 'US/Eastern'
 
 PROJECT_DIR = os.path.normpath(os.path.dirname(__file__))
 INSTALLED_APPS = (
-    'djcelery',
+    # 'djcelery',
     'openrural',
     'gunicorn',
-    'seacucumber',
     'openrural.data_dashboard',
 ) + INSTALLED_APPS
 TEMPLATE_DIRS = (os.path.join(PROJECT_DIR, 'templates'), ) + TEMPLATE_DIRS
