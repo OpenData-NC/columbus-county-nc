@@ -326,10 +326,9 @@ def update_openblock(branch=None):
 def manage_run(command):
     """Run a Django management command on the remote server."""
     require('environment')
-    manage_base = u"%(virtualenv_root)s/bin/django-admin.py " % env
     if '--settings' not in command:
         command = u"%s --settings=%s" % (command, env.settings)
-    project_run(u'%s %s' % (manage_base, command))
+    venv(u'django-admin.py %s' % command)
 
 
 @task
