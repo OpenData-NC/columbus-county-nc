@@ -501,10 +501,10 @@ def update_ve(bootstrap=False, openblock='../openblock'):
         os.chdir(PROJECT_ROOT)
         _develop(openblock)
         os.chdir(PROJECT_ROOT)
-    _pip(filename='ebpub.txt')
-    _pip(filename='ebdata.txt')
-    _pip(filename='obadmin.txt')
-    _pip(filename='openrural.txt')
+    _pip(filename='ebpub.txt', sdists=False)
+    _pip(filename='ebdata.txt', sdists=False)
+    _pip(filename='obadmin.txt', sdists=False)
+    _pip(filename='openrural.txt', sdists=False)
 
 
 @task
