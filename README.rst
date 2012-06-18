@@ -48,9 +48,18 @@ Using the Vagrantfile you can start up the VM. This requires the ``lucid32`` box
     vagrant up
 
 With the VM up and running you can create the necessary users as before.
-The location of the key file may vary on your system.::
+The location of the key file may vary on your system.
+
+On Debian/Ubuntu::
 
     fab -H 33.33.33.10 -u vagrant -i /opt/vagrant/embedded/gems/gems/vagrant-1.0.3/keys/vagrant create_users
+
+On OSX::
+
+    fab -H 33.33.33.10 -u vagrant -i /Applications/Vagrant/embedded/gems/gems/vagrant-1.0.3/keys/vagrant create_users
+
+Then setup the server::
+
     fab vagrant setup_server:all
     fab vagrant deploy
 
