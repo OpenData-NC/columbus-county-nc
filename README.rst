@@ -61,6 +61,7 @@ On OSX::
 Then setup the server::
 
     fab vagrant setup_server:all
+    fab vagrant setup_local_dev
     fab vagrant deploy
 
 It is not necessary to reconfigure the SSH settings on the vagrant box. This forwards
