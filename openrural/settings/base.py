@@ -29,7 +29,7 @@ MANAGERS = ADMINS
 DEBUG = True
 TIME_ZONE = 'US/Eastern'
 
-PROJECT_DIR = os.path.normpath(os.path.dirname(__file__))
+PROJECT_DIR = os.path.normpath(os.path.dirname(os.path.dirname(__file__)))
 INSTALLED_APPS = (
     'djcelery',
     'openrural',
