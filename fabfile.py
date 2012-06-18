@@ -218,7 +218,8 @@ def setup_server(*roles):
         files.append(path_file, env.code_root, use_sudo=True)
         sudo('chown %s:%s %s' % (env.project_user, env.project_user, path_file))
         update_requirements()
-        update_openblock()
+        update_openblock(new_install=True)
+        upload_local_settings()
         upload_supervisor_app_conf(app_name=u'gunicorn')
     if 'lb' in roles:
         nginx.remove_default_site()
@@ -317,13 +318,12 @@ def update_requirements(sdists=False):
         apps = os.path.join(requirements, name)
         venv(base_cmd + ['--requirement %s' % apps])
 
-
 @task
-def update_openblock(branch=None):
+def update_openblock(branch=None, new_install=False):
     require('environment')
-    new_install = False
+    if new_install:
+        project_run('rm -rf %(openblock_root)s' % env)
     if not files.exists(env.openblock_root):
-        new_install = True
         project_run('git clone %(openblock_repo)s %(openblock_root)s' % env)
     with cd(env.openblock_root):
         project_run('git pull')
