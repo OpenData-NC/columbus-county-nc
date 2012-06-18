@@ -505,3 +505,17 @@ def update_ve(bootstrap=False, openblock='../openblock'):
     _pip(filename='ebdata.txt')
     _pip(filename='obadmin.txt')
     _pip(filename='openrural.txt')
+
+
+@task
+def apt_packages():
+    """Print package list for local development."""
+    roles = ['base', 'app', 'db', 'queue']
+    config_file = os.path.join(CONF_ROOT, u'packages.conf')
+    config = ConfigParser.SafeConfigParser()
+    config.read(config_file)
+    packages = []
+    for role in roles:
+        if config.has_section(role):
+            packages.append(config.get(role, 'packages'))
+    print ' '.join(packages)
