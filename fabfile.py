@@ -4,7 +4,6 @@ import random
 import string
 
 from argyle import rabbitmq, postgres, nginx, system
-from argyle.base import upload_template
 from argyle.postgres import create_db_user, create_db
 from argyle.supervisor import supervisor_command, upload_supervisor_app_conf
 from argyle.system import service_command, start_service, stop_service, restart_service
@@ -13,6 +12,8 @@ from argyle import rabbitmq
 from fabric.api import cd, env, get, hide, local, put, require, run, settings, sudo, task
 from fabric.contrib import files, console
 from fabric.colors import yellow
+
+from conf.system import upload_template
 
 # Directory structure
 PROJECT_ROOT = os.path.dirname(__file__)
@@ -243,14 +244,18 @@ def setup_server(*roles):
 
 
 @task
-def upload_local_settings():
+def upload_local_settings(local=False):
     """Upload local.py template to server."""
     require('environment')
-    dest = os.path.join(env.project_root, 'settings', 'local.py')
+    if local:
+        dest = os.path.join(PROJECT_ROOT, env.project, 'settings', 'local.py')
+    else:
+        dest = os.path.join(env.project_root, 'settings', 'local.py')
     _load_passwords(env.password_names, generate=True)
-    upload_template('django/local.py', dest, use_sudo=True)
-    with settings(warn_only=True):
-        sudo('chown %s:%s %s' % (env.project_user, env.project_user, dest))
+    upload_template('django/local.py', dest, use_sudo=True, local=local)
+    if not local:
+        with settings(warn_only=True):
+            sudo('chown %s:%s %s' % (env.project_user, env.project_user, dest))
 
 
 @task
@@ -294,7 +299,7 @@ def venv(cmd):
 
 
 @task
-def update_requirements(sdists=False):
+def update_requirements(sdists=False, dev=False):
     """Update required Python libraries."""
     require('environment')
     requirements = os.path.join(env.code_root, 'requirements')
@@ -320,6 +325,8 @@ def update_requirements(sdists=False):
     for name in names:
         apps = os.path.join(requirements, name)
         venv(base_cmd + ['--requirement %s' % apps])
+    venv(base_cmd + ['--requirement %s' % os.path.join(requirements, 'dev.txt')])
+
 
 @task
 def update_openblock(branch=None, new_install=False):
@@ -394,7 +401,8 @@ def deploy(branch=None):
             supervisor_command('stop %(environment)s:*' % env)
         with settings(user=env.project_user):
             run("git reset --hard origin/%(branch)s" % env)
-    upload_local_settings()
+    local = env.environment == 'vagrant'
+    upload_local_settings(local=local)
     update_openblock()
     if requirements:
         update_requirements()
@@ -426,6 +434,15 @@ def load_db_dump(dump_file):
     temp_file = os.path.join(env.home, '%(environment)s.sql' % env)
     put(dump_file, temp_file, use_sudo=True)
     sudo('psql -d %s -f %s' % (env.db, temp_file), user=env.project_user)
+
+
+@task
+def setup_local_dev():
+    """Create symbolic link to NFS mounted shared folder"""
+    require('environment')
+    project_run('rm -rf %(code_root)s' % env)
+    project_run('ln -s /vagrant %(code_root)s' % env)
+    update_requirements(dev=True)
 
 
 ### Local Fabric Functionality ###
