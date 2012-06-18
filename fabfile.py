@@ -175,6 +175,8 @@ def setup_server(*roles):
         roles.insert(0, 'base')
     install_packages(*roles)
     _load_passwords(env.password_names, generate=True)
+    with settings(warn_only=True):
+        sudo('killall -vw django-admin.py')
     if 'db' in roles:
         if console.confirm(u"Do you want to reset the Postgres cluster?.", default=False):
             # Ensure the cluster is using UTF-8
@@ -220,6 +222,7 @@ def setup_server(*roles):
         update_requirements()
         update_openblock(new_install=True)
         upload_local_settings()
+        syncdb()
         upload_supervisor_app_conf(app_name=u'gunicorn')
     if 'lb' in roles:
         nginx.remove_default_site()
