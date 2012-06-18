@@ -1,17 +1,6 @@
 from openrural.settings.base import *
 
-DATABASES = {
-    'default': {
-        'NAME': 'openblock_devel',
-        'USER': '',
-        'PASSWORD': '',
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'OPTIONS': {},
-        'HOST': '',
-        'PORT': '',
-        'TEST_NAME': 'test_openblock',
-    },
-}
+DEBUG = True
 
 CELERY_ALWAYS_EAGER = True
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
