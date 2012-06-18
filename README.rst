@@ -16,6 +16,12 @@ OpenRural runs a modifed branch of OpenBlock, so switch to that branch::
     $ cd openblock/
     $ git checkout openrural
 
+If you're running a fresh 11.04 install, update your Python utilities::
+
+    $ sudo apt-get install python-setuptools python2.6 python2.6-dev
+    $ sudo easy_install -U pip
+    $ sudo pip install -U distribute virtualenv virtualenvwrapper
+
 Now we can setup our local OpenRural Python environment::
 
     $ cd columbus-county-nc/
@@ -30,9 +36,11 @@ Then create a local settings file and set your ``DJANGO_SETTINGS_MODULE`` to use
     echo "export DJANGO_SETTINGS_MODULE=openrural.settings.local" >> $VIRTUAL_ENV/bin/postactivate
     echo "unset DJANGO_SETTINGS_MODULE" >> $VIRTUAL_ENV/bin/postdeactivate
 
+Download the Debian/Ubuntu script from [Creating a spatial database template for PostGIS](https://docs.djangoproject.com/en/1.4/ref/contrib/gis/install/#creating-a-spatial-database-template-for-postgis) and run it as the `posgres` user.
+
 Create a PostgreSQL database for development and initialize the database::
 
-    $ createdb --template=template_postgis openblock_devel
+    $ createdb --template=template_postgis openrural
     $ django-admin.py syncdb --migrate
 
 If everything went smoothly, you can now runserver::
