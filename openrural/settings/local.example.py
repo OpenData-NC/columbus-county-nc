@@ -1,4 +1,4 @@
-from openrural.settings import *
+from openrural.settings.base import *
 
 DATABASES = {
     'default': {
@@ -12,6 +12,10 @@ DATABASES = {
         'TEST_NAME': 'test_openblock',
     },
 }
+
+CELERY_ALWAYS_EAGER = True
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+CELERYD_HIJACK_ROOT_LOGGER = False
 
 # enable for local logging
 # LOGGING['handlers']['file'] = {
