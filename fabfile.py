@@ -451,8 +451,8 @@ def load_db_dump(dump_file):
 
 @task
 def load_geo_files():
-    require('environment', provided_by=env.environments)
-    manage_run('import_columbus_county')
+    require('environment')
+    manage_run('import_columbus_county -d /tmp/columbusco-shapefiles')
 
 
 @task
