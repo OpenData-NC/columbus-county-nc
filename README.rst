@@ -103,20 +103,14 @@ For more information please review the Vagrant documentation.
 Server Provisioning and Deployment
 ----------------------------------
 
-First, add your AWS credentials to your shell environment::
-
-    export AWS_ACCESS_KEY_ID=
-    export AWS_SECRET_ACCESS_KEY=
-
-It easiest to store this in a file and source it ``source aws.sh``.
-
 Server Provisioning
 *******************
 
 Use fabric to create a new environment::
 
-    $ pip install -r requirements/deploy.txt
-    $ fab new_instance:us-east-1d,columbusco,staging
+    $ $VIRTUAL_ENV/bin/pip install -q -r $PWD/requirements/dev.txt
+    $ fab -H <host> -u ubuntu -i <aws-private-key> create_users
+    $ fab <fab-environment> setup_server:all deploy
 
 Next we bootstrap the server with::
 

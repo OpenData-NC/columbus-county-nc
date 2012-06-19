@@ -76,9 +76,9 @@ def vagrant(debug=True):
 @task
 def staging():
     env.environment = 'staging'
-    env.hosts = [] # FIXME: Add staging server hosts
+    env.hosts = ['107.22.184.180']
     env.branch = 'master'
-    env.server_name = '' # FIXME: Add staging server name
+    env.server_name = 'columbusco-staging.openrural.org'
     setup_path()
 
 
