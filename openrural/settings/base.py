@@ -39,8 +39,6 @@ INSTALLED_APPS = (
 TEMPLATE_DIRS = (os.path.join(PROJECT_DIR, 'templates'), ) + TEMPLATE_DIRS
 ROOT_URLCONF = 'openrural.urls'
 
-STATIC_URL = '/'
-
 #########################
 # CUSTOM EBPUB SETTINGS #
 #########################
@@ -164,6 +162,3 @@ LOGGING['loggers']['celery'] = {'propagate': True, 'level': 'INFO'}
 CELERYD_HIJACK_ROOT_LOGGER = False
 
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
-
-ADMIN_MEDIA_PREFIX = "/media/admin/"
-DJANGO_STATIC_NAME_PREFIX = "/static/"
