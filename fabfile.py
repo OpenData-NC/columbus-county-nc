@@ -423,7 +423,7 @@ def deploy(branch=None):
         syncdb()
     elif migrations:
         syncdb()
-    # collectstatic()
+    collectstatic()
     supervisor_command('restart %(environment)s:*' % env)
 
 
