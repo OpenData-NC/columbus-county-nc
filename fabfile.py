@@ -77,7 +77,7 @@ def vagrant(debug=True):
 def staging():
     env.environment = 'staging'
     env.hosts = ['107.22.184.180']
-    env.branch = 'master'
+    env.branch = 'vagrant'
     env.server_name = 'columbusco-staging.openrural.org'
     setup_path()
 
@@ -447,6 +447,12 @@ def load_db_dump(dump_file):
     temp_file = os.path.join(env.home, '%(environment)s.sql' % env)
     put(dump_file, temp_file, use_sudo=True)
     sudo('psql -d %s -f %s' % (env.db, temp_file), user=env.project_user)
+
+
+@task
+def load_geo_files():
+    require('environment', provided_by=env.environments)
+    manage_run('import_columbus_county')
 
 
 @task
