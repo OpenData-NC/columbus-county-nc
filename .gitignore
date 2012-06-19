@@ -8,3 +8,5 @@ fabsecrets.py
 openrural.log
 shapefiles/
 openrural/settings/local.py
+*.DS_Store
+.vagrant
