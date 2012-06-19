@@ -246,6 +246,8 @@ def setup_server(*roles):
 
 @task
 def update_services():
+    """Upload nginx and supervisor configurations."""
+    require('environment')
     nginx.upload_nginx_site_conf(site_name=u'%(project)s-%(environment)s.conf' % env)
     upload_supervisor_app_conf(app_name=u'gunicorn')
     upload_supervisor_app_conf(app_name=u'celery')
