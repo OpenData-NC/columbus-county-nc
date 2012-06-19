@@ -162,3 +162,6 @@ LOGGING['loggers']['celery'] = {'propagate': True, 'level': 'INFO'}
 CELERYD_HIJACK_ROOT_LOGGER = False
 
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
+STATICFILES_DIRS = (os.path.join(PROJECT_DIR, 'static'), )
+
