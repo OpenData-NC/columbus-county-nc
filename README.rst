@@ -36,7 +36,7 @@ Then create a local settings file and set your ``DJANGO_SETTINGS_MODULE`` to use
     echo "export DJANGO_SETTINGS_MODULE=openrural.settings.local" >> $VIRTUAL_ENV/bin/postactivate
     echo "unset DJANGO_SETTINGS_MODULE" >> $VIRTUAL_ENV/bin/postdeactivate
 
-Download the Debian/Ubuntu script from [Creating a spatial database template for PostGIS](https://docs.djangoproject.com/en/1.4/ref/contrib/gis/install/#creating-a-spatial-database-template-for-postgis) and run it as the `posgres` user.
+Download the Debian/Ubuntu script from `Creating a spatial database template for PostGIS <https://docs.djangoproject.com/en/1.4/ref/contrib/gis/install/#creating-a-spatial-database-template-for-postgis>`_ and run it as the `posgres` user.
 
 Create a PostgreSQL database for development and initialize the database::
 
