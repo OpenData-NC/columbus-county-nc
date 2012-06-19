@@ -245,6 +245,16 @@ def setup_server(*roles):
 
 
 @task
+def update_services():
+    nginx.upload_nginx_site_conf(site_name=u'%(project)s-%(environment)s.conf' % env)
+    upload_supervisor_app_conf(app_name=u'gunicorn')
+    upload_supervisor_app_conf(app_name=u'celery')
+    upload_supervisor_app_conf(app_name=u'group')
+    supervisor_command('reload')
+    supervisor_command('restart %(environment)s:*' % env)
+
+
+@task
 def upload_local_settings(local=False):
     """Upload local.py template to server."""
     require('environment')
