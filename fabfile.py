@@ -64,11 +64,12 @@ def _load_passwords(names, length=20, generate=False):
 
 
 @task
-def vagrant():
+def vagrant(debug=True):
     env.environment = 'vagrant'
     env.hosts = ['33.33.33.10', ]
     env.branch = 'vagrant'
     env.server_name = 'dev.example.com'
+    env.debug = debug
     setup_path()
 
 

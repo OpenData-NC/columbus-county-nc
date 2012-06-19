@@ -12,3 +12,5 @@ BROKER_CONNECTION_TIMEOUT = 15
 
 PASSWORD_CREATE_SALT = '{{ password_create_salt }}%s%s'
 PASSWORD_RESET_SALT = '{{ password_reset_salt }}%s%s'
+
+DEBUG = {% if debug %}True{% else %}False{% endif %}
