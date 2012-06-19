@@ -47,6 +47,24 @@ If everything went smoothly, you can now runserver::
 
     $ django-admin.py runserver
 
+Columbus County, NC
+*******************
+
+To import data for Columbus County, NC::
+
+    $ django-admin.py import_columbus_county --dir=shapefiles
+
+The --dir option specified to import_columbus_county directs the command to look
+for the necessary shapefiles in the specified directory. If that directory does not
+exist, then it will be created, the files will be downloaded into that directory,
+and they will be left there for later use. If --dir is not specified then the files
+will be downloaded to a temporary directory which will be deleted before the command
+finishes.
+
+By default the import_columbus_county command uses the county GIS department's road
+centerliens file to generate blocks. If you would prefer to use census (Tiger) data,
+pass --tiger to the command.
+
 Vagrant Testing
 ------------------------
 
@@ -81,25 +99,6 @@ by visiting localhost:8080 in your browser. You may also want to add::
 to your hosts (/etc/hosts) file. You can stop the VM with ``vagrant halt`` and
 destroy the box completely to retest the provisioning with ``vagrant destroy``.
 For more information please review the Vagrant documentation.
-
-Columbus County, NC
-*******************
-
-To import data for Columbus County, NC::
-
-    $ django-admin.py import_columbus_county --dir=shapefiles
-
-The --dir option specified to import_columbus_county directs the command to look
-for the necessary shapefiles in the specified directory. If that directory does not
-exist, then it will be created, the files will be downloaded into that directory,
-and they will be left there for later use. If --dir is not specified then the files
-will be downloaded to a temporary directory which will be deleted before the command
-finishes.
-
-By default the import_columbus_county command uses the county GIS department's road
-centerliens file to generate blocks. If you would prefer to use census (Tiger) data,
-pass --tiger to the command.
-
 
 Server Provisioning and Deployment
 ----------------------------------
