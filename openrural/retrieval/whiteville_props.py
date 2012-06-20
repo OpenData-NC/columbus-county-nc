@@ -19,7 +19,7 @@ logger = logging.getLogger('openrural.retrieval.whiteville_props')
 class PropsScraper(DashboardMixin, ScraperWikiScraper):
     # scraper settings
     logname = 'properties'
-    schema_slugs = ('property-transactions',)
+    schema_slugs = ('properties',)
 
     # ScraperWiki settings
     scraper_name = 'columbus_county_nc_property_sales_2012'

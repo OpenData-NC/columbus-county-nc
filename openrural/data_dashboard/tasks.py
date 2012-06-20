@@ -4,6 +4,7 @@ from datetime import timedelta
 
 from openrural.retrieval.corporations import CorporationsScraper
 from openrural.retrieval.addresses import AddressesScraper
+from openrural.retrieval.whiteville_props import PropsScraper
 
 
 class CorporationsTask(PeriodicTask):
@@ -29,6 +30,18 @@ class AddressesTask(PeriodicTask):
         logger.info("Starting address task")
         AddressesScraper(clear=clear).run()
         logger.info("Stopping address task")
+
+
+class ProperyTransactionsTask(PeriodicTask):
+
+    name = 'openrural.properties'
+    run_every = timedelta(hours=6)
+
+    def run(self, clear=False):
+        logger = self.get_logger()
+        logger.info("Starting corporations task")
+        PropsScraper(clear=clear).run()
+        logger.info("Stopping corporations task")
 
 
 tasks.register(CorporationsTask)
