@@ -1,5 +1,7 @@
 from openrural.settings.base import *
 
+DEBUG = False
+
 # Graylog2 logging handler
 LOGGING['handlers']['gelf'] = {
     'class': 'openrural.data_dashboard.handlers.CustomGELFHandler',
