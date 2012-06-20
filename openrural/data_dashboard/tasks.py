@@ -39,9 +39,9 @@ class ProperyTransactionsTask(PeriodicTask):
 
     def run(self, clear=False):
         logger = self.get_logger()
-        logger.info("Starting corporations task")
+        logger.info("Starting properties task")
         PropsScraper(clear=clear).run()
-        logger.info("Stopping corporations task")
+        logger.info("Stopping properties task")
 
 
 tasks.register(CorporationsTask)
