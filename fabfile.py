@@ -67,9 +67,18 @@ def _load_passwords(names, length=20, generate=False):
 def vagrant(debug=True):
     env.environment = 'vagrant'
     env.hosts = ['33.33.33.10', ]
-    env.branch = 'vagrant'
+    env.branch = 'master'
     env.server_name = 'dev.example.com'
     env.debug = debug
+    setup_path()
+
+
+@task
+def sandbox():
+    env.environment = 'sandbox'
+    env.hosts = ['174.129.25.212']
+    env.branch = 'master'
+    env.server_name = 'sandbox.openrural.org'
     setup_path()
 
 
@@ -77,7 +86,7 @@ def vagrant(debug=True):
 def staging():
     env.environment = 'staging'
     env.hosts = ['107.22.184.180']
-    env.branch = 'vagrant'
+    env.branch = 'master'
     env.server_name = 'columbusco-staging.openrural.org'
     setup_path()
 
@@ -178,6 +187,7 @@ def setup_server(*roles):
     install_packages(*roles)
     _load_passwords(env.password_names, generate=True)
     with settings(warn_only=True):
+        supervisor_command('stop all')
         sudo('killall -vw django-admin.py')
     if 'db' in roles:
         if console.confirm(u"Do you want to reset the Postgres cluster?.", default=False):
@@ -338,7 +348,9 @@ def update_requirements(sdists=False, dev=False):
     for name in names:
         apps = os.path.join(requirements, name)
         venv(base_cmd + ['--requirement %s' % apps])
-    venv(base_cmd + ['--requirement %s' % os.path.join(requirements, 'dev.txt')])
+    if dev:
+        dev = os.path.join(requirements, 'dev.txt')
+        venv(base_cmd + ['--requirement %s' % dev])
 
 
 @task
