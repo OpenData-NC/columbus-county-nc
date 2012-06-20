@@ -9,6 +9,17 @@ from ebpub.settings_default import *
 # CORE DJANGO SETTINGS #
 ########################
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'openrural',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
+    }
+}
+
 ADMINS = (
     ('Open Rural Team', 'openrural-team@caktusgroup.com'),
 )
@@ -18,18 +29,15 @@ MANAGERS = ADMINS
 DEBUG = True
 TIME_ZONE = 'US/Eastern'
 
-PROJECT_DIR = os.path.normpath(os.path.dirname(__file__))
+PROJECT_DIR = os.path.normpath(os.path.dirname(os.path.dirname(__file__)))
 INSTALLED_APPS = (
     'djcelery',
     'openrural',
     'gunicorn',
-    'seacucumber',
     'openrural.data_dashboard',
 ) + INSTALLED_APPS
 TEMPLATE_DIRS = (os.path.join(PROJECT_DIR, 'templates'), ) + TEMPLATE_DIRS
 ROOT_URLCONF = 'openrural.urls'
-
-STATIC_URL = '/'
 
 #########################
 # CUSTOM EBPUB SETTINGS #
@@ -154,3 +162,6 @@ LOGGING['loggers']['celery'] = {'propagate': True, 'level': 'INFO'}
 CELERYD_HIJACK_ROOT_LOGGER = False
 
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
+STATICFILES_DIRS = (os.path.join(PROJECT_DIR, 'static'), )
+

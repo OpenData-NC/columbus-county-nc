@@ -3,8 +3,8 @@ OpenRural: Columbus County, North Carolina
 
 This is the official Columbus County OpenRural repository.
 
-Local Development Setup
------------------------
+Ubuntu 11.04 - Local Development Setup
+--------------------------------------
 
 To setup OpenRural, you need to clone OpenBlock along side OpenRural::
 
@@ -16,25 +16,31 @@ OpenRural runs a modifed branch of OpenBlock, so switch to that branch::
     $ cd openblock/
     $ git checkout openrural
 
+If you're running a fresh 11.04 install, update your Python utilities::
+
+    $ sudo apt-get install python-setuptools python2.6 python2.6-dev
+    $ sudo easy_install -U pip
+    $ sudo pip install -U distribute virtualenv virtualenvwrapper
+
 Now we can setup our local OpenRural Python environment::
 
     $ cd columbus-county-nc/
-    $ mkvirtualenv --distribute -p python2.6 columbusco
+    $ mkvirtualenv --distribute --python=python2.6 columbusco
     $ add2virtualenv .
-    $ pip install -r requirements/deploy.txt
+    $ $VIRTUAL_ENV/bin/pip install -q -r $PWD/requirements/dev.txt
     $ fab update_ve:True
 
-Create a PostgreSQL database for development::
+Then create a local settings file and set your ``DJANGO_SETTINGS_MODULE`` to use it::
 
-    $ createdb --template=template_postgis openblock_devel
+    cp openrural/settings/local.example.py openrural/settings/local.py
+    echo "export DJANGO_SETTINGS_MODULE=openrural.settings.local" >> $VIRTUAL_ENV/bin/postactivate
+    echo "unset DJANGO_SETTINGS_MODULE" >> $VIRTUAL_ENV/bin/postdeactivate
 
-Create a local settings file::
+Download the Debian/Ubuntu script from `Creating a spatial database template for PostGIS <https://docs.djangoproject.com/en/1.4/ref/contrib/gis/install/#creating-a-spatial-database-template-for-postgis>`_ and run it as the `posgres` user.
 
-    $ cp openrural/local_settings.py.example openrural/local_settings.py
+Create a PostgreSQL database for development and initialize the database::
 
-Point Django do your local settings and initialize the database::
-
-    $ export DJANGO_SETTINGS_MODULE=openrural.local_settings
+    $ createdb --template=template_postgis openrural
     $ django-admin.py syncdb --migrate
 
 If everything went smoothly, you can now runserver::
@@ -59,24 +65,52 @@ By default the import_columbus_county command uses the county GIS department's r
 centerliens file to generate blocks. If you would prefer to use census (Tiger) data,
 pass --tiger to the command.
 
+Vagrant Testing
+------------------------
+
+You can test the provisioning/deployment using `Vagrant <http://vagrantup.com/>`_.
+Using the Vagrantfile you can start up the VM. This requires the ``lucid32`` box::
+
+    vagrant up
+
+With the VM up and running you can create the necessary users as before.
+The location of the key file may vary on your system.
+
+On Debian/Ubuntu::
+
+    fab -H 33.33.33.10 -u vagrant -i /opt/vagrant/embedded/gems/gems/vagrant-1.0.3/keys/vagrant create_users
+
+On OSX::
+
+    fab -H 33.33.33.10 -u vagrant -i /Applications/Vagrant/embedded/gems/gems/vagrant-1.0.3/keys/vagrant create_users
+
+Then setup the server::
+
+    fab vagrant setup_server:all
+    fab vagrant setup_local_dev
+    fab vagrant deploy
+
+It is not necessary to reconfigure the SSH settings on the vagrant box. This forwards
+port 80 in the VM to port 8080 on the host box. You can view the site
+by visiting localhost:8080 in your browser. You may also want to add::
+
+    33.33.33.10 dev.example.com
+
+to your hosts (/etc/hosts) file. You can stop the VM with ``vagrant halt`` and
+destroy the box completely to retest the provisioning with ``vagrant destroy``.
+For more information please review the Vagrant documentation.
 
 Server Provisioning and Deployment
 ----------------------------------
-
-First, add your AWS credentials to your shell environment::
-
-    export AWS_ACCESS_KEY_ID=
-    export AWS_SECRET_ACCESS_KEY=
-
-It easiest to store this in a file and source it ``source aws.sh``.
 
 Server Provisioning
 *******************
 
 Use fabric to create a new environment::
 
-    $ pip install -r requirements/deploy.txt
-    $ fab new_instance:us-east-1d,columbusco,staging
+    $ $VIRTUAL_ENV/bin/pip install -q -r $PWD/requirements/dev.txt
+    $ fab -H <host> -u ubuntu -i <aws-private-key> create_users
+    $ fab <fab-environment> setup_server:all deploy
 
 Next we bootstrap the server with::
 
@@ -96,42 +130,3 @@ For regular deployments, simply run::
 You can reset your local database with::
 
     $ fab staging reset_local_db:columbusco_devel
-
-Manual Setup
-------------
-
-Only run these if the above instructions failed.
-
-If you're on Ubuntu 11.04, install `GDAL the hard way <http://openblockproject.org/docs/install/common_install_problems.html#gdal-the-hard-way>`_. The commands are::
-
-    $ gdal-config --version
-    1.6.3
-    $ pip install --no-install "GDAL>=1.6,<1.7a"  # adjust version as needed
-    $ rm -f $VIRTUAL_ENV/build/GDAL/setup.cfg
-    $ cd $VIRTUAL_ENV/build/GDAL
-    $ python setup.py build_ext --gdal-config=gdal-config \
-                                --library-dirs=/usr/lib \
-                                --libraries=gdal1.6.0 \
-                                --include-dirs=/usr/include/gdal \
-                                install
-
-If you're developing OpenBlock, you should install the development version::
-
-    $ pip install -r requirements/deploy.txt
-    $ fab develop:../openblock
-    $ pip install --no-index \
-                  --find-links=file:$PWD/requirements/sdists/ \
-                  -r requirements/openrural.txt
-    $ add2virtualenv .
-
-Install the OpenRural packages::
-
-    $ cd openrural-nc/
-    $ pip install -r requirements/deploy.txt
-    $ pip install --no-index \
-                  --find-links=file:$PWD/requirements/sdists/ \
-                  -r requirements/ebdata.txt \
-                  -r requirements/ebpub.txt \
-                  -r requirements/obadmin.txt \
-                  -r requirements/openrural.txt
-    $ add2virtualenv .

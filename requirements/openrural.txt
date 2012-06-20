@@ -1,13 +1,9 @@
 importlib==1.0.2
-setuptools-git==0.4.2
-# ebdata==1.2.0dev
-# ebpub==1.2.0dev
-# obadmin==1.2.0dev
-gunicorn==0.13.4
-# seacucumber does not work with boto 2.1 yet
-boto==2.0
-seacucumber==1.2
+gunicorn==0.14.2
+greenlet==0.3.4
+gevent==0.13.6
 graypy==0.2.3
+python-memcached==1.48
 celery==2.5.1
 django-celery==2.5.1
 django-picklefield==0.2.0
