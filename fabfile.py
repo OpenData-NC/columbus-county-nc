@@ -259,8 +259,9 @@ def update_services():
     """Upload nginx and supervisor configurations."""
     require('environment')
     nginx.upload_nginx_site_conf(site_name=u'%(project)s-%(environment)s.conf' % env)
-    upload_supervisor_app_conf(app_name=u'gunicorn')
+    supervisor_command('stop all')
     upload_supervisor_app_conf(app_name=u'celery')
+    upload_supervisor_app_conf(app_name=u'gunicorn')
     upload_supervisor_app_conf(app_name=u'group')
     supervisor_command('reload')
     supervisor_command('restart %(environment)s:*' % env)
