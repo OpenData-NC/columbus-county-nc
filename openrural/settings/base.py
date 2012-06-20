@@ -106,7 +106,7 @@ PASSWORD_RESET_SALT = '%s%s'
 EB_MEDIA_URL = '' # leave at '' for development
 
 # This is used as a "From:" in e-mails sent to users.
-GENERIC_EMAIL_SENDER = 'openblock@' + EB_DOMAIN
+GENERIC_EMAIL_SENDER = 'no-reply@' + EB_DOMAIN
 
 # Filesystem location of scraper log.
 SCRAPER_LOGFILE_NAME = '/tmp/scraperlog_openrural'
