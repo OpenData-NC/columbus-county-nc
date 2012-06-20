@@ -14,3 +14,9 @@ PASSWORD_CREATE_SALT = '{{ password_create_salt }}%s%s'
 PASSWORD_RESET_SALT = '{{ password_reset_salt }}%s%s'
 
 DEBUG = {% if debug %}True{% else %}False{% endif %}
+
+if not PROJECT_TEMPLATES:
+    path = os.path.join(PROJECT_DIR, 'templates')
+    dirs = list(TEMPLATE_DIRS)
+    dirs.remove(path)
+    TEMPLATE_DIRS = tuple(dirs)

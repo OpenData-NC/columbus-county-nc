@@ -165,3 +165,5 @@ CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 
 STATICFILES_DIRS = (os.path.join(PROJECT_DIR, 'static'), )
 
+# include project templates dir?
+PROJECT_TEMPLATES = True
