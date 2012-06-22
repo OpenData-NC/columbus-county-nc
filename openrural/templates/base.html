@@ -11,7 +11,7 @@
         <link rel="stylesheet" href="http://bloximages.chicago2.vip.townnews.com/whiteville.com/content/tncms/live/components/core_advertising/resources/styles/ads.min.css?_dc=1339011644" />
 
         <script type="text/javascript"  src="/shared-content/tncms-ad-manager/ads.js"></script>
-        <title>Whiteville.com: Local. News. Now.</title>
+        <title>{% block title %}Whiteville.com: Local. News. Now.{% endblock %}</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <meta name="robots" content="noarchive">
@@ -327,9 +327,16 @@
             <div class="clear"></div>
             <!-- This where the content starts -->
 
-            <div id="blox-container" class="container_12">
-                <div class="grid_12">
+            <div id="blox-container" class="content container_12">
+                <div id="blox-left-col" class="grid_8">
                     {% block content %}{% endblock %}
+                </div>
+                 <div id="blox-right-col" class="grid_4">
+                    {% block right_nav %}
+                    <div class="ad">
+                        <p>AD placement</p>
+                    </div>
+                    {% endblock %}
                 </div>
             </div>
 

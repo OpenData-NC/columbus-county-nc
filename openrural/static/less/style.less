@@ -15,6 +15,10 @@ body {
 	padding: 0;
 }
 
+.content {
+	font-family: Helvetica, Arial, sans-serif;
+}
+
 ul.dropdown, ul.dropdown li {
 	z-index: 1000;
 }
@@ -31,13 +35,13 @@ ul.dropdown, ul.dropdown li {
 	z-index: -10000;
 }
 
-.grid_12 { 
-	margin: 0 10px; 
-}
-
 .copyright {
 	font-family: Arial, sans-serif;
 	a { color: @black;}
+}
+
+#mapwrapper .olControlZoomPanel {
+	z-index: 999 !important;
 }
 
  #new-header {
@@ -66,7 +70,82 @@ ul.dropdown, ul.dropdown li {
 			line-height: 14px;
 			font-family: Arial, sans-serif;
 		}
+	}
+}
 
+
+.ad { 
+	height: 600px;
+	width: 300px; 
+	background: #333; 
+	p {
+		position: relative;
+		font-weight: bold;
+		text-align: center;
+		top: 300px;
+		color: @white;
+	}
+}
+
+#homepage-search {
+	padding: 0;
+	background-color: transparent;
+	border: none;
+	margin: 0;
+	padding: 10px 0;
+	h2 {
+		padding: 0;
+		margin: 0;
+	}
+
+	#homepage-searchinput {
+		width: 520px;
+		border: 1px #CCC solid;
+		padding: 0.6em 0.4em;
+		background-color: #EEEEEE;
+		&:focus {
+			background-color: transparent;
 		}
 	}
+	input[type="submit"]{
+		border: none;
+        padding: 0.5em 0.5em;
+       	background: url("../images/spyglass.png") no-repeat scroll 0 0 transparent;
+       	width: 50px;
+       	height: 51px;
+	    margin: 0;
+	    overflow: hidden;
+	    padding: 0;
+	    text-indent: 100%;
+	    top: 5px;
+	    white-space: nowrap;
+	    &:hover {
+	    	background-position: 0 -50px;	
+	    }
+	}
+}
+
+#detailmap, #mapwrapper {
+    height: 255px;
+    width: 350px;
+    float: left;
+}
+
+#intro-explore {
+	width: 230px;
+	float: left;
+	margin: 0 15px;
+	ul li {
+		font-size: 14px;
+		padding: 5px 0;
+	}
+	h2 {
+		margin: 0;
+	}
+}
+
+#nav-location { 
+	width: 100%;
+	border-top: 1px solid #CCCCCC;
+	padding-top: 40px;
 }
