@@ -4,17 +4,27 @@
 {% block fulltitle %}OpenRural: {{ scraper }}{% endblock %}
 
 {% block content %}
-<h1>{{ run.scraper }} Geocode Results</h1>
+<h1>{{ scraper }} Geocode Failures {% if run %}in Run {{ run.pk }}{% endif %}</h1>
+<form action='' method='get'>
+    <table>
+        <tr>
+            <td>{{ form.search }}</td>
+            <td><input type="submit" value="Search" /></td>
+        </tr>
+    </table>
+</form>
 <table>
     <tr>
         <th>Date</th>
         <th>Location</th>
+        {% if not run %}<th>Run</th>{% endif %}
         <th>Name</th>
     </tr>
     {% for geocode in geocodes %}
         <tr>
             <td>{{ geocode.date }}</td>
             <td><a href='{{ geocode.news_item.get_absolute_url }}'>{{ geocode.location }}</a></td>
+            {% if not run %}<td><a href='{{ geocode.run.get_absolute_url }}'>{{ geocode.run }}</a></td>{% endif %}
             <td>{{ geocode.name }}</td>
         </tr>
     {% endfor %}
