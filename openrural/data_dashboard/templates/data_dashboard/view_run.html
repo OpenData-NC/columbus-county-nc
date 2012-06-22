@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load data_dashboard_tags %}
+{% load url from future %}
 
 {% block fulltitle %}OpenRural: {{ scraper }}{% endblock %}
 
@@ -16,6 +17,10 @@
             <td>{{ stat.value }}</td>
         </tr>
     {% endfor %}
+    <tr>
+        <td>Total Failures</td>
+        <td><a href='{% url 'list_failures' run.scraper.slug run.pk %}'>{{ num_failures }}</a></td>
+    </tr>
 </table>
 {% if run.status_description %}
 <pre>

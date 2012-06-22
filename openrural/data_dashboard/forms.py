@@ -43,3 +43,7 @@ class RunCommentForm(forms.ModelForm):
     class Meta(object):
         model = Run
         fields = ['comment']
+
+
+class GeocodeFailuresSearch(forms.Form):
+    search = forms.CharField(required=False)

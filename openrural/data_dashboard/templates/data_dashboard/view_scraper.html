@@ -17,6 +17,10 @@
         <th>News Items</th>
         <td>{{ schema.newsitem_set.count }}</td>
     </tr>
+    <tr>
+        <th>Failures</th>
+        <td><a href='{% url 'list_failures' scraper.slug %}'>{{ num_failures }}</a></td>
+    </tr>
 </table>
 {% endif %}
 
@@ -47,7 +51,7 @@
             <td><a href='{% url "view_run" scraper.slug run.pk %}'>{{ run.get_status_display }}</a></td>
             <td>
             {% if run.end_date %}
-                <a href='{% url "list_geocodes" scraper.slug run.pk %}'>{{ run.end_date }}</a>
+                <a href='{% url "list_failures" scraper.slug run.pk %}'>{{ run.end_date }}</a>
             {% endif %}
             </td>
             <td>{{ run.duration|duration }}</td>
