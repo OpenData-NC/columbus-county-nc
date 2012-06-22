@@ -24,7 +24,7 @@ class Run(models.Model):
     status = models.CharField(max_length=32, choices=STATUS_CHOICES,
                               default='initialized')
     status_description = models.TextField(blank=True)
-    comment = models.TextField(blank=True)
+    comment = models.TextField(blank=True, default="")
 
     def duration(self):
         return self.end_date - self.date
