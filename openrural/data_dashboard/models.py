@@ -28,6 +28,11 @@ class Run(models.Model):
     def duration(self):
         return self.end_date - self.date
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('openrural.data_dashboard.views.view_run',
+                [self.scraper.slug, str(self.id)])
+
     def __unicode__(self):
         date = self.date.strftime('%m/%d/%Y %I:%M:%S %p')
         return "%s - %s" % (self.scraper_id, date)

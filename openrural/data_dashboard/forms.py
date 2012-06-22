@@ -36,3 +36,7 @@ class GeocodeForm(forms.ModelForm):
         except (geocoder.GeocodingException, geocoder.ParsingError), e:
             raise forms.ValidationError(unicode(e))
         return location
+
+
+class GeocodeFailuresSearch(forms.Form):
+    search = forms.CharField(required=False)
