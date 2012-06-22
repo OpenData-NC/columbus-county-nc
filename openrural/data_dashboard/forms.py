@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 
 from ebpub import geocoder
 
-from openrural.data_dashboard.models import Geocode
+from openrural.data_dashboard.models import Geocode, Run
 
 
 __all__ = ('GoogleMapsLink', 'GeocodeForm')
@@ -36,3 +36,10 @@ class GeocodeForm(forms.ModelForm):
         except (geocoder.GeocodingException, geocoder.ParsingError), e:
             raise forms.ValidationError(unicode(e))
         return location
+
+
+class RunCommentForm(forms.ModelForm):
+
+    class Meta(object):
+        model = Run
+        fields = ['comment']

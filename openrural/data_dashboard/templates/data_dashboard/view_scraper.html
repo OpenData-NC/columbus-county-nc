@@ -38,6 +38,7 @@
         <th>Status</th>
         <th>End Date</th>
         <th>Duration</th>
+        <th>Comment</th>
     </tr>
     {% for run in runs %}
         <tr>
@@ -50,6 +51,7 @@
             {% endif %}
             </td>
             <td>{{ run.duration|duration }}</td>
+            <td>{{ run.comment|slice:':50' }}{% if run.comment|length > 50 %}...{% endif %}</td>
         </tr>
     {% endfor %}
 </table>

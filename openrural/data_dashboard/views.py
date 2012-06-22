@@ -11,6 +11,7 @@ from ebpub.db.models import Schema
 
 from openrural.data_dashboard import models as dd
 from openrural.data_dashboard import tasks as dashboard_tasks
+from openrural.data_dashboard.forms import RunCommentForm
 
 from celery.registry import tasks
 
@@ -53,6 +54,12 @@ def view_scraper(request, scraper_slug):
 
 def view_run(request, scraper_slug, run_id):
     run = get_object_or_404(dd.Run, scraper__slug=scraper_slug, pk=run_id)
+    if request.POST:
+        form = RunCommentForm(request.POST, instance=run)
+        if form.is_valid():
+            form.save()
+    else:
+        form = RunCommentForm(instance=run)
     crumbs = base_crumbs()
     crumbs.append((scraper_slug,
                    reverse('view_scraper', args=[scraper_slug])))
@@ -60,7 +67,8 @@ def view_run(request, scraper_slug, run_id):
                    reverse('view_run', args=[scraper_slug, run_id])))
     context = {'run': run,
                'stats': run.stats.order_by('name'),
-               'breadcrumbs': crumbs}
+               'breadcrumbs': crumbs,
+                'form': form}
     return render(request, 'data_dashboard/view_run.html', context)
 
 

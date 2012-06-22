@@ -22,4 +22,9 @@
 {{ run.status_description }}
 </pre>
 {% endif %}
+<form action='' method='post'>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" name="submit" value="Update Comment" />
+</form>
 {% endblock %}
