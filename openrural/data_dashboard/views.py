@@ -34,12 +34,20 @@ def view_scraper(request, scraper_slug):
     except Schema.DoesNotExist:
         schema = None
     crumbs = base_crumbs()
-    crumbs.append((scraper_slug,
-                   reverse('view_scraper', args=[scraper_slug])))
+    crumbs.append((scraper_slug, reverse('view_scraper', args=[scraper_slug])))
+    # Default: Do not return skipped runs.
+    show_skipped = (request.GET['show_skipped']
+            if 'show_skipped' in request.GET else "0")
+    show_skipped = 0 if show_skipped == '0' else 1
+    if show_skipped:
+        runs = scraper.runs.order_by('-date')
+    else:
+        runs = scraper.runs.exclude(status='skipped').order_by('-date')
     context = {'scraper': scraper,
-               'runs': scraper.runs.order_by('-date'),
+               'runs': runs,
                'breadcrumbs': crumbs,
-               'schema': schema}
+               'schema': schema,
+               'show_skipped': -1*show_skipped+1}
     return render(request, 'data_dashboard/view_scraper.html', context)
 
 

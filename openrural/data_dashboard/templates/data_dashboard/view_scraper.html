@@ -24,6 +24,13 @@
     {% csrf_token %}
     <input type='submit' name='submit' value='Run' />
 </form>
+
+<form action='' method='get'>
+    <button type='submit' name='show_skipped' value='{{ show_skipped }}'>
+        {% if show_skipped %}Show{% else %}Hide{% endif %} Skipped Runs
+    </button>
+</form>
+
 <table>
     <tr>
         <th>Name</th>
