@@ -131,6 +131,8 @@ class PropsScraper(DashboardMixin, ScraperWikiScraper):
             has_newsitem_detail=True,
             short_source="Columbus County Tax Office",
             allow_charting=True,
+            date_name='Sale Date',
+            date_name_plural='Sale Dates',
         )
 
         SchemaField.objects.create(
@@ -144,8 +146,8 @@ class PropsScraper(DashboardMixin, ScraperWikiScraper):
         SchemaField.objects.create(
             schema=schema,
             name='prop_card',
-            pretty_name='URL of property card',
-            pretty_name_plural='URLs of property cards',
+            pretty_name='Tax Information',
+            pretty_name_plural='Tax Information',
             real_name='varchar02',
         )
 
@@ -155,6 +157,7 @@ class PropsScraper(DashboardMixin, ScraperWikiScraper):
             pretty_name='Property ID',
             pretty_name_plural='Property IDs',
             real_name='int01',
+            display=False,
         )
 
         SchemaField.objects.create(

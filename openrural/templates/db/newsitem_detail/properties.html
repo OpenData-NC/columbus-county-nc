@@ -1,0 +1,45 @@
+{% extends "db/newsitem_detail.html" %}
+
+{% load eb humanize mapping eb_filter comments thumbnail %}
+
+<!-- block newsitem_detail_description -->{% block newsitem_detail_description %}
+{% endblock newsitem_detail_description %}<!-- endblock: newsitem_detail_description -->
+
+<!-- block newsitem_detail_attribute_list -->{% block newsitem_detail_attribute_list %}
+    {% for attribute in attribute_list %}
+        <tr>
+            <th>
+                {{ attribute.sf.smart_pretty_name|capfirst }}
+            </th>
+            <td>
+                {% if attribute.value_list %}
+                    {% for value in attribute.value_list %}
+                        {% if attribute.sf.name == 'prop_card' %}
+                            <a href="{{ value.value }}">View property tax card on ColumbusCo.org</a>
+                        {% else %}
+                            {% if value.url %}
+                                <a href="{{ value.url }}">{{ value.value }}</a>
+                            {% else %}
+                                {% if attribute.sf.name == 'sale_amount' %}${% endif %}
+                                {% if attribute.sf.name == 'tax_value' %}${% endif %}
+                                {{ value.value|intcomma|default:value.value }}
+                            {% endif %}
+                            {% if value.description %}<p>{{ value.description|safe }}</p>{% endif %}
+                        {% endif %}
+                        {% if not forloop.last %}{% if not value.description %}<br>{% endif %}{% endif %}
+                    {% endfor %}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    {% if newsitem.url %}
+    <tr>
+        <th>Photo</th>
+        <td><img width="400" src="{{ newsitem.url }}" alt="Image" /></td>
+    </tr>
+    {% endif %}
+
+{% endblock newsitem_detail_attribute_list %}<!-- endblock: newsitem_detail_image_list -->
+
