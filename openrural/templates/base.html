@@ -1,6 +1,7 @@
 {% load eb compress %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="http://www.facebook.com/2008/fbml">
+    <head>
         <link rel="stylesheet" href="http://bloximages.chicago2.vip.townnews.com/whiteville.com/content/tncms/live/components/core_base_user/resources/styles/styles.css?_dc=1339011661" />
         <link rel="stylesheet" href="http://bloximages.chicago2.vip.townnews.com/whiteville.com/content/tncms/live/global/resources/styles/_navigation/dropdown.css?_dc=1310757832" />
         <link rel="stylesheet" href="http://bloximages.chicago2.vip.townnews.com/whiteville.com/content/tncms/live/global/resources/styles/_navigation/dropdown.vertical.css?_dc=1310757832" />
@@ -10,7 +11,6 @@
         <link rel="stylesheet" href="http://bloximages.chicago2.vip.townnews.com/whiteville.com/content/tncms/live/global/resources/styles/_site/site.css?_dc=1339009202" />
         <link rel="stylesheet" href="http://bloximages.chicago2.vip.townnews.com/whiteville.com/content/tncms/live/components/core_advertising/resources/styles/ads.min.css?_dc=1339011644" />
 
-        <script type="text/javascript"  src="/shared-content/tncms-ad-manager/ads.js"></script>
         <title>{% block title %}Whiteville.com: Local. News. Now.{% endblock %}</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -45,6 +45,14 @@
         <!-- begin block extrahead -->
         {% block extrahead %}{% endblock %}
         <!-- end block extrahead -->
+        <!-- Global TNCMS Ad Manager javascript files --> 
+        <script type="text/javascript" src="http://www.whiteville.com/shared-content/tncms-ad-manager/ads.js"></script>
+        <script type="text/javascript" src="http://www.whiteville.com/shared-content/flowplayer/flashembed.min.js"></script>
+        <script type="text/javascript" src="http://www.whiteville.com/shared-content/swfobject/swfobject.js"></script>
+        <script type="text/javascript" src="http://www.whiteville.com/content/tncms/ads/tncms-ad-limits.js"></script>
+
+        <!-- Ad Manager javascript code for position rail-top1 --> 
+        <script type="text/javascript" src="http://www.whiteville.com/content/tncms/ads/rail-top/rail-top1.js"></script>
     </head>
 
 
@@ -54,26 +62,11 @@
         <div id="blox-wrapper" class="blox-transparency container_12">
             <div id="blox-header-vertical-nav" class="blox-transparency">
         
-                <div id="leaderboard-top">
-	               <div id="tncms-region-ads-leaderboard-top" class="tncms-region-ads">
-                        <script type="text/javascript" src="http://bloximages.chicago2.vip.townnews.com/whiteville.com/content/tncms/ads/leaderboard-top/leaderboard-top1.js?_dc=1339533641"></script>
-                        <script type="text/javascript">
-                            if(typeof oTNCMS_Ad.setRelative == 'function'){ 
-                                oTNCMS_Ad.setRelative(); }
-                                oTNCMS_Ad.show();
-                        </script>
-                    </div>
-	                <div id="tncms-region-ads-tile-top" class="tncms-region-ads"></div>
-                    <div class="clear"></div>
-                </div>
                 
                 <div id="new-header">
                     <div class="new-left">
                         <div class="tncms-region-ads blox-filled" id="tncms-region-ads-tile-header">
-                            <script src="http://bloximages.chicago2.vip.townnews.com/whiteville.com/content/tncms/ads/tile-header/tile-header1.js?_dc=1340038220" type="text/javascript"></script>
-                            <script type="text/javascript">if(typeof oTNCMS_Ad.setRelative == 'function'){ oTNCMS_Ad.setRelative(); }
-                            oTNCMS_Ad.show();
-                        </script>
+                            
                         <a target="_blank" href="http://www.whiteville.com/tncms/ads/c65058422/frontpage/tile-header1/9/29/9291f766-688c-11e1-b1ea-001871e3ce6c/4f57bc31d9bec.image.jpg?r=http://www.crhealthcare.org/" rel="nofollow">
                             <img width="250" height="120" border="0" alt="CRHS Front Top" src="http://bloximages.chicago2.vip.townnews.com/whiteville.com/content/tncms/assets/v3/bannerad/9/29/9291f766-688c-11e1-b1ea-001871e3ce6c/4f57bc31d9bec.image.jpg?_dc=1331149873">
                         </a>
@@ -333,9 +326,8 @@
                 </div>
                  <div id="blox-right-col" class="grid_4">
                     {% block right_nav %}
-                    <div class="ad">
-                        <p>AD placement</p>
-                    </div>
+                    <!-- Ad Manager call to display ads for position rail-top1 --> 
+                    <script language='javascript'>oTNCMS_Ad.show('government');</script>
                     {% endblock %}
                 </div>
             </div>
