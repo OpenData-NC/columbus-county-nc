@@ -11,7 +11,7 @@ from ebpub.db.models import Schema
 
 from openrural.data_dashboard import models as dd
 from openrural.data_dashboard import tasks as dashboard_tasks
-from openrural.data_dashboard.forms import GeocodeFailuresSearch
+from openrural.data_dashboard import forms as dashboard_forms
 
 from celery.registry import tasks
 
@@ -36,22 +36,22 @@ def view_scraper(request, scraper_slug):
         schema = None
     crumbs = base_crumbs()
     crumbs.append((scraper_slug, reverse('view_scraper', args=[scraper_slug])))
-    # Default: Do not return skipped runs.
-    show_skipped = (request.GET['show_skipped']
-            if 'show_skipped' in request.GET else "0")
-    show_skipped = 0 if show_skipped == '0' else 1
-    if show_skipped:
-        runs = scraper.runs.order_by('-date')
+    if request.method == 'POST':
+        form = dashboard_forms.RunListFilter(request.POST)
+        if form.is_valid():
+            statuses = form.cleaned_data['statuses']
     else:
-        runs = scraper.runs.exclude(status='skipped').order_by('-date')
+        statuses = ['updated', 'failed']  # Default statuses to display
+        form = dashboard_forms.RunListFilter(initial={'statuses': statuses})
+    runs = scraper.runs.filter(status__in=statuses).order_by('-date')
     num_failures = dd.Geocode.objects.filter(scraper=scraper.slug,
             success=False).count()
     context = {'scraper': scraper,
                'runs': runs,
                'breadcrumbs': crumbs,
                'schema': schema,
-               'show_skipped': -1*show_skipped+1,
-               'num_failures': num_failures}
+               'num_failures': num_failures,
+               'form': form}
     return render(request, 'data_dashboard/view_scraper.html', context)
 
 
@@ -109,14 +109,14 @@ def list_failures(request, scraper_slug, run_id=None):
         geocodes = dd.Geocode.objects.filter(scraper=scraper.slug,
                 success=False).select_related()
     if request.GET:
-        form = GeocodeFailuresSearch(request.GET)
+        form = dashboard_forms.GeocodeFailuresSearch(request.GET)
         if form.is_valid():
             search = form.cleaned_data['search']
             geocodes = geocodes.filter(Q(name__icontains=search) |
                                        Q(location__icontains=search) |
                                        Q(description__icontains=search))
     else:
-        form = GeocodeFailuresSearch()
+        form = dashboard_forms.GeocodeFailuresSearch()
     context = {'geocodes': geocodes.order_by('-date'),
                'run': run,
                'scraper': scraper,
