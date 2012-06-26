@@ -7,6 +7,10 @@ class Scraper(models.Model):
     slug = models.SlugField(unique=True)
     schema = models.CharField(max_length=255)
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('openrural.data_dashboard.views.view_scraper', [self.slug])
+
     def __unicode__(self):
         return self.slug
 

@@ -55,6 +55,28 @@ def view_scraper(request, scraper_slug):
     return render(request, 'data_dashboard/view_scraper.html', context)
 
 
+def delete_scraper_news_items(request, scraper_slug):
+    scraper = get_object_or_404(dd.Scraper, slug=scraper_slug)
+    try:
+        schema = Schema.objects.get(slug=scraper.schema)
+    except Schema.DoesNotExist:
+        schema = None
+
+    if request.method == 'POST':
+        if schema and 'confirm' in request.POST:
+            schema.newsitem_set.all().delete()
+        return redirect('view_scraper', scraper_slug=scraper.slug)
+
+    crumbs = base_crumbs()
+    crumbs.append((scraper_slug, reverse('view_scraper', args=[scraper_slug])))
+    crumbs.append(('Delete News Items',
+            reverse('delete_scraper_news_items', args=[scraper_slug])))
+    num_items = schema.newsitem_set.count() if schema else None
+    context = {'scraper': scraper, 'num_items': num_items}
+    return render(request, 'data_dashboard/delete_scraper_news_items.html',
+            context)
+
+
 def view_run(request, scraper_slug, run_id):
     run = get_object_or_404(dd.Run, scraper__slug=scraper_slug, pk=run_id)
     crumbs = base_crumbs()

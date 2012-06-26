@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block fulltitle %}Open Rural: Delete All News Items for {{ scraper }}{% endblock %}
+
+{% block content %}
+<h1>Delete All News Items for {{ scraper }}</h1>
+
+<p>Are you sure you want to delete all {{ num_items }} news items for <a href="{{ scraper.get_absolute_url }}">{{ scraper }}</a>?</p>
+
+<form action="" method="post">
+    {% csrf_token %}
+    <input type="submit" name="confirm" value="Delete All News Items" />
+    <input type="submit" name="cancel" value="Cancel" />
+</form>
+
+{% endblock %}
