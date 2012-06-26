@@ -1,5 +1,6 @@
 import time
 
+from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Max, Q
 from django.core.urlresolvers import reverse
@@ -11,8 +12,7 @@ from ebpub.db.models import Schema
 
 from openrural.data_dashboard import models as dd
 from openrural.data_dashboard import tasks as dashboard_tasks
-from openrural.data_dashboard.forms import (RunCommentForm,
-                                           GeocodeFailuresSearch)
+from openrural.data_dashboard.forms import RunCommentForm, GeocodeFailuresSearch
 
 from celery.registry import tasks
 
@@ -62,6 +62,10 @@ def view_run(request, scraper_slug, run_id):
         form = RunCommentForm(request.POST, instance=run)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Run comment was updated.')
+            return redirect('view_run', scraper_slug, run_id)
+        else:
+            messages.error(request, 'Run comment failed to update.')
     else:
         form = RunCommentForm(instance=run)
     crumbs = base_crumbs()
