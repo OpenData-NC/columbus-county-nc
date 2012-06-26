@@ -56,7 +56,7 @@
     </head>
 
 
-<body>
+<body id="{% block body_id %}{% endblock %}" class="{% block body_class %}{% endblock %}">
     <div id="blox-html-container" class="venue-app ads-preview-false index front app-editorial depth-2 grid-300_5-3-4 url-default theme-zen">
 
         <div id="blox-wrapper" class="blox-transparency container_12">
@@ -318,9 +318,14 @@
                 </li>
             </ul>
             <div class="clear"></div>
-            <!-- This where the content starts -->
 
             <div id="blox-container" class="content container_12">
+                  <!-- begin block breadcrumbs -->
+            {% block breadcrumbs %}
+                {% include "db/snippets/breadcrumbs.html" %}
+            {% endblock breadcrumbs %}
+            <!-- end block breadcrumbs -->
+            <!-- This where the content starts -->
                 <div id="blox-left-col" class="grid_8">
                     {% block content %}{% endblock %}
                 </div>

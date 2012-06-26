@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% load eb %}
+
+{% block title %}{% METRO_NAME %} {{ location_type.plural_name }}{% endblock title %}
+
+{% block extrahead %}
+<meta name="description" content="List of {{ location_type.plural_name }} in {% METRO_NAME %}, with recent news for each one.">
+{% endblock extrahead %}
+
+{% block body_id %}location-type{% endblock %}
+
+{% block content %}
+	<h2>{% METRO_NAME %} {{ location_type.plural_name }}</h2>
+	<p class="lead">Choose a {{ location_type.name }} to see recent news in that area. You can also <a href="{% url ebpub-street-list %}">browse by street</a> to find an individual block.</p>
+	<ul class="location-list">
+	{% ifequal location_type.plural_name "cities" %}
+			{% for location in location_list %}
+			<li><a href="{{ location.slug }}/">{{ location.name }}</a></li>
+			{% endfor %}
+	{% else %}
+		{% regroup location_list by city as city_list %}
+		{% for city in city_list %}
+			{% if city_list|length|greaterthan:"1" %}<h2>{{ city.grouper.title }}</h2>{% endif %}
+				{% for location in city.list %}
+				<li><a href="{{ location.slug }}/">{{ location.name }}</a></li>
+				{% endfor %}
+		{% endfor %}
+	{% endifequal %}
+	</ul>
+{% endblock content %}

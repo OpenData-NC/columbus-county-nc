@@ -4,7 +4,7 @@
 @black: #000000;
 @grayLighter: #CCCCCC;
 @white: #FFFFFF;
-
+@blue: #007FBF;
 // Generic styles
 // ===================
 
@@ -15,8 +15,22 @@ body {
 	padding: 0;
 }
 
-.content {
+h1 {
+	font-size: 32px;
+}
+
+h2 {
+	margin: 10px 0;
+}
+
+a { color: @blue; }
+
+div.content {
 	font-family: Helvetica, Arial, sans-serif;
+	font-size: 13px;
+	a {
+		color: @blue;
+	}
 }
 
 ul.dropdown, ul.dropdown li {
@@ -137,7 +151,15 @@ ul.dropdown, ul.dropdown li {
 	margin: 0 15px;
 	ul li {
 		font-size: 14px;
-		padding: 5px 0;
+		padding: 0;
+		a {
+			height: 10px;
+			padding: 8px 0;
+			color: @blue;
+			&:hover {
+				color: @blue;
+			}
+		}
 	}
 	h2 {
 		margin: 0;
@@ -146,6 +168,42 @@ ul.dropdown, ul.dropdown li {
 
 #nav-location { 
 	width: 100%;
-	border-top: 1px solid #CCCCCC;
 	padding-top: 40px;
+}
+
+ul#nav-breadcrumb, #nav-breadcrumb {
+	padding: 0;
+	margin: 0;
+	float: none;
+	display: block;
+	background: none transparent;
+	font-size: 15px;
+	li {
+		float: left;
+		background-color: none;
+		padding: 9px 30px 11px 20px; 
+		a {
+			color: @blue;
+			&:hover {
+				text-decoration: underline;
+			}
+		}
+	}
+
+}
+
+ul#nav-breadcrumb {
+	height: 35px;
+}
+
+.lead {
+	margin-bottom: 10px;
+	font-size: 16px;
+	font-weight: 200;
+	line-height: 27px;
+}
+
+ul {
+	margin: 0 0 0 10px;
+	padding: 0;
 }
