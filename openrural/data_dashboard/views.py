@@ -1,5 +1,6 @@
 import time
 
+from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Max, Q
 from django.core.urlresolvers import reverse
@@ -11,7 +12,8 @@ from ebpub.db.models import Schema
 
 from openrural.data_dashboard import models as dd
 from openrural.data_dashboard import tasks as dashboard_tasks
-from openrural.data_dashboard import forms as dashboard_forms
+from openrural.data_dashboard.forms import RunCommentForm, GeocodeFailuresSearch
+
 
 from celery.registry import tasks
 
@@ -79,6 +81,16 @@ def delete_scraper_news_items(request, scraper_slug):
 
 def view_run(request, scraper_slug, run_id):
     run = get_object_or_404(dd.Run, scraper__slug=scraper_slug, pk=run_id)
+    if request.POST:
+        form = RunCommentForm(request.POST, instance=run)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Run comment was updated.')
+            return redirect('view_run', scraper_slug, run_id)
+        else:
+            messages.error(request, 'Run comment failed to update.')
+    else:
+        form = RunCommentForm(instance=run)
     crumbs = base_crumbs()
     crumbs.append((scraper_slug,
                    reverse('view_scraper', args=[scraper_slug])))
@@ -88,6 +100,7 @@ def view_run(request, scraper_slug, run_id):
     context = {'run': run,
                'stats': run.stats.order_by('name'),
                'breadcrumbs': crumbs,
+               'form': form,
                'num_failures': num_failures}
     return render(request, 'data_dashboard/view_run.html', context)
 

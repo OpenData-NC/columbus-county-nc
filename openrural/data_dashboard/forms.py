@@ -38,6 +38,13 @@ class GeocodeForm(forms.ModelForm):
         return location
 
 
+class RunCommentForm(forms.ModelForm):
+
+    class Meta(object):
+        model = Run
+        fields = ['comment']
+
+
 class GeocodeFailuresSearch(forms.Form):
     """
     Used to search the name, description, and location fields of a geocode

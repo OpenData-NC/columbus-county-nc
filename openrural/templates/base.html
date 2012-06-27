@@ -321,13 +321,20 @@
             <div class="clear"></div>
 
             <div id="blox-container" class="content container_12">
-                  <!-- begin block breadcrumbs -->
-            {% block breadcrumbs %}
-                {% include "db/snippets/breadcrumbs.html" %}
-            {% endblock breadcrumbs %}
-            <!-- end block breadcrumbs -->
-            <!-- This where the content starts -->
+                <!-- begin block breadcrumbs -->
+                {% block breadcrumbs %}
+                    {% include "db/snippets/breadcrumbs.html" %}
+                {% endblock breadcrumbs %}
+                <!-- end block breadcrumbs -->
+                <!-- This where the content starts -->
                 <div id="blox-left-col" class="grid_8">
+                    {% if messages %}
+                        <ul class="messages">
+                            {% for message in messages %}
+                                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
                     {% block content %}{% endblock %}
                 </div>
                  <div id="blox-right-col" class="grid_4">
