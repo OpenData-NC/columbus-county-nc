@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% load eb %}
+
+{% block title %}Search results for: {{ query }}{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div id="content">
+	<h1>Location not found</h1>
+	<h2>No results for <strong>"{{ query }}"</strong></h2>
+	<ul class="suggestions">Here are some things you might want to try:
+		<li><b>1.</b> Navigate our <a href="{% url ebpub-street-list %}">full list of streets</a> to find news for an individual block.</li>
+		<li><b>2.</b> Find a {% for locationtype in locationtype_list %}{% if forloop.last %} or {% endif %}<a href="{{ locationtype.url }}">{{ locationtype.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}.</li>
+	</ul>
+	<h2>Or try another address search in {% METRO_NAME %}</h2>
+	<form action="{% url ebpub-search %}" method="GET">
+		<p><input type="text" name="q" value="{{ query }}"> <input type="submit" value="Search again"></p>
+	</form>
+</div><!--/ #content-->
+{% endblock %}

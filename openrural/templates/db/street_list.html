@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% load eb %}
+
+{% block title %}Streets{% if city %} in {{ city.name }}{% endif %}{% endblock %}
+
+{% block body_id %}street-list{% endblock %}
+
+{% block content %}
+<div id="content">
+	<h1>Streets{% if city %} in {{ city.name }}{% endif %}</h1>
+	<p>Choose a street to find recent news near an individual
+	block. You can also <a href="{% url ebpub-loc-type-list %}">browse by locations</a>
+	{% if example_loctype %}such as {{ example_loctype|lower }}{% endif %}.
+	</p>
+	{% regroup street_list by street_slug|upper|slice:":1" as alpha_list %}
+	{% for current_letter in alpha_list %}
+		<h2>{{ current_letter.grouper }}</h2>
+		<p class="menu" id="alpha_{{ current_letter.grouper|lower }}">
+			{% for letter in alpha_list %}{% ifequal letter.grouper current_letter.grouper %}<strong>{{ letter.grouper }}</strong>{% else %}<a href="#alpha_{{ letter.grouper|lower }}">{{ letter.grouper|upper }}</a>{% endifequal %}{% endfor %}
+			{% if not forloop.first %}<a class="top" href="#content">&uarr; Top</a>{% endif %}
+		</p>
+		{% comment %}<!-- break the lists up a bit to be easier on the eye. -->{% endcomment %}
+		{% for street_bunch in current_letter.list|bunch:"20" %}
+			<ul>
+				{% for street in street_bunch %}
+				<li><a href="{{ street.url }}">{{ street.pretty_name }}</a></li>
+				{% endfor %}
+			</ul>
+		{% endfor %}
+	{% endfor %}
+</div><!--/content-->
+{% endblock %}

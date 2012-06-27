@@ -1,0 +1,64 @@
+{% extends "base.html" %}{% comment %}<!-- -*- mode: django-html; tab-width: 4 -*- -->{% endcomment %}
+
+{% load eb mapping %}
+
+{% comment %}
+Base template for all "place" pages -- either block or location.
+Implements only the "top" of the page -- the title and "Nearby" list.
+
+Required variables: nearby_locations, place, is_block
+{% endcomment %}
+
+<!-- begin block content -->
+{% block content %}
+
+<!-- begin block place_content -->
+{% block place_content %}{% endblock %}
+<!-- end block place_content -->
+
+<div id="nav-location">
+	<!-- begin block map -->
+	{% block map %}
+	<div id="mapwrapper">
+		<script type="text/javascript">
+		{% autoescape off %}
+		  function loadMap() {
+		    var config = {{map_configuration}};
+    		config.bounds = [{{bbox.0}}, {{bbox.1}}, {{bbox.2}}, {{bbox.3}}];
+    		return new OBMap(config);
+		  }
+	 	{% endautoescape %}
+		</script>
+		{% include "richmaps/richmap.html" %}
+	</div><!--/ #mapwrapper -->
+	{% endblock map %}
+	<!-- end block map -->
+
+    <!-- block subscribe_links -->
+    {% block subscribe_links %}
+	<div class="subscribe-links">
+		<p><strong>Subscribe:</strong>
+		  <a href="{{ place.url }}feeds/">Custom RSS feeds</a>
+		  {% if alerts_installed %}<a href="{{ place.alert_url }}">E-mail alerts</a>{% endif %}
+		</p>
+	</div>
+    {% endblock subscribe_links %}
+    <!-- end block subscribe_links -->
+
+    <!-- block nearby_locations -->
+    {% block nearby_locations %}
+	{% if nearby_locations %}
+	<div id="nearby">
+	<h2>Nearby locations</h2>
+		<ul>
+			{% for location in nearby_locations %}
+			<li><a id="location-{{ location.id }}" href="{{ location.url }}">{{ location.name }}</a></li>
+			{% endfor %}
+		</ul>
+	</div><!-- end #nearby -->
+	{% endif %}
+    {% endblock nearby_locations %}
+    <!-- endblock nearby_locations -->
+
+</div><!--/ #nav-location -->
+{% endblock content %}

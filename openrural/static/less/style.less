@@ -5,8 +5,16 @@
 @grayLighter: #CCCCCC;
 @white: #FFFFFF;
 @blue: #007FBF;
+
 // Generic styles
 // ===================
+
+ul.nav-view li {
+	font-size: 12px;
+	&:first-child { 
+		color: @black;
+	}
+}
 
 body {
 	background: transparent;
@@ -19,18 +27,21 @@ h1 {
 	font-size: 32px;
 }
 
-h2 {
+h2, #content h2 {
 	margin: 10px 0;
 }
 
 a { color: @blue; }
 
-div.content {
+div.content, #content {
 	font-family: Helvetica, Arial, sans-serif;
 	font-size: 13px;
+	width: 100%;
 	a {
 		color: @blue;
 	}
+	p { 
+		font-size: 13px; }
 }
 
 ul.dropdown, ul.dropdown li {
@@ -54,7 +65,8 @@ ul.dropdown, ul.dropdown li {
 	a { color: @black;}
 }
 
-#mapwrapper .olControlZoomPanel {
+// The style below makes maps higher ranked in layers. Removes any problems with overlap
+ #mapwrapper .olControlZoomPanel {
 	z-index: 999 !important;
 }
 
@@ -204,6 +216,76 @@ ul#nav-breadcrumb {
 }
 
 ul {
-	margin: 0 0 0 10px;
+	margin: 0 0 0 0;
 	padding: 0;
+}
+
+// Place detail specific
+// =====================
+
+#place-detail {
+	.subscribe-links {
+			width: 250px;
+			p { 
+				font-size: 11px; 
+				padding: 5px 5px 5px 8px; }
+			a { margin: 0 0 0 5px; font-size: 11px; }
+		}
+	#nav-location {
+		width: 250px;
+		float: right;
+		
+	}
+	#content {
+		width: 325px;
+		h4 {
+			font-size: 13px;
+			padding: 8px 0 5px;
+			font-weight: 200;
+			text-transform: uppercase;
+		}
+		h3 {
+			border-bottom: 2px solid #ccc;
+			font-weight: bold;
+			margin: 1em 0 0 0;
+			padding-bottom: 5px;
+		}
+		.newsitem {
+			border-top: none;
+			padding: 1em 0;
+			a {
+				font-weight: bold;
+				font-size: 14px;
+			}
+		}
+		
+	}
+	#detailmap, #mapwrapper {
+		width: 250px;
+		height: 325px;
+	}
+	form.select-filter {
+		float: none;
+		padding: 15px 0;
+		button {
+			float: right;
+			width: 50px;
+		}
+	}
+}
+
+// Search styles
+// =====================
+ul.suggestions {
+	font-weight: bold;
+	li {
+		padding: 10px 0 5px 0;
+		font-weight: normal;
+	}
+}
+
+// Street list styles
+// =====================
+p.menu a.top {
+	float: right;
 }
