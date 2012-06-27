@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 
 from ebpub import geocoder
 
-from openrural.data_dashboard.models import Geocode
+from openrural.data_dashboard.models import Geocode, Run
 
 
 __all__ = ('GoogleMapsLink', 'GeocodeForm')
@@ -39,4 +39,18 @@ class GeocodeForm(forms.ModelForm):
 
 
 class GeocodeFailuresSearch(forms.Form):
+    """
+    Used to search the name, description, and location fields of a geocode
+    failures list.
+
+    """
     search = forms.CharField(required=False)
+
+
+class RunListFilter(forms.Form):
+    """Used to filter scraper runs by status."""
+    statuses = forms.MultipleChoiceField(
+            widget=forms.CheckboxSelectMultiple(),
+            choices=Run.STATUS_CHOICES,
+            required=False
+    )
