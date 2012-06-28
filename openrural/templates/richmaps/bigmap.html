@@ -1,0 +1,68 @@
+{% extends "base.html" %}{% comment %} -*- mode: django-html; tab-width: 4 -*- {% endcomment %}
+{% load eb humanize mapping %}
+
+{% block title %}Map of {% METRO_NAME %}{% endblock %}
+
+{% block body_id %}big-map{% endblock %}
+
+{% block breadcrumb %}{% endblock %}
+
+{% block content %}
+  <h1>Filter items to display on map</h1>
+  <div id="map_date_range">
+      <form action="#" id="map_date_range_form">
+          <label for="map_begin_date">Start Date</label>
+          <input type="text" class="begin-date" id="map_begin_date" />
+          <label for="map_end_date">End Date</label>
+          <input type="text" class="end-date" id="map_end_date" />
+          <input type="submit" value="change" />
+      </form>
+  </div>
+	<div id="mapwrapper" class="fullpage">
+		<div id="layerswitcher-container">
+			<div id="layerswitcher" class="olControlLayerSwitcher"></div>
+		</div>
+		<script type="text/javascript">
+     {% autoescape off %}
+      function loadMap() {
+          var config = {{map_config}};
+          config['baselayer_type']  = "{{ MAP_BASELAYER_TYPE }}";
+
+          var map = new OBMap(config);
+	  map.map.addControl(
+              new OpenLayers.Control.LayerSwitcher(
+                  {'div': OpenLayers.Util.getElement('layerswitcher')}
+          ));
+          var permalink = new OpenblockPermalink(map);
+          map.map.addControl(permalink);
+
+          var dateControl = new OBMapDateRange(map, permalink, '#map_date_range_form');
+
+          var headlines = new OBMapItemList(map, {'element': '#map_headlines'});
+          $('#mapwrapper').css('margin-left', $('#map_headlines').css('width'));
+
+          // Overriding openlayers' normal layer switcher hide/expand.
+          var switcherLabel = $j('#mapwrapper .layersDiv .dataLbl');
+          var layersDiv = $j('#mapwrapper .layersDiv .dataLayersDiv');
+
+          switcherLabel.html('&nabla; Overlays');
+          switcherLabel.toggle(
+              function() {
+                  layersDiv.show(100);
+                  switcherLabel.html('&Delta; Overlays');
+              },
+              function() {
+                  layersDiv.hide(100);
+                  switcherLabel.html('&nabla; Overlays');
+  });
+
+          return map;
+      }
+      {% endautoescape %}
+		</script>
+
+{% include "richmaps/richmap.html" %}
+</div><!-- end mapwrapper -->
+  <div id="map_headlines" class="map-headlines"></div>
+
+{% endblock %}
