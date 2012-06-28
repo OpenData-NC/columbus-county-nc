@@ -86,8 +86,6 @@ def view_run(request, scraper_slug, run_id):
             form.save()
             messages.success(request, 'Run comment was updated.')
             return redirect('view_run', scraper_slug, run_id)
-        else:
-            messages.error(request, 'Run comment failed to update.')
     else:
         form = dashboard_forms.RunCommentForm(instance=run)
     crumbs = base_crumbs()
