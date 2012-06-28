@@ -481,6 +481,7 @@ def setup_local_dev():
 def runserver():
     """Run dev server on local VM"""
     require('environment')
+    sudo('supervisorctl restart all')
     manage_run("runserver 0.0.0.0:9000")
 
 
