@@ -18,7 +18,9 @@
         <td>
             {% with schema.newsitem_set.count as count %}
                 {{ count }}
-                {% if count > 0 %}(<a href="{% url 'delete_scraper_news_items' scraper.slug %}">delete all</a>){% endif %}
+                {% if request.user.is_authenticated and count > 0 %}
+                    (<a href="{% url 'delete_scraper_news_items' scraper.slug %}">delete all</a>)
+                {% endif %}
             {% endwith %}
         </td>
     </tr>
