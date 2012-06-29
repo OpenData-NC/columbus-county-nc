@@ -79,6 +79,7 @@ class CorporationsScraper(DashboardMixin, ScraperWikiScraper):
             is_public=True,
             indefinite_article='a',
             has_newsitem_detail=True,
+            allow_charting=True,
         )
         SchemaField.objects.create(
             schema=schema,
@@ -100,6 +101,7 @@ class CorporationsScraper(DashboardMixin, ScraperWikiScraper):
             pretty_name_plural="Citizenships",
             real_name='varchar03',
             name='citizenship',
+            display=False,
         )
         SchemaField.objects.create(
             schema=schema,
@@ -107,6 +109,7 @@ class CorporationsScraper(DashboardMixin, ScraperWikiScraper):
             pretty_name_plural="SOSIDs",
             real_name='int01',
             name='sosid',
+            display=False,
         )
 
 
