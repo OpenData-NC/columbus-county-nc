@@ -43,7 +43,7 @@
 			<ul class="location-type-list">
 			{% get_schema_list %}
 			{% for schema in schema_list %}
-				<li><a href="{{ schema.url }}">{{ schema }}</a></li>
+				<li><a href="{% url ebpub-schema-filter schema.slug %}">{{ schema.name }}</a></li>
 			{% endfor %}
 			</ul>
 		</div><!--/ #intro-explore-->
