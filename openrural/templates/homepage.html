@@ -18,14 +18,14 @@
 		<div id="mapwrapper">
 		  <script type="text/javascript">
 		  {% autoescape off %}
-		  
+
 		  function loadMap() {
   		  var config = {{map_configuration}};
-        config.center = [{{default_lon}}, {{default_lat}}];
-        config.zoom = {{default_zoom}};
-        return new OBMap(config);        
+		config.center = [{{default_lon}}, {{default_lat}}];
+		config.zoom = {{default_zoom}};
+		return new OBMap(config);
   		}
-  		
+
   		{% endautoescape %}
 		  </script>
 		{% include "richmaps/richmap.html" %}
@@ -43,7 +43,9 @@
 			<ul class="location-type-list">
 			{% get_schema_list %}
 			{% for schema in schema_list %}
-				<li><a href="{% url ebpub-schema-filter schema.slug %}">{{ schema.name }}</a></li>
+				{% if schema.newsitem_set.count > 0 %}
+					<li><a href="{% url ebpub-schema-filter schema.slug %}">{{ schema.plural_name|title }}</a></li>
+				{% endif %}
 			{% endfor %}
 			</ul>
 		</div><!--/ #intro-explore-->
