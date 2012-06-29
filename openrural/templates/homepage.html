@@ -35,9 +35,11 @@
 			<h2>Find news near you</h2>
 			<ul class="location-type-list">
 				{% for location_type in location_type_list %}
-					<li><a href="{{ location_type.url }}"><strong class="number">{{ location_type.count|intcomma }}</strong> {{ location_type.plural_name|capfirst }}</a></li>
+					{% with location_type.name|add:','|add:location_type.plural_name as name %}
+						<li><a href="{{ location_type.url }}"><strong class="number">{{ location_type.count|intcomma }}</strong> {{ location_type.count|pluralize:name }}</a></li>
+					{% endwith %}
 				{% endfor %}
-				<li><a href="{% url ebpub-street-list %}"><strong class="number">{{ street_count|intcomma }}</strong> Streets</a></li>
+				<li><a href="{% url ebpub-street-list %}"><strong class="number">{{ street_count|intcomma }}</strong> Street{{ street_count|pluralize }}</a></li>
 			</ul>
 			<h2>Find by news topic</h2>
 			<ul class="location-type-list">
