@@ -1,0 +1,26 @@
+{# This snippet requires these variables: schema, newsitem_list #}
+{% load eb humanize %}
+
+{% regroup newsitem_list by item_date as newsitem_list_byday %}
+
+{% for newsitem_group in newsitem_list_byday %}
+	<li class="newsitem">
+		<h3>New items for {{ newsitem_group.grouper }}</h3>
+		<ul>
+		{% for newsitem in newsitem_group.list %}
+			<li>
+			{% with location_url=newsitem.location_url %}
+				{% if location_url %}<a href="{{ location_url }}">{% endif %}<span class="location">{{ newsitem.location_name }}</span>{% if location_url %}</a>{% endif %}
+			{% endwith %}
+			<!-- block newsitem_list_content -->
+			{% block newsitem_list_content %}
+				<strong class="title"><a href="{{ newsitem.item_url}}" class="url">{{ newsitem.title|truncatewords_html:20 }}</a></strong>
+				{% if newsitem.description %}<p class="info">{{ newsitem.description|truncatewords_html:20}}</p>{% endif %}
+				 {% if newsitem.attributes.sale_amount %}<p class="price">${{ newsitem.attributes.sale_amount|intcomma }}</p>{% endif %}
+			{% endblock newsitem_list_content %}
+			<!-- endblock newsitem_list_content -->
+			</li>
+		{% endfor %}
+		</ul>
+	</li>
+{% endfor %}

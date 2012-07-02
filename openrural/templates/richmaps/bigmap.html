@@ -5,19 +5,10 @@
 
 {% block body_id %}big-map{% endblock %}
 
-{% block breadcrumb %}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
 
 {% block content %}
-  <h1>Filter items to display on map</h1>
-  <div id="map_date_range">
-      <form action="#" id="map_date_range_form">
-          <label for="map_begin_date">Start Date</label>
-          <input type="text" class="begin-date" id="map_begin_date" />
-          <label for="map_end_date">End Date</label>
-          <input type="text" class="end-date" id="map_end_date" />
-          <input type="submit" value="change" />
-      </form>
-  </div>
+  <h1>Map of {% METRO_NAME %}</h1>
 	<div id="mapwrapper" class="fullpage">
 		<div id="layerswitcher-container">
 			<div id="layerswitcher" class="olControlLayerSwitcher"></div>
@@ -29,7 +20,7 @@
           config['baselayer_type']  = "{{ MAP_BASELAYER_TYPE }}";
 
           var map = new OBMap(config);
-	  map.map.addControl(
+	        map.map.addControl(
               new OpenLayers.Control.LayerSwitcher(
                   {'div': OpenLayers.Util.getElement('layerswitcher')}
           ));
@@ -54,15 +45,26 @@
               function() {
                   layersDiv.hide(100);
                   switcherLabel.html('&nabla; Overlays');
-  });
+      });
 
           return map;
       }
       {% endautoescape %}
 		</script>
 
-{% include "richmaps/richmap.html" %}
-</div><!-- end mapwrapper -->
+    {% include "richmaps/richmap.html" %}
+  </div><!-- end mapwrapper -->
+  <h2>Filter out what the map displays by date</h2>
+  <div id="map_date_range">
+      <form action="#" id="map_date_range_form">
+          <label for="map_begin_date">Start Date</label>
+          <input type="text" class="begin-date" id="map_begin_date" />
+          <label for="map_end_date">End Date</label>
+          <input type="text" class="end-date" id="map_end_date" />
+          <input type="submit" value="change" />
+      </form>
+  </div>
+  
   <div id="map_headlines" class="map-headlines"></div>
 
 {% endblock %}

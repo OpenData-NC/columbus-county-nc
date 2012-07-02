@@ -6,6 +6,8 @@
 
 {% block body_id %}schema-filter{% endblock %}
 
+{% block body_class %}newsitem_list{% endblock %}
+
 {% block content %}
 <script type="text/javascript">
   var linkIds = [];
@@ -41,6 +43,7 @@
 
 	<div id="content">
 		<h1>{{ schema.plural_name }}</h1>
+		<h3><a href="{% url ebpub-schema-detail schema.slug %}">See statistics and more for {{ schema.plural_name }} &rarr;</a></h3>
 		<!-- block extradescription -->
 		{% block extradescription %}
 		{% endblock %}
@@ -78,18 +81,18 @@
 		{% if newsitem_list %}
 			<p>{% map_icon_img schema %} <strong>{{ schema.plural_name|capfirst }} {{ page_start_index|intcomma }}-{{ page_end_index|intcomma }}</strong> (Page {{ page_number|intcomma }})</p>
 			{% if has_next or has_previous %}
-			<ul>
-				{% if has_previous %}<li><a href="?page={{ previous_page_number }}" rel="nofollow">Previous</a></li>{% endif %}
-				{% if has_next %}<li><a href="?page={{ next_page_number }}" rel="nofollow">Next</a></li>{% endif %}
+			<ul class="paginate-newsitems">
+				{% if has_previous %}<li><a href="?page={{ previous_page_number }}" rel="nofollow">&larr; Previous</a></li>{% endif %}
+				{% if has_next %}<li><a href="?page={{ next_page_number }}" rel="nofollow">Next &rarr;</a></li>{% endif %}
 			</ul>
 			{% endif %}
 			<ul>
 				{% newsitem_list_by_schema newsitem_list ungrouped %}
 			</ul>
 			{% if has_next or has_previous %}
-			<ul>
-				{% if has_previous %}<li><a href="?page={{ previous_page_number }}" rel="nofollow">Previous</a></li>{% endif %}
-				{% if has_next %}<li><a href="?page={{ next_page_number }}" rel="nofollow">Next</a></li>{% endif %}
+			<ul class="paginate-newsitems">
+				{% if has_previous %}<li><a href="?page={{ previous_page_number }}" rel="nofollow">&larr; Previous</a></li>{% endif %}
+				{% if has_next %}<li><a href="?page={{ next_page_number }}" rel="nofollow">Next &rarr;</a></li>{% endif %}
 			</ul>
 			{% endif %}
 		{% else %}

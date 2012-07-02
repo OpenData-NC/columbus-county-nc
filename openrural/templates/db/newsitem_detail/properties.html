@@ -2,7 +2,32 @@
 
 {% load eb humanize mapping eb_filter comments thumbnail %}
 
+{% block body_id %}property-detail{% endblock %}
+
+{% block newsitem_detail_location %}
+
+<tr>
+    <th>Location</th>
+    <td>{% if location_url %}
+            <a href="{{ location_url }}">Click to view news items in around this area.</a>
+        {% else %}
+            This item could not be mapped.
+        {% endif %}
+    </td>
+</tr>
+{% endblock %}
+
 <!-- block newsitem_detail_description -->{% block newsitem_detail_description %}
+    <tr>
+        <th>Photo</th>
+        <td>
+             {% if newsitem.url %}
+            <a href="{{ newsitem.url }}"><img width="240" src="{{ newsitem.url }}" alt="{{ newsitem.title }}" /></a>
+            {% else %}
+            <img width="175" src="{{ STATIC_URL}}images/property_image_placeholder.png" />
+            {% endif %}
+        </td>
+    </tr>
 {% endblock newsitem_detail_description %}<!-- endblock: newsitem_detail_description -->
 
 <!-- block newsitem_detail_attribute_list -->{% block newsitem_detail_attribute_list %}
@@ -34,12 +59,6 @@
             </td>
         </tr>
     {% endfor %}
-    {% if newsitem.url %}
-    <tr>
-        <th>Photo</th>
-        <td><img width="400" src="{{ newsitem.url }}" alt="Image" /></td>
-    </tr>
-    {% endif %}
 
 {% endblock newsitem_detail_attribute_list %}<!-- endblock: newsitem_detail_image_list -->
 
