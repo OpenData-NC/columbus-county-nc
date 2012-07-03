@@ -15,7 +15,7 @@
         	{{ newsitem.title }}
         {% endif %}
     </h1>
-	<h2>Retrieved on {{ newsitem.pub_date|date:"F j, Y" }}</h2>
+	<h2>Updated on {{ newsitem.pub_date|date:"F j, Y" }}</h2>
 	{% block newsitem_detail_summary %}{% endblock %}
 
 	<div id="mapwrapper">
