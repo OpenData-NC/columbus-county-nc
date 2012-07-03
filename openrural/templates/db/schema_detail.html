@@ -24,10 +24,6 @@
 		{% if schema.short_description %}
 			<p>{{ schema.short_description|safe }}</p>
 		{% endif %}
-
-		{% if schema.short_description %}
-			<p>{{ schema.summary|safe }}</p>
-		{% endif %}
 		
 		{% block extradescription %}{%endblock%}
 		
