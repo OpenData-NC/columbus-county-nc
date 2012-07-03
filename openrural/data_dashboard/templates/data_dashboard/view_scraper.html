@@ -1,45 +1,46 @@
-{% extends "base.html" %}
+{% extends "data_dashboard/base_dashboard.html" %}
 {% load data_dashboard_tags %}
 {% load url from future %}
 
-{% block fulltitle %}OpenRural: {{ scraper }}{% endblock %}
+{% block title %}OpenRural: {{ scraper }}{% endblock %}
 
 {% block content %}
-<h1>{{ scraper }}</h1>
+<h1>{{ scraper|capfirst }}
+<form class="run-scraper" action='{% url "run_scraper" scraper.slug %}' method='POST'>
+    {% csrf_token %}
+    <input type='submit' name='submit' value='Run {{ scraper }} scraper' />
+</form></h1>
 
 {% if schema %}
-<table>
-    <tr>
-        <th>Name</th>
-        <td>{{ schema.plural_name|capfirst }}</td>
-    </tr>
-    <tr>
-        <th>News Items</th>
-        <td>
+    <h2>Name: {{ schema.plural_name|capfirst }}</h2>
+    
+    {% if schema.newitem_set or num_failures %}
+    <ul class="details">
+        {% if schema.newsitem_set %}
+        <li>
+            <strong>News Items:</strong>
             {% with schema.newsitem_set.count as count %}
                 {{ count }}
                 {% if request.user.is_authenticated and count > 0 %}
                     (<a href="{% url 'delete_scraper_news_items' scraper.slug %}">delete all</a>)
                 {% endif %}
             {% endwith %}
-        </td>
-    </tr>
-    <tr>
-        <th>Failures</th>
-        <td><a href='{% url 'list_failures' scraper.slug %}'>{{ num_failures }}</a></td>
-    </tr>
-</table>
+
+        </li>
+        {% endif %}
+        {% if num_failures %}
+        <li>
+            <strong>Failures:</strong> <a href='{% url 'list_failures' scraper.slug %}'>{{ num_failures }}</a>
+        </li>
+        {% endif %}
+    </ul>
+    {% endif %}
 {% endif %}
 
-<form action='{% url "run_scraper" scraper.slug %}' method='post'>
+<form action='' method='POST'>
     {% csrf_token %}
-    <input type='submit' name='submit' value='Run' />
-</form>
-
-<form action='' method='post'>
-    {% csrf_token %}
-    {{ form.as_table }}
-    <input type='submit' name='submit' value='Filter' />
+        {{ form }}
+        <input type='submit' name='submit' value='Filter results' />
 </form>
 
 <table>

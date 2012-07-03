@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% load eb humanize eb_filter compress mapping %}
+
+{% block title %}{% METRO_NAME %} {{ schema.plural_name }}{% endblock %}
+
+{% block extrahead %}
+{% compress css %}
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}styles/calendrical.css" />
+{% endcompress %}
+{% compress js %}
+<script src="{{ STATIC_URL }}scripts/jquery.calendrical.js"></script>
+{% endcompress %}
+
+<meta name="description" content="{% if schema.short_description %}{{ schema.short_description }}{% else %}{{ schema.plural_name|capfirst }} in {% METRO_NAME %}.{% endif %}{% if schema.update_frequency %} Updated {{ schema.update_frequency|lower }}.{% endif %}">
+{% endblock %}
+
+{% block body_id %}schema-detail{% endblock %}
+
+{% block content %}
+	<div id="content">
+		<h1>{% map_icon_img schema %} {{ schema.plural_name|capfirst }}</h1>
+		
+		{% if schema.short_description %}
+			<h3>{{ schema.short_description }}</h3>
+		{% endif %}
+		
+		{% block extradescription %}{%endblock%}
+		
+		{% if schema.update_frequency %}
+			<p>{{ schema.update_frequency }}</p>
+		{% endif %}
+
+		{% if schema.allow_charting %}
+			{% if date_chart %}
+				<div id="date-chart">
+					{% with date_chart.dates|first as first_date %}
+						{% with date_chart.dates|last as last_date %}
+							<h2><strong>Date range:</strong> {{ first_date.date|date:"N j, Y" }} – {{ last_date.date|date:"N j, Y" }}</h2>
+						{% endwith %}
+					{% endwith %}
+					<h3><strong>{{ date_chart.total_count|intcomma }}</strong> {% schema_plural_name schema date_chart.total_count %}</h3>
+					{% include "db/snippets/date_chart.html" %}
+				</div><!--/ #date-chart -->
+			{% endif %}
+			{% if schema.allow_charting %}
+				{% with "filter/" as search_url %}
+					{% include "db/snippets/filter_left_nav.html" %}
+				{% endwith %}
+			{% endif %}
+			{% for location_chart in location_chartfield_list %}
+				<div class="location-chart" id="location-{{ location_chart.location_type.slug }}">
+					<h2>By {{ location_chart.location_type.name }}</h2>
+					<table>
+						{% for location in location_chart.locations %}
+							<tr>
+								<td class="label">
+									<span class="name">
+										<a href="{% filter_url schema +'location' location.location %}">{{ location.location.name }}</a>
+										<span class="bar" style="width: {% widthratio location.total date_chart.total_count 100 %}%"></span>
+									</span>
+								</td>
+								<td class="count">
+									{{ location.total|intcomma }}
+								</td>
+								<td class="percent">
+									{% widthratio location.total date_chart.total_count 100 %}%
+								</td>
+							</tr>
+						{% endfor %}
+						{% comment %}<!-- Not sure what to do with 'unknowns'. Not really useful to users. See ticket #192. -->
+						<tr class="ungeocoded">
+							<td class="label">
+								<span class="name">
+									Unknown
+									<span class="bar" style="width: {% widthratio location_chart.unknown date_chart.total_count 100 %}%"></span>
+								</span>
+							</td>
+							<td class="count">
+								{{ location_chart.unknown|intcomma }}
+							</td>
+							<td class="percent">
+								{% widthratio location_chart.unknown date_chart.total_count 100 %}%
+							</td>
+						</tr>
+						{% endcomment %}
+						{% if not location_chart.locations|length|lessthan:9 %}
+							<tr>
+								<td colspan="3">
+									<a href="{% filter_url schema +'location' location_chart.location_type %}">See all {{ location_chart.location_type.plural_name }}&hellip;</a>
+								</td>
+							</tr>
+						{% endif %}
+					</table>
+				</div><!--/ #location-{{ location_chart.location_type.slug }} -->
+			{% endfor %}
+			{% for lookup in lookup_list %}
+
+				<div id="lookup-{{ lookup.sf.name }}">
+					<h2>By {{ lookup.sf.pretty_name }}</h2>
+					<table>
+						{% for value in lookup.top_values %}
+						<tr>
+							<td class="label">
+								<span class="name">
+									<a href="{% filter_url schema +lookup.sf value.lookup %}" title="{{ value.lookup.name }}">{{ value.lookup.name }}</a>
+									{% if value.total %}<span class="bar" style="width: {% widthratio value.total date_chart.total_count 100 %}%"></span>{% endif %}
+								</span>
+							</td>
+							<td class="count">
+								{{ value.total|intcomma }}
+							</td>
+							<td class="percent">
+								{% widthratio value.total date_chart.total_count 100 %}%
+							</td>
+						</tr>
+						{% endfor %}
+						<tr>
+							<td colspan="3">
+								<a href="{% filter_url schema +lookup.sf %}">See all {{ lookup.sf.pretty_name_plural }}&hellip;</a>
+
+							</td>
+						</tr>
+					</table>
+					{% if lookup.sf.is_many_to_many_lookup %}<p>Percentages may add up to more than 100 because {{ schema.plural_name }} may have multiple {{ lookup.sf.pretty_name_plural }}.</p>{% endif %}
+				</div><!--/ #lookup-{{ lookup.sf.name }} -->
+			{% endfor %}
+		{% else %}
+			{# If schema is uncharted, show a list of most recent items instead #}
+			{% if newsitem_list %}
+				<div id="latest-items">
+					<h2>Most recent {{ schema.plural_name }}</h2>
+					<ul>
+						{% newsitem_list_by_schema newsitem_list ungrouped %}
+					</ul>
+				</div><!--/ #latest-items -->
+			{% endif %}
+		{% endif %}
+	</div><!--/ #content -->
+{% endblock %}

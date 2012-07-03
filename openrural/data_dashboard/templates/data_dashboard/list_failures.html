@@ -1,17 +1,13 @@
-{% extends "base.html" %}
+{% extends "data_dashboard/base_dashboard.html" %}
 {% load data_dashboard_tags %}
 
-{% block fulltitle %}OpenRural: {{ scraper }}{% endblock %}
+{% block title %}OpenRural: {{ scraper }}{% endblock %}
 
 {% block content %}
 <h1>{{ scraper }} Geocode Failures {% if run %}in Run {{ run.pk }}{% endif %}</h1>
-<form action='' method='get'>
-    <table>
-        <tr>
-            <td>{{ form.search }}</td>
-            <td><input type="submit" value="Search" /></td>
-        </tr>
-    </table>
+<form class="scraper-search" action='' method='GET'>
+    {{ form.search }}
+   <input type="submit" value="Search" />
 </form>
 <table>
     <tr>
