@@ -8,7 +8,8 @@
 
 <tr>
     <th>Location</th>
-    <td>{% if location_url %}
+    <td>{{ newsitem.location_name|default:"unknown" }}<br />
+        {% if location_url %}
             <a href="{{ location_url }}">Click to view news items in around this area.</a>
         {% else %}
             This item could not be mapped.
