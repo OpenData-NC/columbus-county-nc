@@ -89,7 +89,7 @@ class CountyImporter(object):
             'plural_name': 'Counties',
             'slug': 'counties',
             'is_browsable': True,
-            'is_significant': True,
+            'is_significant': False,
             'scope': self.metro_name,
         }
         try:
@@ -133,8 +133,8 @@ class CountyImporter(object):
     def import_starter_cities(self):
         fkey = 'place'
         type_data = {
-            'name': 'City',
-            'plural_name': 'Cities',
+            'name': 'City/Area',
+            'plural_name': 'Cities and Areas',
             'slug': 'cities',
             'is_browsable': True,
             'is_significant': True,
