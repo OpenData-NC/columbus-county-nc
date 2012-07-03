@@ -2,7 +2,7 @@
 // ===================
 
 @black: #000000;
-@grayLighter: #CCCCCC;
+@gray: #333333;
 @white: #FFFFFF;
 @blue: #007FBF;
 
@@ -234,8 +234,8 @@ ul {
 	padding: 0;
 }
 
-// Place detail specific
-// =====================
+// Place detail styles
+// ========================
 
 #place-detail {
 	.subscribe-links {
@@ -316,7 +316,7 @@ p.menu a.top {
 	float: right;
 }
 
-// Schema filter
+// Schema filter styles
 // =====================
 body#schema-filter {
 	#detailmap, #mapwrapper {
@@ -325,7 +325,7 @@ body#schema-filter {
 	}
 }
 
-// Big map
+// Big map styles
 // =====================
 body#big-map {
 	#detailmap, #mapwrapper {
@@ -354,8 +354,8 @@ body#big-map {
 
 }
 
-// News item detail
-// =====================
+// News item detail styles
+// =======================
 body.newsitem-detail {
 	h1 { margin: 22px 0 0 0;}
 	h2 { 
@@ -395,3 +395,49 @@ body.newsitem_list {
 		}
 	}
 }
+
+// Schema detail
+// =====================
+body#schema-detail {
+	table.datechart {
+		border: 2px solid lighten(@gray, 60%);
+		th, td {
+    		padding: 6px 2px 0 2px;
+		}
+		.bar {
+			width: 13px;
+			background: lighten(@gray, 25%);
+			&:hover {
+				background: darken(@gray, 15%);
+			}
+		}
+		th {
+			background: lighten(@gray, 70);
+			&.monthlabel {
+				padding: 8px 3px;
+				a {
+					font-weight: bold;
+					font-size: 14px;
+				}
+			}
+		}
+	}
+	.location-chart {
+		table {
+			width: 100%;
+			td {
+				border: 1px solid lighten(@gray, 60%);
+				text-align: center;
+				&.label {
+					background: lighten(@gray, 70%);
+					width: 150px;
+					text-align: left;
+				}
+			}
+		}
+	}
+	#location-neighborhoods table, #location-zipcodes table {
+		background: #FFFFFF;
+	}
+}
+

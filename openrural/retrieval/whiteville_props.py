@@ -72,13 +72,14 @@ class PropsScraper(DashboardMixin, ScraperWikiScraper):
                 'owner_name': data['GRANTEE'].title(),
                 'acres': '%s' % data['ACRES'],
                 'tax_value': int(data['APPRAISAL']),
+                'address': '%s, %s %s' % (addr_feature['FULLADD'], 'NC', addr_feature['ZIP']),
                 'sale_amount': int(data['SALE']),
                 'prop_card': str(addr_feature['PROPCARD']) if addr_feature else '',
             }
 
             transformed_point = parcel_feature.geom.transform(4326, True)
             if addr_feature:
-                location_name = '%s %s %s' % (addr_feature['FULLADD'], addr_feature['CITY'], addr_feature['ZIP'])
+                location_name = address
                 zipcode = '%s' % addr_feature['ZIP']
             else:
                 location_name = 'Property %s (address unknown)' % prop_val
