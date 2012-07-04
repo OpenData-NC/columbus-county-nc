@@ -10,22 +10,21 @@
 {{ block.super }}
 
 <script type="text/javascript" charset="utf-8">
-var pid = '{{ pid }}';
+	var pid = '{{ pid }}';
 
-window.onload = function() {
-	$j(".chzn-select").chosen({no_results_text: "No results matched"});
+	window.onload = function() {
+		$j(".chzn-select").chosen({no_results_text: "No results matched"});
 
-	$j('#sectionfilterbutton').click(function() {
-		var url = $j('#sectionfilter').val();
-		if (url) { window.location = url; }
-		return false;
-	});
-	{% if USER %}
-	{% include "db/snippets/onload_scripts.html" %}
-	$j('h4.unloaded').removeClass('unloaded');
-	{% endif %}
-}
-
+		$j('#sectionfilterbutton').click(function() {
+			var url = $j('#sectionfilter').val();
+			if (url) { window.location = url; }
+			return false;
+		});
+		{% if USER %}
+		{% include "db/snippets/onload_scripts.html" %}
+		$j('h4.unloaded').removeClass('unloaded');
+		{% endif %}
+	}
 </script>
 
 {% endblock extrahead %}

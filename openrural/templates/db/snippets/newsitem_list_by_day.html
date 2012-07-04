@@ -5,7 +5,6 @@ Expects these variables: newsitem_list, hidden_schema_list, show_upcoming, is_la
 {% if newsitem_list %}
 	{% regroup newsitem_list by item_date|friendlydate as newsitem_list_byday %}
 	{% for daygroup in newsitem_list_byday %}
-		<h3>{{ daygroup.grouper }}</h3>
 		{% regroup daygroup.list by schema as newsitem_list_byschema %}
 		{% for schemagroup in newsitem_list_byschema %}
 			{% with schemagroup.list|length as num_newsitems %}
@@ -16,7 +15,7 @@ Expects these variables: newsitem_list, hidden_schema_list, show_upcoming, is_la
 				{% if schemagroup.grouper.is_special_report %}Special report: {{ schemagroup.grouper.name }}{% else %}{{ num_newsitems }} {% schema_plural_name schemagroup.grouper num_newsitems %}{% endif %}
 			
 				</h4>
-				<div class="schema_{{ schemagroup.grouper.slug }} {% if is_hidden %}hidden{% else %}visible{% endif %}">
+				<div class="schema schema_{{ schemagroup.grouper.slug }} {% if is_hidden %}hidden{% else %}visible{% endif %}">
 					{% newsitem_list_by_schema schemagroup.list %}
 				</div>
 				{% endwith %}

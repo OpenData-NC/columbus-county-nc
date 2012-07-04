@@ -268,10 +268,18 @@ ul {
 	padding: 0;
 }
 
+.newsitem .location {
+	font-size: 1.0em !important;
+	text-transform: none !important;
+	font-weight: bold;
+}
 // Place detail styles
 // ========================
 
 #place-detail {
+	#place-detail-content .visible ul li {
+		border: none;
+	}
 	.subscribe-links {
 			width: 250px;
 			p { 
@@ -294,15 +302,23 @@ ul {
 		h3 {
 			border-bottom: 2px solid #ccc;
 			font-weight: bold;
-			margin: 1em 0 0 0;
+			margin: 0;
 			padding-bottom: 5px;
 		}
 		.newsitem {
 			border-top: none;
-			padding: 1em 0;
+			padding: 0 0 1em 0;
 			a {
 				font-weight: bold;
 				font-size: 14px;
+			}
+			ul.properties {
+				.title {
+					margin: 0;
+				}
+				.price {
+					font-weight: bold;
+				}
 			}
 		}
 		

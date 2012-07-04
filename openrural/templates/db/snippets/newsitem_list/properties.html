@@ -10,8 +10,8 @@
 		{% for newsitem in newsitem_group.list %}
 			<li>
     		{% block newsitem_list_content %}
-				<a class="title" href="{{ newsitem.item_url }}">{{ newsitem.location_name }}</a>
-				<p class="price">${{ newsitem.attributes.sale_amount|intcomma }}</p>
+    			<span class="price">${{ newsitem.attributes.sale_amount|intcomma }}</span>
+				<p><a class="title" href="{{ newsitem.item_url }}">{{ newsitem.location_name }}</a></p>
 			{% endblock newsitem_list_content %}
 			</li>
 		{% endfor %}
