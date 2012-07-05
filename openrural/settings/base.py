@@ -118,7 +118,7 @@ STAFF_COOKIE_NAME = 'obstaff_openrural'
 STAFF_COOKIE_VALUE = ''
 
 # What LocationType to redirect to when viewing /locations.
-DEFAULT_LOCTYPE_SLUG = 'neighborhoods'
+DEFAULT_LOCTYPE_SLUG = 'cities'
 
 # What kinds of news to show on the homepage.
 # This is one or more Schema slugs.
