@@ -39,14 +39,13 @@
 						<li><a href="{{ location_type.url }}"><strong class="number">{{ location_type.count|intcomma }}</strong> {{ location_type.count|pluralize:name }}</a></li>
 					{% endwith %}
 				{% endfor %}
-				<li><a href="{% url ebpub-street-list %}"><strong class="number">{{ street_count|intcomma }}</strong> Street{{ street_count|pluralize }}</a></li>
 			</ul>
 			<h2>Find by news topic</h2>
 			<ul class="location-type-list">
 			{% get_schema_list %}
 			{% for schema in schema_list %}
 				{% if schema.newsitem_set.count > 0 %}
-					<li><a href="{% url ebpub-schema-filter schema.slug %}"><strong>{{ schema.newsitem_set.count }}</strong> {{ schema|title }} news items</a></li>
+					<li><a href="{% url ebpub-schema-filter schema.slug %}"><strong>{{ schema.newsitem_set.count }}</strong> {{ schema.plural_name|capfirst }}</a></li>
 				{% endif %}
 			{% endfor %}
 			</ul>
