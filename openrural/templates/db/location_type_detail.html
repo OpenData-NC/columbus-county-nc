@@ -12,7 +12,7 @@
 
 {% block content %}
 	<h2>{% METRO_NAME %} {{ location_type.plural_name }}</h2>
-	<p class="lead">Choose a {{ location_type.name }} to see recent news in that area. You can also <a href="{% url ebpub-street-list %}">browse by street</a> to find an individual block.</p>
+	<p class="lead">Choose a {{ location_type.name }} to see recent news in that area.</p>
 	<ul class="location-list">
 	{% ifequal location_type.plural_name "cities" %}
 			{% for location in location_list %}
