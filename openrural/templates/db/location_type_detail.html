@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-
 {% load eb %}
+{% load openrural_tags %}
 
 {% block title %}{% METRO_NAME %} {{ location_type.plural_name }}{% endblock title %}
 
@@ -14,7 +14,8 @@
 	<h2>{% METRO_NAME %} {{ location_type.plural_name }}</h2>
 	<p class="lead">Choose a {{ location_type.name }} to see recent news in that area.</p>
 	<ul class="location-list">
-	{% ifequal location_type.plural_name "cities" %}
+	{% ifequal location_type.slug "cities" %}
+            {% reorder_cities_list %}
 			{% for location in location_list %}
 			<li><a href="{{ location.slug }}/">{{ location.name }}</a></li>
 			{% endfor %}
