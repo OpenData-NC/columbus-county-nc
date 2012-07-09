@@ -16,18 +16,18 @@
 		<div id="nav-location">
 
 		<div id="mapwrapper">
-		  <script type="text/javascript">
-		  {% autoescape off %}
+		<script type="text/javascript">
+		  	{% autoescape off %}
 
-		  function loadMap() {
-  		  var config = {{map_configuration}};
-		config.center = [{{default_lon}}, {{default_lat}}];
-		config.zoom = {{default_zoom}};
-		return new OBMap(config);
-  		}
+		  	function loadMap() {
+  		  		var config = {{ map_configuration }};
+				config.center = [{{ default_lon }}, {{ default_lat }}];
+				config.zoom = {{ default_zoom }};
+				return new OBMap(config);
+  			}
 
-  		{% endautoescape %}
-		  </script>
+  			{% endautoescape %}
+		 </script>
 		{% include "richmaps/richmap.html" %}
 		</div><!-- end mapwrapper -->
 
