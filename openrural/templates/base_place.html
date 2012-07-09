@@ -35,6 +35,8 @@ Required variables: nearby_locations, place, is_block
 	<!-- end block map -->
 
     <!-- block subscribe_links -->
+    {# Commented until RSS feeds and Email alerts are fixed #}
+    {% comment  %}
     {% block subscribe_links %}
 	<div class="subscribe-links">
 		<p><strong>Subscribe:</strong>
@@ -43,6 +45,7 @@ Required variables: nearby_locations, place, is_block
 		</p>
 	</div>
     {% endblock subscribe_links %}
+    {% endblock %}
     <!-- end block subscribe_links -->
 
     <!-- block nearby_locations -->
