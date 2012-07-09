@@ -5,7 +5,7 @@
 
 {% for newsitem_group in newsitem_list_byday %}
 	<li class="newsitem">
-		<h3>New items for {{ newsitem_group.grouper }}</h3>
+		<h3>{{ newsitem_group.grouper }}</h3>
 		<ul class="properties">
 		{% for newsitem in newsitem_group.list %}
 			<li>
