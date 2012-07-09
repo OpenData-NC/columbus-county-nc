@@ -9,26 +9,29 @@
 {% block content %}
 
 <div id="content">
-	<h1>{% if location_url %}
-        	{{ newsitem.location_name|default:"unknown" }}
-        {% else %}
-        	{{ newsitem.title }}
-        {% endif %}
-    </h1>
+	{% block newsitem_detail_title %}
+        <h1>
+            {% if location_url %}
+        	    {{ newsitem.location_name|default:"unknown" }}
+            {% else %}
+        	    {{ newsitem.title }}
+            {% endif %}
+        </h1>
+    {% endblock %}
 	<h2>Updated on {{ newsitem.pub_date|date:"F j, Y" }}</h2>
 	{% block newsitem_detail_summary %}{% endblock %}
 
 	<div id="mapwrapper">
 	  <script type="text/javascript">
 	  {% autoescape off %}
-	  
+
 	  function loadMap() {
 		  var config = {{map_configuration}};
       config.center = [{{map_center_x}}, {{map_center_y}}];
       config.zoom = 16;
-      return new OBMap(config);        
+      return new OBMap(config);
 		}
-		
+
 		{% endautoescape %}
 	  </script>
 	  {% include "richmaps/richmap.html" %}
@@ -130,9 +133,9 @@
 
 	{% block item_comments %}
 	  {% if newsitem.schema.allow_comments %}
-	  {% get_comment_count for newsitem as comment_count %} 
+	  {% get_comment_count for newsitem as comment_count %}
 	  <h2>{{comment_count}} Comments</h2>
-	  
+
 	  <div class="comment-list">
     {% get_comment_list for newsitem as comment_list %}
     {% for comment in comment_list %}
@@ -166,7 +169,7 @@
           If this field is filled in, the comment will be rejected as spam.</td>
           {{form.honeypot}}
         </div>
-        
+
         <div>
               <input type="submit" name="submit" value="Post">
         </div>

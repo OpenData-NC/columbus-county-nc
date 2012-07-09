@@ -1,0 +1,40 @@
+{% extends "db/newsitem_detail.html" %}
+
+{% load humanize %}
+
+{% block body_id %}corporation-detail{% endblock %}
+
+{% block newsitem_detail_title %}
+    <h1>{{ newsitem.title }}</h1>
+{% endblock %}
+
+{% block newsitem_detail_attribute_list %}
+    {% for attribute in attribute_list %}
+        <tr>
+            <th>{{ attribute.sf.smart_pretty_name|capfirst }}</th>
+            <td>
+                {% if attribute.value_list %}
+                    {% for value in attribute.value_list %}
+                        {% ifequal attribute.sf.pretty_name 'Type' %}
+                            {% ifequal value.value 'NP' %}
+                                Not-for-profit
+                            {% else %}
+                                {{ value.value }}
+                            {% endifequal %}
+                        {% else %}
+                            {% if value.url %}
+                                <a href="{{ value.url }}">{{ value.value }}</a>
+                            {% else %}
+                                {{ value.value|intcomma|default:value.value }}
+                            {% endif %}
+                        {% endifequal %}
+                        {% if value.description %}<p>{{ value.description|safe }}</p>{% endif %}
+                        {% if not forloop.last %}{% if not value.description %}<br>{% endif %}{% endif %}
+                    {% endfor %}
+                {% else %}
+                    None
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}
