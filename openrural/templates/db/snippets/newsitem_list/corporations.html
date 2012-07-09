@@ -10,8 +10,8 @@
             {% for newsitem in newsitem_group.list %}
                 <li>
                     {% block newsitem_list_content %}
-                        <strong class="address">{% get_corporation_full_address newsitem %}</strong>
-                        <p><a class="title" href="{{ newsitem.item_url }}">{{ newsitem.title }}</a></p>
+                        <span><a class="title" href="{{ newsitem.item_url }}">{{ newsitem.title }}</a></span>
+                        <span class="address">{% get_corporation_full_address newsitem %}</span>
                     {% endblock %}
                 </li>
             {% endfor %}
