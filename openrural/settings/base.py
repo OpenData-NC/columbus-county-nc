@@ -51,9 +51,9 @@ EB_DOMAIN = 'localhost'
 SHORT_NAME = 'whiteville'
 
 # Where to center citywide maps, eg. on homepage.
-DEFAULT_MAP_CENTER_LON = -78.747621
-DEFAULT_MAP_CENTER_LAT = 34.254866
-DEFAULT_MAP_ZOOM = 10
+DEFAULT_MAP_CENTER_LON = -78.62
+DEFAULT_MAP_CENTER_LAT = 34.22
+DEFAULT_MAP_ZOOM = 9
 
 # Metros. You almost certainly only want one dictionary in this list.
 # See the configuration docs for more info.
