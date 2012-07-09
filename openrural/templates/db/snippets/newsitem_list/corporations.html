@@ -1,0 +1,19 @@
+{# This snippet requires these variables: schema, newsitem_list #}
+{% load openrural_tags %}
+
+{% regroup newsitem_list by item_date as newsitem_list_byday %}
+
+{% for newsitem_group in newsitem_list_byday %}
+    <li class="newsitem">
+        <h3>{{ newsitem_group.grouper }}</h3>
+        <ul class="corporations">
+            {% for newsitem in newsitem_group.list %}
+                <li>
+                    {% block newsitem_list_content %}
+                        <strong class="address">{% get_corporation_full_address newsitem %}</strong>
+                        <p><a class="title" href="{{ newsitem.item_url }}">{{ newsitem.title }}</a></p>
+                    {% endblock %}
+                </li>
+            {% endfor %}
+        </ul>
+{% endfor %}

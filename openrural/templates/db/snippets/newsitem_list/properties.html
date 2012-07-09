@@ -1,5 +1,5 @@
 {# This snippet requires these variables: schema, newsitem_list #}
-{% load eb humanize %}
+{% load humanize %}
 
 {% regroup newsitem_list by item_date as newsitem_list_byday %}
 
@@ -10,7 +10,7 @@
 		{% for newsitem in newsitem_group.list %}
 			<li>
     		{% block newsitem_list_content %}
-    			<span class="price">${{ newsitem.attributes.sale_amount|intcomma }}</span>
+    			<strong class="price">${{ newsitem.attributes.sale_amount|intcomma }}</strong>
 				<p><a class="title" href="{{ newsitem.item_url }}">{{ newsitem.location_name }}</a></p>
 			{% endblock newsitem_list_content %}
 			</li>
