@@ -20,10 +20,12 @@
 			if (url) { window.location = url; }
 			return false;
 		});
+		{% comment %}
 		{% if USER %}
 		{% include "db/snippets/onload_scripts.html" %}
 		$j('h4.unloaded').removeClass('unloaded');
 		{% endif %}
+		{% endcomment %}
 	}
 </script>
 
@@ -85,7 +87,7 @@
 	{% include "db/snippets/newsitem_list_by_day.html" %}
 	{% comment %}
 	{% ifnotequal place.slug "unknown" %}
-	<div id="alerts-signup">	
+	<div id="alerts-signup">
 		<h2>Sign up for:</h2>
 		<ul>
 			{% if alerts_installed %}<li><a class="email" href="{{ place.alert_url }}">E-mail alerts</a></li>{% endif %}
