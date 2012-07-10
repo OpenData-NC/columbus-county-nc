@@ -5,7 +5,6 @@
 
 {% for newsitem_group in newsitem_list_byday %}
 	<li class="newsitem">
-		<h3>{{ newsitem_group.grouper }}</h3>
 		<ul>
 		{% for newsitem in newsitem_group.list %}
 			<li>
