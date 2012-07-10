@@ -133,8 +133,8 @@ class CountyImporter(object):
     def import_starter_cities(self):
         fkey = 'place'
         type_data = {
-            'name': 'City/Area',
-            'plural_name': 'Cities and Areas',
+            'name': 'Community',
+            'plural_name': 'Communities',
             'slug': 'cities',
             'is_browsable': True,
             'is_significant': True,

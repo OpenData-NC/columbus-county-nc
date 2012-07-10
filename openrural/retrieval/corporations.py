@@ -72,8 +72,8 @@ class CorporationsScraper(DashboardMixin, ScraperWikiScraper):
         except Schema.DoesNotExist:
             pass
         schema = Schema.objects.create(
-            name='Corporation',
-            plural_name='corporations',
+            name='New Business',
+            plural_name='New Businesses',
             slug=self.schema_slugs[0],
             last_updated=datetime.datetime.now(),
             is_public=True,
