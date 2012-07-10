@@ -1,6 +1,7 @@
 import string
 
 from django import template
+from django.conf import settings
 
 from ebpub.db.models import Schema
 
@@ -66,3 +67,7 @@ def regroup_numbered_streets(context):
         alpha_list.insert(0, entry)
     context['alpha_list'] = alpha_list
     return ''
+
+@register.simple_tag
+def get_editor_email():
+    return getattr(settings, 'OPENRURAL_EDITOR_EMAIL', '')

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load eb %}
+{% load eb openrural_tags %}
 
 {% block title %}{{ first_block.street_pretty_name }}{% endblock %}
 
@@ -8,7 +8,7 @@
 <div id="content">
     <h1>{{ first_block.street_pretty_name }}</h1>
     <p>Select the part of the street for which you'd like to see what's happening.</p>
-    <p class="other">Don't see the address you're looking for? Try <a href="{% url ebpub-search %}">searching</a> or <a href="#">notify the editor</a>.</p>
+    <p class="other">Don't see the address you're looking for? Try <a href="{% url ebpub-search %}">searching</a> or <a href="mailto:{% get_editor_email %}">notify the editor</a>.</p>
     {# Regroup by abbreviation after street name (e.g., N or SW) #}
     {% regroup block_list by postdir as postdir_list %}
     {% for postdir in postdir_list %}
