@@ -1,0 +1,9 @@
+<p class="menu">
+    {% for letter in alphabet %}
+        {% if letter in letter_list %}
+            <strong><a href="#alpha_{{ letter|lower }}">{{ letter|upper }}</a></strong>
+        {% else %}
+            {{ letter|upper }}
+        {% endif %}
+    {% endfor %}
+</p>

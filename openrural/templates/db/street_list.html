@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load eb %}
+{% load eb openrural_tags %}
 
 {% block title %}Streets{% if city %} in {{ city.name }}{% endif %}{% endblock %}
 
@@ -14,13 +14,15 @@
 	{% if example_loctype %}such as {{ example_loctype|lower }}{% endif %}.
 	</p>
 	{% regroup street_list by street_slug|upper|slice:":1" as alpha_list %}
-	{% for current_letter in alpha_list %}
+    {% regroup_numbered_streets %}
+    <p>Jump to streets that begin with:</p>
+	{% get_alphabet_menu alpha_list %}
+    {% for current_letter in alpha_list %}
 		<h2>{{ current_letter.grouper }}</h2>
 		<p class="menu" id="alpha_{{ current_letter.grouper|lower }}">
-			{% for letter in alpha_list %}{% ifequal letter.grouper current_letter.grouper %}<strong>{{ letter.grouper }}</strong>{% else %}<a href="#alpha_{{ letter.grouper|lower }}">{{ letter.grouper|upper }}</a>{% endifequal %}{% endfor %}
-			{% if not forloop.first %}<a class="top" href="#content">&uarr; Top</a>{% endif %}
+			<a class="top" href="#content">&uarr; Top</a>
 		</p>
-		{% comment %}<!-- break the lists up a bit to be easier on the eye. -->{% endcomment %}
+		{# break the lists up a bit to be easier on the eye. #}
 		{% for street_bunch in current_letter.list|bunch:"20" %}
 			<ul>
 				{% for street in street_bunch %}

@@ -1,3 +1,5 @@
+import string
+
 from django import template
 
 from ebpub.db.models import Schema
@@ -29,3 +31,38 @@ def get_corporation_full_address(newsitem):
         zip_code = ''
 
     return '{0}, {1}, NC {2}'.format(addr, city, zip_code).strip()
+
+@register.inclusion_tag('db/snippets/alphabet_menu.html')
+def get_alphabet_menu(alpha_list):
+    """
+    Renders a menu containing all letters of the alphabet. For letters which
+    are in alpha_list, the letter links to the associated list of streets.
+    The '#' sign links to streets which do not begin with letters, if such
+    streets exist.
+    """
+    alphabet = '#' + string.ascii_lowercase  # '#' represents numbered streets
+    letter_list = [entry['grouper'].lower() for entry in alpha_list]
+    return {
+        'alphabet': alphabet,
+        'letter_list': letter_list,
+    }
+
+@register.simple_tag(takes_context=True)
+def regroup_numbered_streets(context):
+    """
+    Regroups the 'alpha_list' context variable such that all streets which
+    do not begin with letters are grouped by '#'.  If such streets exist,
+    this will be the first entry in 'alpha_list.'
+    """
+    alpha_list = []
+    numbered_streets = []
+    for entry in context['alpha_list']:
+        if entry['grouper'].lower() in string.ascii_lowercase:
+            alpha_list.append(entry)
+        else:
+            numbered_streets.extend(entry['list'])
+    if numbered_streets:
+        entry = {'list': numbered_streets, 'grouper': '#'}
+        alpha_list.insert(0, entry)
+    context['alpha_list'] = alpha_list
+    return ''
