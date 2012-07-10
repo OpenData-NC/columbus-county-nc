@@ -12,7 +12,7 @@
 	<p>Choose a street to find recent news near an individual
 	block. You can also <a href="{% url ebpub-loc-type-list %}">browse by {% if example_loctype %}{{ example_loctype|lower }}{% else %}locations{% endif %}</a>.
 	</p>
-	<p class="other">Don't see the street you're looking for? Try <a href="{% url ebpub-search %}">searching</a> or <a href="#">notify the editor.</a></p>
+	<p class="other">Don't see the street you're looking for? Try <a href="{% url ebpub-search %}">searching</a> or <a href="#">notify the editor</a>.</p>
 	{% regroup street_list by street_slug|upper|slice:":1" as alpha_list %}
     {% regroup_numbered_streets %}
     <b>Jump to streets that begin with:</b>

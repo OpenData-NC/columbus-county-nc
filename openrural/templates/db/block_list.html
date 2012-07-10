@@ -6,20 +6,24 @@
 
 {% block content %}
 <div id="content">
-	<h1>{{ first_block.street_pretty_name }}</h1>
-	{% regroup block_list by postdir as postdir_list %}
-	{% for postdir in postdir_list %}
-		{% regroup postdir.list by predir as predir_list %}
-		{% for predir in predir_list %}
-			<h2>{{ predir.grouper }}{% if predir.grouper %}. {% endif %}{{ first_block.street_pretty_name }}{% if postdir.grouper %} {{ postdir.grouper }}{% endif %}</h2>
-			{% for block_bunch in predir.list|bunchlong:"4" %}
-				<ul>
-					{% for block in block_bunch %}
-					<li><a href="{{ block.url }}">{{ block.from_num }}-{{ block.to_num }} {{ block.predir }}</a></li>
-					{% endfor %}
-				</ul>
-			{% endfor %}
-		{% endfor %}
-	{% endfor %}
+    <h1>{{ first_block.street_pretty_name }}</h1>
+    <p>Select the part of the street for which you'd like to see what's happening.</p>
+    <p class="other">Don't see the address you're looking for? Try <a href="{% url ebpub-search %}">searching</a> or <a href="#">notify the editor</a>.</p>
+    {# Regroup by abbreviation after street name (e.g., N or SW) #}
+    {% regroup block_list by postdir as postdir_list %}
+    {% for postdir in postdir_list %}
+        {# Regroup by abbreviation before streeet name (e.g., N or SW) #}
+        {% regroup postdir.list by predir as predir_list %}
+        {% for predir in predir_list %}
+            <h2>{{ predir.grouper }}{% if predir.grouper %}. {% endif %}{{ first_block.street_pretty_name }}{% if postdir.grouper %} {{ postdir.grouper }}{% endif %}</h2>
+            {% for block_bunch in predir.list|bunchlong:"4" %}
+                <ul>
+                    {% for block in block_bunch %}
+                    <li><a href="{{ block.url }}">From {{ block.from_num }} {% if block.predir %}{{ block.predir }}. {% endif %}{{ block.street_pretty_name }} {{ block.postdir }} to {{ block.to_num }} {% if block.predir %}{{ block.predir }}. {% endif %}{{ first_block.street_pretty_name }} {{ block.postdir }}</a></li>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+        {% endfor %}
+    {% endfor %}
 </div>
 {% endblock %}
