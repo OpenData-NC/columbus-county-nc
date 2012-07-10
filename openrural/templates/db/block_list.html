@@ -15,7 +15,9 @@
         {# Regroup by abbreviation before streeet name (e.g., N or SW) #}
         {% regroup postdir.list by predir as predir_list %}
         {% for predir in predir_list %}
-            <h2>{{ predir.grouper }}{% if predir.grouper %}. {% endif %}{{ first_block.street_pretty_name }}{% if postdir.grouper %} {{ postdir.grouper }}{% endif %}</h2>
+            {% if predir_list|length > 1 or postdir_list|length > 1 %}
+                <h2>{{ predir.grouper }}{% if predir.grouper %}. {% endif %}{{ first_block.street_pretty_name }}{% if postdir.grouper %} {{ postdir.grouper }}{% endif %}</h2>
+            {% endif %}
             {% for block_bunch in predir.list|bunchlong:"4" %}
                 <ul>
                     {% for block in block_bunch %}
