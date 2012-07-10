@@ -365,6 +365,32 @@ ul.suggestions {
 
 // Street list styles
 // =====================
+#content {
+	ul.menu {
+		padding-top: 10px;
+		li {
+			float: left;
+			background-color: lighten(@gray, 70%);
+			width: 10px;
+			margin-right: 2px;
+			font-weight: bold;
+			text-align: center;
+			cursor: pointer;
+			color: lighten(@gray, 20%);
+			&.alpha-link {
+				background-color: @blue;
+				&:hover {
+						background-color: darken(@blue, 90%);
+					}
+				a {
+					color: @white;
+					
+				}
+			}
+		}
+	}
+}
+
 p.menu a.top {
 	float: right;
 }

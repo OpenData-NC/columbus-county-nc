@@ -13,9 +13,10 @@
 	block. You can also <a href="{% url ebpub-loc-type-list %}">browse by locations</a>
 	{% if example_loctype %}such as {{ example_loctype|lower }}{% endif %}.
 	</p>
+	<p class="other">Don't see the street you're looking for? Try <a href="{% url ebpub-search %}">searching</a> or <a href="#">notify the editor.</a></p>
 	{% regroup street_list by street_slug|upper|slice:":1" as alpha_list %}
     {% regroup_numbered_streets %}
-    <p>Jump to streets that begin with:</p>
+    <b>Jump to streets that begin with:</b>
 	{% get_alphabet_menu alpha_list %}
     {% for current_letter in alpha_list %}
 		<h2>{{ current_letter.grouper }}</h2>
