@@ -2,6 +2,7 @@
 {% load openrural_tags %}
 
 {% regroup newsitem_list by item_date as newsitem_list_byday %}
+
 {% for newsitem_group in newsitem_list_byday %}
     <li class="newsitem">
         <ul class="corporations">

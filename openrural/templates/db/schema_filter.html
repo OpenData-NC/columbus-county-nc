@@ -86,15 +86,7 @@
 				{% if has_next %}<li><a href="?page={{ next_page_number }}" rel="nofollow">Next &rarr;</a></li>{% endif %}
 			</ul>
 			{% endif %}
-			<ul>
-				{% newsitem_list_by_schema newsitem_list ungrouped %}
-			</ul>
-			{% if has_next or has_previous %}
-			<ul class="paginate-newsitems">
-				{% if has_previous %}<li><a href="?page={{ previous_page_number }}" rel="nofollow">&larr; Previous</a></li>{% endif %}
-				{% if has_next %}<li><a href="?page={{ next_page_number }}" rel="nofollow">Next &rarr;</a></li>{% endif %}
-			</ul>
-			{% endif %}
+			{% include "db/snippets/newsitem_list_by_day.html" %}
 		{% else %}
 			<h2>No {{ schema.plural_name }} were found for the given search criteria.</h2>
             {% if filters.filters_for_display %}

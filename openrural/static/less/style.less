@@ -456,12 +456,16 @@ body.newsitem-detail {
 // News item list
 // =====================
 body.newsitem_list {
+	.content li {
+		padding: 5px 5px 5px 0;
+	}
 	li.newsitem {
 		ul {
 			margin-bottom: 20px;
 			li {
 				font-size: 14px;
 				padding: 0;
+				margin-bottom: 1em;
 				a {
 					font-weight: bold;
 				}
@@ -473,10 +477,8 @@ body.newsitem_list {
 					}
 				}
 			}
-			&.properties {
-				.title {
-					margin: 0;
-				}
+			.title {
+				margin: 0;
 			}
 		}
 	}
