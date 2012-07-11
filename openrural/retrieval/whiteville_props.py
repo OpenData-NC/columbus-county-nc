@@ -22,7 +22,7 @@ class PropsScraper(DashboardMixin, ScraperWikiScraper):
     schema_slugs = ('properties',)
 
     # ScraperWiki settings
-    scraper_name = 'columbus_county_nc_property_sales_2012'
+    scraper_name = 'daily_columbus_county_nc_property_sales'
 
     # Rerfers to whether a detail page exists for a downloaded item
     has_detail = False
@@ -73,7 +73,7 @@ class PropsScraper(DashboardMixin, ScraperWikiScraper):
                 'acres': '%s' % data['ACRES'],
                 'tax_value': int(data['APPRAISAL']),
                 'sale_amount': int(data['SALE']),
-                'prop_card': str(addr_feature['PROPCARD']) if addr_feature else '',
+                'prop_card': 'http://webtax.columbusco.org/prc/pid%06d.pdf' % prop_val
             }
 
             transformed_point = parcel_feature.geom.transform(4326, True)
