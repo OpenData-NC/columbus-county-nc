@@ -168,3 +168,6 @@ STATICFILES_DIRS = (os.path.join(PROJECT_DIR, 'static'), )
 
 # include project templates dir?
 PROJECT_TEMPLATES = True
+
+# Email address which the public can use to contact the editor
+OPENRURAL_EDITOR_EMAIL = 'openrural@unc.edu'

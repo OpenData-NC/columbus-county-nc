@@ -120,7 +120,7 @@ class Command(BaseCommand):
             'plural_name': 'Counties',
             'slug': 'counties',
             'is_browsable': True,
-            'is_significant': True,
+            'is_significant': False,
             'scope': metro_name,
         }
         try:
