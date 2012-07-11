@@ -22,10 +22,10 @@
     <tr>
         <th>Photo</th>
         <td>
-             {% if newsitem.url %}
-            <a href="{{ newsitem.url }}"><img width="240" src="{{ newsitem.url }}" alt="{{ newsitem.title }}" /></a>
+            {% if newsitem.url %}
+                <a href="{{ newsitem.url }}"><img width="240" src="{{ newsitem.url }}" alt="{{ newsitem.title }}" /></a>
             {% else %}
-            <img width="175" src="{{ STATIC_URL}}images/property_image_placeholder.png" />
+                <img width="175" src="{{ STATIC_URL}}images/property_image_placeholder.png" />
             {% endif %}
         </td>
     </tr>
