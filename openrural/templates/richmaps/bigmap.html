@@ -5,7 +5,13 @@
 
 {% block body_id %}big-map{% endblock %}
 
-{% block breadcrumbs %}{% endblock %}
+{% block breadcrumbs %}
+<ul id="nav-breadcrumb">
+  <li><a href="{% url ebpub-homepage %}">{% METRO_NAME %}</a></li>
+  <li>Map of {% METRO_NAME %}</li>
+</ul>
+
+{% endblock %}
 
 {% block content %}
   <h1>Map of {% METRO_NAME %}</h1>
