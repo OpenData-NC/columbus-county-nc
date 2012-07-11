@@ -22,7 +22,7 @@
 		<h1>{% map_icon_img schema %} {{ schema.plural_name|capfirst }}</h1>
 		
 		{% if schema.short_description %}
-			<p>{{ schema.short_description|safe }}</p>
+			{{ schema.short_description|safe }}
 		{% endif %}
 		
 		{% block extradescription %}{%endblock%}
