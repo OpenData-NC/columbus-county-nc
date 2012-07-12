@@ -5,7 +5,9 @@ from django.conf import settings
 
 from ebpub.db.models import Schema
 
+
 register = template.Library()
+
 
 @register.simple_tag(takes_context=True)
 def get_schema_list(context):
@@ -13,10 +15,12 @@ def get_schema_list(context):
     context["schema_list"] = schemas
     return ''
 
+
 @register.simple_tag(takes_context=True)
 def reorder_cities_list(context):
     context['location_list'] = context['location_list'].order_by('name')
     return ''
+
 
 @register.simple_tag
 def get_corporation_full_address(newsitem):
@@ -31,7 +35,13 @@ def get_corporation_full_address(newsitem):
     except:
         zip_code = ''
 
-    return '{0}, {1}, NC {2}'.format(addr, city, zip_code).strip()
+    if city:
+        full_addr = '{0}, {1}, NC {2}'.format(addr, city, zip_code).strip()
+    else:
+        full_addr = '{0}, NC {1}'.format(addr, zip_code).strip()
+
+    return full_addr
+
 
 @register.inclusion_tag('db/snippets/alphabet_menu.html')
 def get_alphabet_menu(alpha_list):
@@ -47,6 +57,7 @@ def get_alphabet_menu(alpha_list):
         'alphabet': alphabet,
         'letter_list': letter_list,
     }
+
 
 @register.simple_tag(takes_context=True)
 def regroup_numbered_streets(context):
@@ -67,6 +78,7 @@ def regroup_numbered_streets(context):
         alpha_list.insert(0, entry)
     context['alpha_list'] = alpha_list
     return ''
+
 
 @register.simple_tag
 def get_editor_email():
