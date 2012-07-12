@@ -21,10 +21,6 @@
 	<div id="content">
 		<h1>{% map_icon_img schema %} {{ schema.plural_name|capfirst }}</h1>
 		
-		{% if schema.short_description %}
-			{{ schema.short_description|safe }}
-		{% endif %}
-		
 		{% block extradescription %}{%endblock%}
 		
 		{% if schema.update_frequency %}
@@ -135,6 +131,9 @@
 					</ul>
 				</div><!--/ #latest-items -->
 			{% endif %}
+		{% endif %}
+		{% if schema.source %}
+			{{ schema.source|safe }}
 		{% endif %}
 	</div><!--/ #content -->
 {% endblock %}
