@@ -126,7 +126,7 @@ HOMEPAGE_DEFAULT_NEWSTYPES = [u'news-articles']
 
 # How many days of news to show on the homepage, place detail view,
 # and elsewhere.
-DEFAULT_DAYS = 7
+DEFAULT_DAYS = 14
 
 # Edit this if you want to control where
 # scraper scripts will put their HTTP cache.
