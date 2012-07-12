@@ -13,7 +13,7 @@
 
 {% if schema %}
     <h2>Name: {{ schema.plural_name|capfirst }}</h2>
-    
+
     {% if schema.newitem_set or num_failures %}
     <ul class="details">
         {% if schema.newsitem_set %}
@@ -37,10 +37,10 @@
     {% endif %}
 {% endif %}
 
-<form action='' method='POST'>
-    {% csrf_token %}
-        {{ form }}
-        <input type='submit' name='submit' value='Filter results' />
+<form action='' method='GET'>
+    {{ form }}
+    <input type='hidden' name='filter' />
+    <input type='submit' value='Filter results' />
 </form>
 
 <table>

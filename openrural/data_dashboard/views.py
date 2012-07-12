@@ -37,12 +37,12 @@ def view_scraper(request, scraper_slug):
         schema = None
     crumbs = base_crumbs()
     crumbs.append((scraper_slug, reverse('view_scraper', args=[scraper_slug])))
-    if request.method == 'POST':
-        form = dashboard_forms.RunListFilter(request.POST)
+    if 'filter' in request.GET:
+        form = dashboard_forms.RunListFilter(request.GET)
         if form.is_valid():
             statuses = form.cleaned_data['statuses']
     else:
-        statuses = ['updated', 'failed']  # Default statuses to display
+        statuses = ['updated', 'failed', 'running', 'initialized']  # Default statuses to display
         form = dashboard_forms.RunListFilter(initial={'statuses': statuses})
     runs = scraper.runs.filter(status__in=statuses).order_by('-date')
     num_failures = dd.Geocode.objects.filter(scraper=scraper.slug,
