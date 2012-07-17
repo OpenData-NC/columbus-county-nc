@@ -53,7 +53,7 @@ class RestaurantInspectionsTask(PeriodicTask):
     def run(self, clear=False):
         logger = self.get_logger()
         logger.info("Starting restaurant inspections task")
-        PropsScraper(clear=clear).run()
+        RestaurantsScraper(clear=clear).run()
         logger.info("Stopping restaurant inspections task")
 
 
