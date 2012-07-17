@@ -1,99 +1,95 @@
 #!/usr/bin/env python
 
 import sys
-import csv
 import datetime
+from string import capwords
 from optparse import OptionParser
-from collections import defaultdict
 
-from django.template import defaultfilters as filters
-from django.core.serializers.json import DjangoJSONEncoder
-
-from ebpub.db.models import Schema, SchemaField
+from ebpub.db.models import NewsItem, Schema, SchemaField
 from ebpub.utils.script_utils import add_verbosity_options
-from ebdata.retrieval.scrapers.newsitem_list_detail import NewsItemListDetailScraper
 
+from openrural.retrieval.base.scraperwiki import ScraperWikiScraper
 from openrural.data_dashboard.scrapers import DashboardMixin
 
 
 FACILITY_STATUS_CODES = {
-    'A': 'Establishment open for business.',
-    'B': 'Permit or license valid but establishment not open for business at a particular time of year (seasonal).',
-    'C': 'Permit or license valid but establishment not open for business for unknown reasons (bankruptcy, etc.)',
-    'D': 'Permit suspended and establishment closed for nonpayment of fees.',
-    'E': 'Permit suspended and establishment closed for rule or law violations.',
-    'F': 'Transitional permit expired and establishment closed due to noncompliance of conditions on transitional permit.',
-    'G': 'Permit revoked and establishment closed. (Building destroyed etc.)',
-    'H': 'Permit invalid due to sale of business or establishment has been upgraded from food stand to restaurant or if the license or permit issued from another agency has become invalid.',
-    'I': 'New permit (not transitional permit - see T status) issued and establishment opened for business or a license from another agency has been issued.',
-    'J': 'Permit expired because establishment has not been in operation for one year in accordance with GS 130A-248(b1).',
-    'K': 'Transitional permit becomes a permanent permit.',
-    'L': 'To be used with Child Care Centers only. Used when a childcare center changes ownership and earns an Approved, Provisional or Disapproved classification. Used to show facility has a pending status.',
-    'M': 'Mail returned. Inspection still due. A request for a correct address has been sent to the county.',
-    'S': 'Services for the Blind exempt from fee. Inspections still due.',
-    'T': 'Transitional Permit issued and establishment open for business.',
-    'U': 'The facility received an inspection while under a transitional permit.',
-    'W': 'The facility has received an Intent to Suspend for rule violation that is not associated with billing. (Inspection required.)',
-    'X': 'Administrative stop clock for billing. Inspections still due (Example: late Letter).',
-    'Z': 'Administrative error. No inspection required. Account should never have been assigned this ID number.'
+    'A': 'Open for business.',
+    'B': 'Closed for the season.',
+    'C': 'Closed for business.',
+    'D': 'Closed for nonpayment of fees.',
+    'E': 'Closed due to violations.',
+    'F': 'Closed for violating conditional permit.',
+    'G': 'Permit permanently revoked.',
+    'H': 'Permit invalid.',
+    'I': 'New permit. First inspection.',
+    'J': 'Permit expired.',
+    'K': 'Open for business.',
+    'L': 'Open for business.',
+    'M': 'Open for business.',
+    'S': 'Open for business.',
+    'T': 'New permit. First inspection.',
+    'U': 'New permit. First inspection.',
+    'W': 'Permit faces suspension due to rule violation.',
+    'X': 'Open for business.',
+    'Z': 'No inspection required.'
 }
 
 
-class RestaurantInspections(DashboardMixin, NewsItemListDetailScraper):
+class RestaurantsScraper(DashboardMixin, ScraperWikiScraper):
+    # scraper settings
+    logname = 'restaurants'
+    schema_slugs = ('restaurants',)
 
-    logname = 'restaurant-scraper'
-    schema_slugs = ('restaurant-inspections',)
+    # ScraperWiki Settings
+    scraper_name = 'restaurant'
 
-    def update(self, csvreader):
-        insp_dict = defaultdict(list)
-        for item in csvreader:
-            key = '%s %s' % (item['FacilityID'], item['ACTIVITY_DATE'])
-            insp_dict[key].append(item)
+    # Rerfers to whether a detail page exists for a downloaded item
+    has_detail = False
 
-        for key, val in insp_dict.items():
-            self.parse_insp_list(val)
+    # Override base ScraperWikiScraper get_query
+    def get_query(self, select='*', limit=10, offset=0):
+        query = ['SELECT {0} FROM `facinfo` NATURAL JOIN `inspinfo`'.format(select)]
+        query.append("WHERE FacilityID LIKE '07024%'")
+        if self.ordering:
+            query.append('ORDER BY {0}'.format(self.ordering))
+        if limit > 0:
+            query.append('LIMIT {0}'.format(limit))
+        if offset > 0:
+            query.append('OFFSET {0}'.format(offset))
+        query = ' '.join(query)
+        self.logger.debug(query)
+        return query
 
-    def parse_insp_list(self, rows):
-        row = rows[0]
-        status = row['STATUS_CODE']
+    def existing_record(self, record):
+        record_date = datetime.datetime.strptime(record['ACTIVITY_DATE'], "%Y-%m-%d").date()
+        if record_date:
+            try:
+                qs = NewsItem.objects.filter(schema__id=self.schema.id, item_date=record_date)
+                qs = qs.by_attribute(self.schema_fields['facility_id'], record['FacilityID'])
+                return qs[0]
+            except IndexError:
+                return None
+
+    def save(self, old_record, data, detail_record):
+        item_date = data['ACTIVITY_DATE']
+        status = data['STATUS_CODE']
         attrs = {
-            'restaurant_id': row['FacilityID'],
-            'name': row['FAC_NAME'],
-            'status_code': self.get_or_create_lookup('status_code', status, status, description=FACILITY_STATUS_CODES[status]).id,
-            'score': int(float(row['ACTIVITY_FINAL_SCORE'])*100),
+            'name': capwords(data['FAC_NAME']),
+            'facility_id': data['FacilityID'],
+            'score': data['ACTIVITY_FINAL_SCORE'],
+            'status_code': self.get_or_create_lookup('status_code', status, status,
+                description=FACILITY_STATUS_CODES[status]).id,
         }
 
-        form_item_lookups = [self.get_or_create_lookup('form_item',
-            r['FORM_ITEM_ID'], r['FORM_ITEM_ID'], description=r['FORM_ITEM_DESC']) for r in rows]
-        form_item_text = ','.join(str(v.id) for v in form_item_lookups)
-        if len(form_item_text) > 4096:
-            # This is an ugly hack to work around the fact that
-            # many-to-many Lookups are themselves an ugly hack.
-            # See http://developer.openblockproject.org/ticket/143
-            form_item_text = form_item_text[0:4096]
-            form_item_text = form_item_text[0:form_item_text.rindex(',')]
-            self.logger.warning('Restaurant %r had too many violations to store, skipping some!', attrs['name'])
-
-        # There's a bunch of data about every particular violation, and we
-        # store it as a JSON object. Here, we create the JSON object.
-        i_lookup_dict = dict([(v.code, v) for v in form_item_lookups])
-        i_list = [{'desc': i_lookup_dict[r['FORM_ITEM_ID']].description, 'comment': r['ACTIVITY_ITEM_COMMENT']} for r in rows]
-        i_json = DjangoJSONEncoder().encode(i_list)
-
-        title = filters.title(attrs['name'])
-        item_date = datetime.datetime.strptime(row['ACTIVITY_DATE'], "%m/%d/%Y")
-        attrs.update({
-            'form_item': form_item_text,
-            'comments': i_json,
-        })
-        self.create_newsitem(
+        item = self.create_or_update(
+            old_record,
             attrs,
-            title=title,
+            title=attrs['name'],
             item_date=item_date,
-            location_name=filters.title(row['ADDR_LINE1']),
-            city=row['ADDR_CITY'],
-            state=row['STATE_CODE'],
-            zipcode=row['ADDR_ZIP5'],
+            location_name=data['ADDR_LINE1'].title(),
+            city=data['ADDR_CITY'].title(),
+            state=data['STATE_CODE'],
+            zipcode=data['ADDR_ZIP5'],
         )
 
     def _create_schema(self):
@@ -112,39 +108,25 @@ class RestaurantInspections(DashboardMixin, NewsItemListDetailScraper):
         )
         SchemaField.objects.create(
             schema=schema,
-            pretty_name="Restaurant Name",
-            pretty_name_plural="Restaurant Names",
+            pretty_name="Establishment Name",
+            pretty_name_plural="Establishment Names",
             real_name='varchar01',
             name='name',
         )
         SchemaField.objects.create(
             schema=schema,
-            pretty_name="Restaurant ID",
-            pretty_name_plural="Restaurant IDs",
-            real_name='int01',
-            name='resaurant_id',
+            pretty_name="Facility ID",
+            pretty_name_plural="Facility IDs",
+            real_name='varchar02',
+            name='facility_id',
+            display=False,
         )
         SchemaField.objects.create(
             schema=schema,
             pretty_name="Score",
             pretty_name_plural="Scores",
-            real_name='int02',
+            real_name='varchar03',
             name='score',
-        )
-        SchemaField.objects.create(
-            schema=schema,
-            is_lookup=True,
-            pretty_name="Form Items",
-            pretty_name_plural="Form Items",
-            real_name='varchar02',
-            name='form_item',
-        )
-        SchemaField.objects.create(
-            schema=schema,
-            pretty_name="Comments",
-            pretty_name_plural="Comments",
-            real_name='text01',
-            name='comments',
         )
         SchemaField.objects.create(
             schema=schema,
@@ -162,10 +144,7 @@ def main():
                       action="store_true", dest="clear")
     add_verbosity_options(parser)
     opts, args = parser.parse_args(sys.argv)
-    if len(args) != 2:
-        parser.error("Please specify a CSV file to import")
-    csvreader = csv.DictReader(open(args[1]))
-    RestaurantInspections(clear=opts.clear).run(csvreader)
+    RestaurantsScraper(clear=opts.clear).run()
 
 
 if __name__ == '__main__':
