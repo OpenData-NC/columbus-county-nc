@@ -70,6 +70,7 @@ class PropsScraper(DashboardMixin, ScraperWikiScraper):
             attrs = {
                 'prop': prop_val,
                 'owner_name': data['GRANTEE'].title(),
+                'previous_owner': data['GRANTOR'].title(),
                 'acres': '%s' % data['ACRES'],
                 'tax_value': int(data['APPRAISAL']),
                 'sale_amount': int(data['SALE']),
@@ -140,9 +141,17 @@ class PropsScraper(DashboardMixin, ScraperWikiScraper):
         SchemaField.objects.create(
             schema=schema,
             name='owner_name',
-            pretty_name='Owner Name',
-            pretty_name_plural='Owner Names',
+            pretty_name='Buyer/Grantee',
+            pretty_name_plural='Buyers/Grantees',
             real_name='varchar01',
+        )
+
+        SchemaField.objects.create(
+            schema=schema,
+            name='previous_owner',
+            pretty_name='Seller/Grantor',
+            pretty_name_plural='Sellers/Grantors',
+            real_name='varchar04',
         )
 
         SchemaField.objects.create(
