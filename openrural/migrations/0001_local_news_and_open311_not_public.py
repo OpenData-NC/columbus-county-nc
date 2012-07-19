@@ -8,16 +8,12 @@ from django.db.models import Q
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        "Write your forwards methods here."
-        Schema = orm['db.Schema']
-        schemas = Schema.objects.filter(Q(slug='local-news') | Q(slug='open311-service-requests'))
-        schemas.update(is_public=False)
+        """Deleted in favor of a management command."""
+        pass
 
     def backwards(self, orm):
-        "Write your backwards methods here."
-        Schema = orm['db.Schema']
-        schemas = Schema.objects.filter(Q(slug='local-news') | Q(slug='open311-service-requests'))
-        schemas.update(is_public=True)
+        """Deleted in favor of a management command."""
+        pass
 
     models = {
         'db.aggregateall': {
