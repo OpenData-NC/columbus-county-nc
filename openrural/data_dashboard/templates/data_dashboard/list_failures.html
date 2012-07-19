@@ -9,6 +9,7 @@
     {{ form.search }}
    <input type="submit" value="Search" />
 </form>
+{% include 'data_dashboard/includes/pagination.html' with page=geocodes %}
 <table>
     <tr>
         <th>Date</th>
@@ -17,7 +18,7 @@
         <th>Name</th>
         {% if request.user.is_authenticated %}<th>Fix in Admin</th>{% endif %}
     </tr>
-    {% for geocode in geocodes %}
+    {% for geocode in geocodes.object_list %}
         <tr>
             <td>{{ geocode.date }}</td>
             <td><a href='{{ geocode.news_item.get_absolute_url }}'>{{ geocode.location }}</a></td>
@@ -31,4 +32,5 @@
         </tr>
     {% endfor %}
 </table>
+{% include 'data_dashboard/includes/pagination.html' with page=geocodes %}
 {% endblock %}

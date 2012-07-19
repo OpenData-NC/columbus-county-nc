@@ -3,6 +3,7 @@ import time
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Max, Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.views.decorators.http import require_POST
@@ -114,20 +115,29 @@ def list_failures(request, scraper_slug, run_id=None):
                        reverse('view_run', args=[scraper_slug, run_id])))
     crumbs.append(('Failures', ''))
     if run:
-        geocodes = run.geocodes.filter(success=False).select_related()
+        geocodes_list = run.geocodes.filter(success=False).select_related()
     else:
-        geocodes = dd.Geocode.objects.filter(scraper=scraper.slug,
+        geocodes_list = dd.Geocode.objects.filter(scraper=scraper.slug,
                 success=False).select_related()
     if request.GET:
         form = dashboard_forms.GeocodeFailuresSearch(request.GET)
         if form.is_valid():
             search = form.cleaned_data['search']
-            geocodes = geocodes.filter(Q(name__icontains=search) |
+            geocodes_list = geocodes_list.filter(Q(name__icontains=search) |
                                        Q(location__icontains=search) |
                                        Q(description__icontains=search))
     else:
         form = dashboard_forms.GeocodeFailuresSearch()
-    context = {'geocodes': geocodes.order_by('-date'),
+    geocodes_list.order_by('-date')
+    paginator = Paginator(geocodes_list, 25)  # 25 objects per page
+    page = request.GET.get('page', 1)
+    try:
+        geocodes = paginator.page(page)
+    except PageNotAnInteger:
+        geocodes = paginator.page(1)  # Get first page
+    except EmptyPage:
+        geocodes = paginator.page(paginator.num_pages)  # Get last page
+    context = {'geocodes': geocodes,
                'run': run,
                'scraper': scraper,
                'breadcrumbs': crumbs,
