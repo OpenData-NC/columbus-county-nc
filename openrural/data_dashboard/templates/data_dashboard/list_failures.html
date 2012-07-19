@@ -14,19 +14,29 @@
     <tr>
         <th>Date</th>
         <th>Location</th>
-        {% if not run %}<th>Run</th>{% endif %}
+        {% if not run %}
+            <th>Run</th>
+        {% endif %}
         <th>Name</th>
-        {% if request.user.is_authenticated %}<th>Fix in Admin</th>{% endif %}
+        {% if request.user.is_authenticated %}
+            <th>Fix in Admin</th>
+        {% endif %}
     </tr>
     {% for geocode in geocodes.object_list %}
         <tr>
             <td>{{ geocode.date }}</td>
             <td><a href='{{ geocode.news_item.get_absolute_url }}'>{{ geocode.location }}</a></td>
-            {% if not run %}<td><a href='{{ geocode.run.get_absolute_url }}'>{{ geocode.run }}</a></td>{% endif %}
+            {% if not run %}
+                <td>
+                    <a href='{{ geocode.run.get_absolute_url }}'>{{ geocode.run }}</a>
+                </td>
+            {% endif %}
             <td>{{ geocode.name }}</td>
             {% if request.user.is_authenticated %}
                 <td>
-                    <a href="{% url admin:db_newsitem_change geocode.news_item.id %}">Fix</a>
+                    {% if geocode.news_item and geocode.news_item.id %}
+                        <a href="{% url admin:db_newsitem_change geocode.news_item.id %}">Fix</a>
+                    {% endif %}
                 </td>
             {% endif %}
         </tr>
