@@ -27,7 +27,7 @@ def get_newsitem_full_address(newsitem):
     addr = newsitem.location_name.strip()
     locs = newsitem.location_set.all()
     try:
-        city = locs.filter(location_type__slug='cities').get().name.strip()
+        city = locs.filter(location_type__slug='cities').get().name.title().strip()
     except:
         city = ''
     try:
