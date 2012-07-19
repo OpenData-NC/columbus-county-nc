@@ -85,17 +85,15 @@
 
   <div id="place-detail-content">
 	{% include "db/snippets/newsitem_list_by_day.html" %}
-	{% comment %}
 	{% ifnotequal place.slug "unknown" %}
 	<div id="alerts-signup">
 		<h2>Sign up for:</h2>
 		<ul>
 			{% if alerts_installed %}<li><a class="email" href="{{ place.alert_url }}">E-mail alerts</a></li>{% endif %}
-			<li><a class="feed" href="{{ place.url }}feeds/">Custom RSS feeds</a></li>
+			{#<li><a class="feed" href="{{ place.url }}feeds/">Custom RSS feeds</a></li>#}
 		</ul>
 	</div>
 	{% endifnotequal %}
-  	{% endcomment %}
   </div><!--/ #place-detail-content -->
 
   <!-- begin block extracontent -->
