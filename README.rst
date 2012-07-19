@@ -45,11 +45,11 @@ Create a PostgreSQL database for development and initialize the database::
 
 To hide certain schemas from the site by setting public to False, use the
 hide_schemas management command with the slugs of the schemas you wish to hide
-as the arguments.
+as the arguments::
 
     $ django-admin.py hide_schemas local-news open311-service-requests
 
-To hide just the local-news and open311-service-requests schemas, use the
+To hide just the Local News and Open311 Service Requests schemas, use the
 --default option.
 
 If everything went smoothly, you can now runserver::
