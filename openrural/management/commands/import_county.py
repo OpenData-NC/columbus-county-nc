@@ -172,8 +172,16 @@ class CountyImporter(object):
             verbose=True)
         loc_created_count = loc_importer.save(self.datafiles[fkey]['name_field'])
         townships = Location.objects.filter(location_type=self.city_type).exclude(pk__in=city_pks)
+        city_names = Location.objects.filter(location_type=self.city_type, pk__in=city_pks).values_list('name', flat=True)
+        city_names = [name.lower() for name in city_names]
         for township in townships:
-            township.name = '%s environs' % township.name.title()
+            if township.name.lower() in city_names:
+                city = Location.objects.get(location_type=self.city_type, pk__in=city_pks, name__iexact=township.name)
+                city.name = '%s town limits' % city.name.title()
+                city.save()
+                township.name = '%s area' % township.name.title()
+            else:
+                township.name = township.name.title()
             township.slug = slugify(township.name)
             township.location = township.location.difference(within_cities)
             township.save()
