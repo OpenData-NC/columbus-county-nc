@@ -1,15 +1,16 @@
 {# This snippet requires these variables: schema, newsitem_list #}
-{% load humanize %}
+{% load openrural_tags humanize %}
 
 {% regroup newsitem_list by item_date as newsitem_list_byday %}
+
 {% for newsitem_group in newsitem_list_byday %}
     <li class="newsitem">
-        <ul class="properties">
+        <ul>
             {% for newsitem in newsitem_group.list %}
                 <li>
                     {% block newsitem_list_content %}
                         <span>
-                            <a class="title" href="{{ newsitem.item_url }}">{{ newsitem.location_name }}</a>
+                            <a class="title" href="{{ newsitem.item_url }}">{% get_newsitem_full_address newsitem %}</a>
                         </span>
                         <span class="price">${{ newsitem.attributes.sale_amount|intcomma }}</span>
                     {% endblock %}

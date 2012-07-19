@@ -79,10 +79,8 @@ class PropsScraper(DashboardMixin, ScraperWikiScraper):
 
             transformed_point = parcel_feature.geom.transform(4326, True)
             if addr_feature:
-                fulladd = str(addr_feature['FULLADD']).title()
-                city = str(addr_feature['CITY']).title()
-                zipcode = '%s' % addr_feature['ZIP']
-                location_name = '%s, %s, NC %s' % (fulladd, city, zipcode)
+                location_name = str(addr_feature['FULLADD']).title()
+                zipcode = str(addr_feature['ZIP'])
             else:
                 location_name = 'Property %s (address unknown)' % prop_val
                 zipcode = ''

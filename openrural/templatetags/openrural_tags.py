@@ -23,7 +23,7 @@ def reorder_cities_list(context):
 
 
 @register.simple_tag
-def get_corporation_full_address(newsitem):
+def get_newsitem_full_address(newsitem):
     addr = newsitem.location_name.strip()
     locs = newsitem.location_set.all()
     try:
@@ -83,3 +83,25 @@ def regroup_numbered_streets(context):
 @register.simple_tag
 def get_editor_email():
     return getattr(settings, 'OPENRURAL_EDITOR_EMAIL', '')
+
+
+@register.filter
+def truncatechars(value, arg):
+    """Truncate the text when it exceeds a certain number of characters.
+    Deletes the last word only if partial.
+    Adds '...' at the end of the text.
+
+    Based on http://djangosnippets.com/snippets/2653/
+    """
+    try:
+        length = int(arg)
+    except ValueError:
+        return value
+
+    if len(value) > length:
+        if value[length:length + 1].isspace():
+            return value[:length].rstrip() + '...'
+        else:
+            return value[:length].rsplit(' ', 1)[0].rstrip() + '...'
+    else:
+        return value

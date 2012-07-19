@@ -1,24 +1,21 @@
 {# This snippet requires these variables: schema, newsitem_list #}
-{% load eb humanize %}
+{% load openrural_tags %}
 
 {% regroup newsitem_list by item_date as newsitem_list_byday %}
 
 {% for newsitem_group in newsitem_list_byday %}
 	<li class="newsitem">
 		<ul>
-		{% for newsitem in newsitem_group.list %}
-			<li>
-			{% with location_url=newsitem.location_url %}
-				{% if location_url %}<a href="{{ location_url }}">{% endif %}<span class="location">{{ newsitem.location_name }}</span>{% if location_url %}</a>{% endif %}
-			{% endwith %}
-			<!-- block newsitem_list_content -->
-			{% block newsitem_list_content %}
-				<strong class="title"><a href="{{ newsitem.item_url}}" class="url">{{ newsitem.title|truncatewords_html:20 }}</a></strong>
-				{% if newsitem.description %}<p class="info">{{ newsitem.description|truncatewords_html:20}}</p>{% endif %}
-			{% endblock newsitem_list_content %}
-			<!-- endblock newsitem_list_content -->
-			</li>
-		{% endfor %}
+		    {% for newsitem in newsitem_group.list %}
+			    <li>
+			        {% block newsitem_list_content %}
+				        <span>
+                            <a class="title" href="{{ newsitem.item_url}}">{{ newsitem.title|striptags|truncatechars:50 }}</a>
+                        </span>
+			            <span class="price">{% get_newsitem_full_address newsitem %}</span>
+                    {% endblock newsitem_list_content %}
+			    </li>
+		    {% endfor %}
 		</ul>
 	</li>
 {% endfor %}
