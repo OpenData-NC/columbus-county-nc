@@ -175,6 +175,9 @@ class CountyImporter(object):
         city_names = Location.objects.filter(location_type=self.city_type, pk__in=city_pks).values_list('name', flat=True)
         city_names = [name.lower() for name in city_names]
         for township in townships:
+            # If a same-named city already exists, then:
+            #   1. Rename the township to "Cityname area."
+            #   2. Rename the city to "Cityname town limits."
             if township.name.lower() in city_names:
                 city = Location.objects.get(location_type=self.city_type, pk__in=city_pks, name__iexact=township.name)
                 city.name = '%s town limits' % city.name.title()
