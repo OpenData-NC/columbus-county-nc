@@ -1,5 +1,6 @@
 import logging
 from optparse import make_option
+import os
 
 from django.core.management.base import BaseCommand
 from django.contrib.gis.gdal import DataSource
