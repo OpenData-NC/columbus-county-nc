@@ -182,6 +182,7 @@ class CountyImporter(object):
                 city = Location.objects.get(location_type=self.city_type, pk__in=city_pks, name__iexact=township.name)
                 city.name = '%s town limits' % city.name.title()
                 city.save()
+                city.slug = slugify(city.name)  # This seems to be expected by some OpenBlock code.
                 township.name = '%s area' % township.name.title()
             else:
                 township.name = township.name.title()

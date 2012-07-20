@@ -5,17 +5,13 @@
 {% block breadcrumbs %}{% endblock %}
 
 {% block content %}
-<div id="content">
-	<h1>Every Street in Every City</h1>
-    <p>Select a city/area to browse the streets there.</p>
-	<ul>
-	{% for city in all_cities %}
-	  {% if city.slug in cities_with_streets %}
-	    <li><a href="{% url ebpub-street-list city.slug %}">{{ city.name }}</a></li>
-	  {% else %}
-	    <!-- <li>{{city.name }} <i>(0 blocks)</i></li> -->
-	  {% endif %}
-	{% endfor %}
-	</ul>
-</div>
+    <div id="content">
+        <h1>Every Street in Every City</h1>
+        <p>Select a city/area to browse the streets there.</p>
+        <ul>
+            {% for city in all_cities %}
+                <li><a href="{% url ebpub-street-list city.slug %}">{{ city.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
 {% endblock %}
