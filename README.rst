@@ -71,7 +71,7 @@ will be downloaded to a temporary directory which will be deleted before the com
 finishes.
 
 By default the import_columbus_county command uses the county GIS department's road
-centerliens file to generate blocks. If you would prefer to use census (Tiger) data,
+centerlines file to generate blocks. If you would prefer to use census (Tiger) data,
 pass --tiger to the command.
 
 Vagrant Testing

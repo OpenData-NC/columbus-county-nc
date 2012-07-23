@@ -36,6 +36,7 @@ def census_name_for(shapetype, state, county):
 
 
 class CountyImporter(object):
+
     def __init__(self, county, county_location=None):
         self.county = county
         state = self.state = county[0:2]
@@ -157,7 +158,8 @@ class CountyImporter(object):
         return loc_created_count
 
     def augment_cities(self):
-        # Add in county subdivisions, deleting from their shapes any area already covered by a "proper" city.
+        # Add in county subdivisions, deleting from their shapes any area
+        # already covered by a "proper" city.
         fkey = 'cousub'
         starter_cities = Location.objects.filter(location_type=self.city_type)
         within_cities = GEOSGeometry('MULTIPOLYGON EMPTY')
@@ -172,14 +174,16 @@ class CountyImporter(object):
             verbose=True)
         loc_created_count = loc_importer.save(self.datafiles[fkey]['name_field'])
         townships = Location.objects.filter(location_type=self.city_type).exclude(pk__in=city_pks)
-        city_names = Location.objects.filter(location_type=self.city_type, pk__in=city_pks).values_list('name', flat=True)
+        city_names = Location.objects.filter(location_type=self.city_type,
+            pk__in=city_pks).values_list('name', flat=True)
         city_names = [name.lower() for name in city_names]
         for township in townships:
             # If a same-named city already exists, then:
             #   1. Rename the township to "Cityname area."
             #   2. Rename the city to "Cityname town limits."
             if township.name.lower() in city_names:
-                city = Location.objects.get(location_type=self.city_type, pk__in=city_pks, name__iexact=township.name)
+                city = Location.objects.get(location_type=self.city_type,
+                    pk__in=city_pks, name__iexact=township.name)
                 city.name = '%s town limits' % city.name.title()
                 city.slug = slugify(city.name)  # This seems to be expected by some OpenBlock code.
                 city.save()
@@ -205,7 +209,7 @@ class CountyImporter(object):
         return loc_created_count
 
     def import_blocks(self):
-        # Now we load them the blocks table.
+        # Now we load the blocks table.
         print "Importing blocks, this may take several minutes ..."
 
         importer = TigerImporter(
@@ -220,10 +224,9 @@ class CountyImporter(object):
         print "Created %d blocks, updated %d" % (num_created, num_updated)
 
     def populate_streets(self):
-        print "Populating streets and fixing addresses, these can take several minutes..."
-
         # Note these scripts should be run ONCE, in this order,
         # after you have imported *all* your blocks.
+        print "Populating streets and fixing addresses, these can take several minutes..."
 
         populate_streets.main(['streets'])
         populate_streets.main(['block_intersections'])
