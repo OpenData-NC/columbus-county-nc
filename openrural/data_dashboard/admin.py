@@ -21,7 +21,7 @@ class GeocodeAdmin(admin.ModelAdmin):
     list_display = ('id', 'run', 'date', 'success', 'location', 'name',
                     'zipcode')
     list_filter = ('success', 'date', 'name', 'scraper', 'zipcode')
-    search_fields = ('batch__id', 'location', 'description')
+    search_fields = ('location', 'description')
     ordering = ('-date',)
     readonly_fields = ('success', 'name', 'run', 'news_item', 'scraper',
                        'zipcode')
