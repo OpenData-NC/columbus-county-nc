@@ -9,209 +9,202 @@
 {% block content %}
 
 <div id="content">
-	{% block newsitem_detail_title %}
+    {% block newsitem_detail_title %}
         <h1>
             {% if location_url %}
-        	    {{ newsitem.location_name|default:"unknown" }}
+                {{ newsitem.location_name|default:"unknown" }}
             {% else %}
-        	    {{ newsitem.title }}
+                {{ newsitem.title }}
             {% endif %}
         </h1>
     {% endblock %}
-	<h2>Updated on {{ newsitem.pub_date|date:"F j, Y" }}</h2>
-	{% block newsitem_detail_summary %}{% endblock %}
+    <h2>Updated on {{ newsitem.pub_date|date:"F j, Y" }}</h2>
+    {% block newsitem_detail_summary %}{% endblock %}
 
-	<div id="mapwrapper">
-	  <script type="text/javascript">
-	  {% autoescape off %}
-
-	  function loadMap() {
-		  var config = {{map_configuration}};
-      config.center = [{{map_center_x}}, {{map_center_y}}];
-      config.zoom = 16;
-      return new OBMap(config);
-		}
-
-		{% endautoescape %}
-	  </script>
-	  {% include "richmaps/richmap.html" %}
-	</div>
-
-    <!-- block flagging -->{% block flagging %}
-	{% if allow_flagging %}
-
-	  <div id="flag-form-wrapper"></div>
-	  <script type="text/javascript">
-        var formURL = '{% url moderation_flag_form newsitem.id %}';
-		// Handler for receiving POST response.
-		var handlePostResponse = function(html) {
-			$j('#flag-form-wrapper').html(html);
-			$j('#flag-submit').click(submitFlagForm);
-		};
-
-		// Handler for submitting the flag form.
-		var submitFlagForm = function(evt) {
-		    evt.preventDefault();
-			var data = $('#flag-form').serialize();
-			$j.post(formURL, data, handlePostResponse);
-		};
-		// Hook up the submit handler.
-		var formLoaded = function(text, status, xhr) {
-			$j('#flag-submit').click(submitFlagForm);
-		};
-		$j('#flag-form-wrapper').load(formURL, formLoaded);
-	  </script>
-
-	{% endif %}
-	{% endblock flagging %}<!-- endblock flagging -->
-	<table>
-		{% block newsitem_detail_location %}
-		<tr>
-			<th>Location</th>
-			<td>
-				{% if location_url %}<a href="{{ location_url }}">{% endif %}
-                                {{newsitem.location_name|default:"unknown"}}
-                                {% if location_url %}</a>{% endif %}
-				{% if not newsitem.location %}<p>This location couldn't be mapped.</p>{% endif %}
-			</td>
-		</tr>
-		{% endblock %}
-		<!-- block newsitem_detail_date -->{% block newsitem_detail_date %}
-			<tr>
-				<th>{{ newsitem.schema.date_name|capfirst }}</th>
-				<td><a href="{{ newsitem.item_date_url }}">{{ newsitem.item_date|date:"F j, Y" }}</a></td>
-			</tr>
-		{% endblock newsitem_detail_date %}<!-- endblock: newsitem_detail_date -->
-		<!-- block newsitem_detail_description -->{% block newsitem_detail_description %}
-			<tr>
-				<th>Description</th>
-				<td>{{ newsitem.description|truncatewords_html:20}}
-				  {% if newsitem.url %}
-				    <br /><a href="{{newsitem.url}}">Read more at {{newsitem.url}}</a>
-				  {% endif %}
-				</td>
-			</tr>
-		{% endblock newsitem_detail_description %}<!-- endblock: newsitem_detail_description -->
-		<!-- block newsitem_detail_image_list -->{% block newsitem_detail_image_list %}
-			{% for image in images %}
-				<tr>
-					<th>Image {{ forloop.counter }}</th>
-					<td>
-					  <img src="{{ image.url }}" width="640">
-					</td>
-				</tr>
-			{% endfor %}
-		{% endblock %}<!-- endblock: newsitem_detail_image_list -->
-		<!-- block newsitem_detail_attribute_list -->{% block newsitem_detail_attribute_list %}
-			{% for attribute in attribute_list %}
-				<tr>
-					<th>
-						{{ attribute.sf.smart_pretty_name|capfirst }}
-					</th>
-					<td>
-						{% if attribute.value_list %}
-						{% for value in attribute.value_list %}
-							{% if value.url %}
-								<a href="{{ value.url }}">{{ value.value }}</a>
-							{% else %}
-								{{ value.value|intcomma|default:value.value }}
-							{% endif %}
-							{% if value.description %}<p>{{ value.description|safe }}</p>{% endif %}
-							{% if not forloop.last %}{% if not value.description %}<br>{% endif %}{% endif %}
-						{% endfor %}
-						{% else %}
-						None
-						{% endif %}
-					</td>
-				</tr>
-			{% endfor %}
-		{% endblock newsitem_detail_attribute_list %}<!-- endblock: newsitem_detail_image_list -->
-	</table>
-
-  {% block extracontent %}
-  {% endblock %}
-
-	{% block item_comments %}
-	  {% if newsitem.schema.allow_comments %}
-	  {% get_comment_count for newsitem as comment_count %}
-	  <h2>{{comment_count}} Comments</h2>
-
-	  <div class="comment-list">
-    {% get_comment_list for newsitem as comment_list %}
-    {% for comment in comment_list %}
-        <div id="c{{comment.id}}" class="comment">
-          <div class="comment-text">{{ comment.comment }}</div>
-          <span class="comment-author">by {{ comment.name }}</span>
-          <span class="comment-date">{{comment.submit_date}}</span>
-          {% comment %}<a class="comment-flag-link" href="{% url comments-flag comment.id %}">flag this comment</a>{%endcomment%}
-        </div>
-    {% endfor %}
+    <div id="mapwrapper">
+        <script type="text/javascript">
+        {% autoescape off %}
+            function loadMap() {
+                var config = {{map_configuration}};
+                config.center = [{{map_center_x}}, {{map_center_y}}];
+                config.zoom = 16;
+                return new OBMap(config);
+            }
+        {% endautoescape %}
+        </script>
+        {% include "richmaps/richmap.html" %}
     </div>
 
-
-    {% if request.user.is_authenticated %}
-	  <h2> Add a Comment </h2>
-	  {% get_comment_form for newsitem as form %}
-
-      <form id="comment-form" action="{% comment_form_target %}" method="post">
-        {% csrf_token %}
-        {{form.content_type}}
-        {{form.object_pk}}
-        {{form.timestamp}}
-        {{form.security_hash}}
-
-        <label for="id_comment">{{form.comment.label_tag}}</label>
-        <div>
-          {{form.comment}}
-        </div>
-
-        <div class="hidden">
-          If this field is filled in, the comment will be rejected as spam.</td>
-          {{form.honeypot}}
-        </div>
-
-        <div>
-              <input type="submit" name="submit" value="Post">
-        </div>
-    </form>
+    <!-- block flagging -->{% block flagging %}
+    {% if allow_flagging %}
+        <div id="flag-form-wrapper"></div>
+        <script type="text/javascript">
+            var formURL = '{% url moderation_flag_form newsitem.id %}';
+            // Handler for receiving POST response.
+            var handlePostResponse = function(html) {
+                $j('#flag-form-wrapper').html(html);
+                $j('#flag-submit').click(submitFlagForm);
+            };
+            // Handler for submitting the flag form.
+            var submitFlagForm = function(evt) {
+                evt.preventDefault();
+                var data = $('#flag-form').serialize();
+                $j.post(formURL, data, handlePostResponse);
+            };
+            // Hook up the submit handler.
+            var formLoaded = function(text, status, xhr) {
+                $j('#flag-submit').click(submitFlagForm);
+            };
+            $j('#flag-form-wrapper').load(formURL, formLoaded);
+        </script>
     {% endif %}
-	  {% endif %}
-	{% endblock %}
+    {% endblock flagging %}<!-- endblock flagging -->
+    <table>
+        {% block newsitem_detail_location %}
+        <tr>
+            <th>Location</th>
+            <td>
+                {% if location_url %}<a href="{{ location_url }}">{% endif %}
+                {{ newsitem.location_name|default:"unknown" }}
+                {% if location_url %}</a>{% endif %}
+                {% if not newsitem.location %}<p>This location couldn't be mapped.</p>{% endif %}
+            </td>
+        </tr>
+        {% endblock %}
+        <!-- block newsitem_detail_date -->{% block newsitem_detail_date %}
+            <tr>
+                <th>{{ newsitem.schema.date_name|capfirst }}</th>
+                <td><a href="{{ newsitem.item_date_url }}">{{ newsitem.item_date|date:"F j, Y" }}</a></td>
+            </tr>
+        {% endblock newsitem_detail_date %}<!-- endblock: newsitem_detail_date -->
+        <!-- block newsitem_detail_description -->{% block newsitem_detail_description %}
+            {% if newsitem.description.strip %}
+            <tr>
+                <th>Description</th>
+                <td>{{ newsitem.description|truncatewords_html:20}}
+                  {% if newsitem.url %}
+                      <br /><a href="{{ newsitem.url }}">Read more at {{ newsitem.url }}</a>
+                  {% endif %}
+                </td>
+            </tr>
+            {% endif %}
+        {% endblock newsitem_detail_description %}<!-- endblock: newsitem_detail_description -->
+        <!-- block newsitem_detail_image_list -->{% block newsitem_detail_image_list %}
+            {% for image in images %}
+                <tr>
+                    <th>Image {{ forloop.counter }}</th>
+                    <td>
+                        <img src="{{ image.url }}" width="640">
+                    </td>
+                </tr>
+            {% endfor %}
+        {% endblock %}<!-- endblock: newsitem_detail_image_list -->
+        <!-- block newsitem_detail_attribute_list -->{% block newsitem_detail_attribute_list %}
+            {% for attribute in attribute_list %}
+                <tr>
+                    <th>
+                        {{ attribute.sf.smart_pretty_name|capfirst }}
+                    </th>
+                    <td>
+                        {% if attribute.value_list %}
+                        {% for value in attribute.value_list %}
+                            {% if value.url %}
+                                <a href="{{ value.url }}">{{ value.value }}</a>
+                            {% else %}
+                                {{ value.value|intcomma|default:value.value }}
+                            {% endif %}
+                            {% if value.description %}<p>{{ value.description|safe }}</p>{% endif %}
+                            {% if not forloop.last %}{% if not value.description %}<br>{% endif %}{% endif %}
+                        {% endfor %}
+                        {% else %}
+                            None
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        {% endblock newsitem_detail_attribute_list %}<!-- endblock: newsitem_detail_image_list -->
+    </table>
 
+    {% block extracontent %}
+    {% endblock %}
 
-	<!-- block similaritems -->{% block similaritems %}
-		{% if not newsitem.schema.is_special_report %}
-			{% if locations_within %}
-				<h2>Other {{ newsitem.schema.plural_name }} nearby</h2>
-				<ul>
-					{% for location in locations_within %}
-					<li><a href="{% filter_url newsitem.schema +'location' location %}">{{ location.name }}</a></li>
-					{% endfor %}
-					<li><a href="{{ newsitem.schema.url }}">More {{ newsitem.schema.plural_name }} in {% METRO_NAME %}</a></li>
-				</ul>
-			{% endif %}
-		{% endif %}
-	{% endblock %}<!-- endblock similaritems -->
+    {% block item_comments %}
+        {% if newsitem.schema.allow_comments %}
+            {% get_comment_count for newsitem as comment_count %}
+            <h2>{{comment_count}} Comments</h2>
 
-{% if newsitem.schema.summary %}
-	<h2>About {{ schema.plural_name }}...</h2>
-	<ul class="inlinelist">
-	  {% if newsitem.schema.summary.strip %}
-	  <li>Summary: {{ newsitem.schema.summary|safe|linebreaks }}</li>
-	  {% endif %}
-	  {% if newsitem.schema.source.strip %}
-	  {% with newsitem.schema.source.splitlines as sources %}
-		<li>Source{{sources|pluralize}}:
-		{% for source in sources %}
-		   {% if source.strip %}
-		   <a href="{{ source.strip|safe }}">{{source}}
-		   </a>
-		   {% endif %}
-		{% endfor %}
-	  {% endwith %}
-	{% endif %}
-	</ul>
-{% endif %}
+            <div class="comment-list">
+                {% get_comment_list for newsitem as comment_list %}
+                {% for comment in comment_list %}
+                <div id="c{{comment.id}}" class="comment">
+                    <div class="comment-text">{{ comment.comment }}</div>
+                    <span class="comment-author">by {{ comment.name }}</span>
+                    <span class="comment-date">{{comment.submit_date}}</span>
+                    {% comment %}<a class="comment-flag-link" href="{% url comments-flag comment.id %}">flag this comment</a>{%endcomment%}
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if request.user.is_authenticated %}
+                <h2> Add a Comment </h2>
+                {% get_comment_form for newsitem as form %}
+
+                <form id="comment-form" action="{% comment_form_target %}" method="post">
+                    {% csrf_token %}
+                    {{ form.content_type }}
+                    {{ form.object_pk }}
+                    {{ form.timestamp }}
+                    {{ form.security_hash }}
+
+                    <label for="id_comment">{{ form.comment.label_tag }}</label>
+                    <div>
+                        {{ form.comment }}
+                    </div>
+
+                    <div class="hidden">
+                      If this field is filled in, the comment will be rejected as spam.
+                      {{ form.honeypot }}
+                    </div>
+
+                    <div>
+                        <input type="submit" name="submit" value="Post">
+                    </div>
+                </form>
+            {% endif %}
+        {% endif %}
+    {% endblock %}
+
+    <!-- block similaritems -->{% block similaritems %}
+        {% if not newsitem.schema.is_special_report %}
+            {% if locations_within %}
+                <h2>Other {{ newsitem.schema.plural_name }} nearby</h2>
+                <ul>
+                    {% for location in locations_within %}
+                        <li><a href="{% filter_url newsitem.schema +'location' location %}">{{ location.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endif %}
+    {% endblock %}<!-- endblock similaritems -->
+
+    {% if newsitem.schema.summary %}
+        <h2>About {{ schema.plural_name }}...</h2>
+        <ul class="inlinelist">
+            {% if newsitem.schema.summary.strip %}
+                <li>Summary: {{ newsitem.schema.summary|safe|linebreaks }}</li>
+            {% endif %}
+            {% if newsitem.schema.source.strip %}
+                {% with newsitem.schema.source.splitlines as sources %}
+                    <li>Source{{sources|pluralize}}:
+                    {% for source in sources %}
+                        {% if source.strip %}
+                            <a href="{{ source.strip|safe }}">{{ source }}</a>
+                        {% endif %}
+                    {% endfor %}
+                {% endwith %}
+            {% endif %}
+        </ul>
+    {% endif %}
 
 </div><!--/ #content-->
 {% endblock %}
