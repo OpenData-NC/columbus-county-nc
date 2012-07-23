@@ -182,7 +182,6 @@
                     {% for location in locations_within %}
                         <li><a href="{% filter_url newsitem.schema +'location' location %}">{{ location.name }}</a></li>
                     {% endfor %}
-                    <li><a href="{{ newsitem.schema.url }}">More {{ newsitem.schema.plural_name }} in {% METRO_NAME %}</a></li>
                 </ul>
             {% endif %}
         {% endif %}
