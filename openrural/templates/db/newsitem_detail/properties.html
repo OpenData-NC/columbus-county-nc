@@ -1,6 +1,6 @@
 {% extends "db/newsitem_detail.html" %}
 
-{% load eb humanize mapping eb_filter comments thumbnail %}
+{% load eb humanize mapping eb_filter comments thumbnail openrural_tags %}
 
 {% block body_id %}property-detail{% endblock %}
 
@@ -8,7 +8,7 @@
 
 <tr>
     <th>Location</th>
-    <td>{{ newsitem.location_name|default:"unknown" }}<br />
+    <td>{% get_newsitem_full_address newsitem %}<br />
         {% if location_url %}
             <a href="{{ location_url }}">Click to view all recent news items near this property.</a>
         {% else %}

@@ -1,6 +1,6 @@
 {% extends "base.html" %}{% comment %}<!-- -*- mode: django-html; tab-width: 4 -*- -->{% endcomment %}
 
-{% load eb humanize mapping eb_filter comments thumbnail %}
+{% load eb humanize mapping eb_filter comments thumbnail openrural_tags %}
 
 {% block title %}{{ newsitem.title }} | {{ newsitem.schema.plural_name|capfirst }}{% endblock %}
 
@@ -10,13 +10,7 @@
 
 <div id="content">
     {% block newsitem_detail_title %}
-        <h1>
-            {% if location_url %}
-                {{ newsitem.location_name|default:"unknown" }}
-            {% else %}
-                {{ newsitem.title }}
-            {% endif %}
-        </h1>
+        <h1>{{ newsitem.title }}</h1>
     {% endblock %}
     <h2>Updated on {{ newsitem.pub_date|date:"F j, Y" }}</h2>
     {% block newsitem_detail_summary %}{% endblock %}
@@ -65,7 +59,7 @@
             <th>Location</th>
             <td>
                 {% if location_url %}<a href="{{ location_url }}">{% endif %}
-                {{ newsitem.location_name|default:"unknown" }}
+                {% get_newsitem_full_address newsitem %}
                 {% if location_url %}</a>{% endif %}
                 {% if not newsitem.location %}<p>This location couldn't be mapped.</p>{% endif %}
             </td>
