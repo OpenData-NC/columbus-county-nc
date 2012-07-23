@@ -5,28 +5,29 @@
 {% block title %}News {% if is_block %}near{% else %}in{% endif %} {{ place.pretty_name }}{% if is_block %}, {{ place.city_object.name }}{% endif %}{% endblock title %}
 
 {% block extrahead %}
-{% ifnotequal place.slug "unknown" %}<link rel="alternate" type="application/rss+xml" title="RSS" href="{{ place.rss_url }}" />{% endifnotequal %}
-<meta name="description" content="Recent news {% if is_block %}near{% else %}in{% endif %} {{ place.pretty_name }}{% if is_block %} in {{ place.city_object.name }}{% endif %}.">
+    {% ifnotequal place.slug "unknown" %}<link rel="alternate" type="application/rss+xml" title="RSS" href="{{ place.rss_url }}" />{% endifnotequal %}
+    
+    <meta name="description" content="Recent news {% if is_block %}near{% else %}in{% endif %} {{ place.pretty_name }}{% if is_block %} in {{ place.city_object.name }}{% endif %}.">
 {{ block.super }}
 
 <script type="text/javascript" charset="utf-8">
-	var pid = '{{ pid }}';
+    var pid = '{{ pid }}';
 
-	window.onload = function() {
-		$j(".chzn-select").chosen({no_results_text: "No results matched"});
+    window.onload = function() {
+        $j(".chzn-select").chosen({no_results_text: "No results matched"});
 
-		$j('#sectionfilterbutton').click(function() {
-			var url = $j('#sectionfilter').val();
-			if (url) { window.location = url; }
-			return false;
-		});
-		{% comment %}
-		{% if USER %}
-		{% include "db/snippets/onload_scripts.html" %}
-		$j('h4.unloaded').removeClass('unloaded');
-		{% endif %}
-		{% endcomment %}
-	}
+        $j('#sectionfilterbutton').click(function() {
+            var url = $j('#sectionfilter').val();
+            if (url) { window.location = url; }
+            return false;
+        });
+        {% comment %}
+        {% if USER %}
+            {% include "db/snippets/onload_scripts.html" %}
+            $j('h4.unloaded').removeClass('unloaded');
+        {% endif %}
+        {% endcomment %}
+    }
 </script>
 
 {% endblock extrahead %}
@@ -34,70 +35,70 @@
 {% block body_id %}place-detail{% endblock %}
 
 {% block header %}
-	{% if is_block %}{{ place.from_num }} – {{ place.to_num }} block of {% if place.predir %}{{ place.predir }}. {% endif %}{{ place.street_pretty_name }}{% if place.postdir %} {{ place.postdir }}.{% endif %}
-	{% else %}{{ place.name }}
-	{% endif %}
+    {% if is_block %}{{ place.from_num }} – {{ place.to_num }} block of {% if place.predir %}{{ place.predir }}. {% endif %}{{ place.street_pretty_name }}{% if place.postdir %} {{ place.postdir }}.{% endif %}
+    {% else %}{{ place.name }}
+    {% endif %}
 {% endblock header %}
 
 {% block place_content %}
-
 <div id="content">
+    {% ifnotequal place.slug "unknown" %}
+        <div id="contentheader">
+            <h1>{{ place.pretty_name }}</h1>
 
-  {% ifnotequal place.slug "unknown" %}
-	<div id="contentheader">
-	  <h1>{{ place.pretty_name }}</h1>
+            <ul class="nav-view">
+                {% if show_upcoming %}
+                    <li><a href="../" rel="nofollow">Recent News</a></li>
+                    <li class="selected">Upcoming Events</li>
+                    <li><a href="../overview/" rel="nofollow">Overview</a></li>
+                {% else %}
+                    <li class="selected">Recent News</li>
+                    <li><a href="upcoming/" rel="nofollow">Upcoming Events</a></li>
+                    <li><a href="overview/" rel="nofollow">Overview</a></li>
+                {% endif %}
+            </ul>
+      
+            {% if is_block %}
+                <p>Show news within:</p>
+                <ul>
+                    <li>{% ifequal block_radius "1" %}1 block{% else %}<a href="?radius=1" rel="nofollow">1 block</a>{% endifequal %}</li>
+                    <li>{% ifequal block_radius "3" %}3 blocks{% else %}<a href="?radius=3" rel="nofollow">3 blocks</a>{% endifequal %}</li>
+                    <li>{% ifequal block_radius "8" %}8 blocks{% else %}<a href="?radius=8" rel="nofollow">8 blocks</a>{% endifequal %}</li>
+                </ul>
+            {% endif %}
 
-	  <ul class="nav-view">
-		{% if show_upcoming %}
-		  <li><a href="../" rel="nofollow">Recent News</a></li>
-		  <li class="selected">Upcoming Events</li>
-		  <li><a href="../overview/" rel="nofollow">Overview</a></li>
-		{% else %}
-		  <li class="selected">Recent News</li>
-		  <li><a href="upcoming/" rel="nofollow">Upcoming Events</a></li>
-		  <li><a href="overview/" rel="nofollow">Overview</a></li>
-		{% endif %}
-	  </ul>
-	  {% if is_block %}
-	  <p>Show news within:</p>
-	  <ul>
-		<li>{% ifequal block_radius "1" %}1 block{% else %}<a href="?radius=1" rel="nofollow">1 block</a>{% endifequal %}</li>
-		<li>{% ifequal block_radius "3" %}3 blocks{% else %}<a href="?radius=3" rel="nofollow">3 blocks</a>{% endifequal %}</li>
-		<li>{% ifequal block_radius "8" %}8 blocks{% else %}<a href="?radius=8" rel="nofollow">8 blocks</a>{% endifequal %}</li>
-	  </ul>
-	  {% endif %}
-	  <form class="select-filter" method="GET">
-		<select id="sectionfilter" class="chzn-select"
-			style="width: 260px;"
-			data-placeholder="Choose a type of information&hellip;">
-		  <option value=""></option>
-		  {% for schema in filtered_schema_list %}
-			<option value="{% filter_url filters +'schema' schema %}">{{ schema.plural_name|capfirst }}</option>
-		  {% endfor %}
-		</select>
-		<button id="sectionfilterbutton">Go</button>
-		{% if USER %}
-		 <button id="saveplacebutton" style="display: none;">{% if is_saved %}Remove this saved place{% else %}Save this place{% endif %}</button><span id="saveplacestatus"></span>
-		{% endif %}
-	  </form>
-	</div><!-- /#contentheader -->
-  {% endifnotequal %}
+            <form class="select-filter" method="GET">
+                <select id="sectionfilter" class="chzn-select"
+                        style="width: 260px;"
+                        data-placeholder="Choose a type of information&hellip;">
+                    <option value=""></option>
+                    {% for schema in filtered_schema_list %}
+                        <option value="{% filter_url filters +'schema' schema %}">{{ schema.plural_name|capfirst }}</option>
+                    {% endfor %}
+                </select>
+                <button id="sectionfilterbutton">Go</button>
+                {% if USER %}
+                    <button id="saveplacebutton" style="display: none;">{% if is_saved %}Remove this saved place{% else %}Save this place{% endif %}</button><span id="saveplacestatus"></span>
+                {% endif %}
+            </form>
+        </div><!-- /#contentheader -->
+    {% endifnotequal %}
 
-  <div id="place-detail-content">
-	{% include "db/snippets/newsitem_list_by_day.html" %}
-	{% ifnotequal place.slug "unknown" %}
-	<div id="alerts-signup">
-		<h2>Sign up for:</h2>
-		<ul>
-			{% if alerts_installed %}<li><a class="email" href="{{ place.alert_url }}">E-mail alerts</a></li>{% endif %}
-			{#<li><a class="feed" href="{{ place.url }}feeds/">Custom RSS feeds</a></li>#}
-		</ul>
-	</div>
-	{% endifnotequal %}
-  </div><!--/ #place-detail-content -->
+    <div id="place-detail-content">
+        {% include "db/snippets/newsitem_list_by_day.html" %}
+        {% ifnotequal place.slug "unknown" %}
+            <div id="alerts-signup">
+                <h2>Sign up for:</h2>
+                <ul>
+                    {% if alerts_installed %}<li><a class="email" href="{{ place.alert_url }}">E-mail alerts</a></li>{% endif %}
+                    {#<li><a class="feed" href="{{ place.url }}feeds/">Custom RSS feeds</a></li>#}
+                </ul>
+            </div>
+        {% endifnotequal %}
+    </div><!--/ #place-detail-content -->
 
-  <!-- begin block extracontent -->
-  {% block extracontent %}{% endblock extracontent %}
-  <!-- end block extracontent -->
+    <!-- begin block extracontent -->
+    {% block extracontent %}{% endblock extracontent %}
+    <!-- end block extracontent -->
 </div><!--/ #content -->
 {% endblock place_content %}
