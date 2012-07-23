@@ -78,14 +78,16 @@
             </tr>
         {% endblock newsitem_detail_date %}<!-- endblock: newsitem_detail_date -->
         <!-- block newsitem_detail_description -->{% block newsitem_detail_description %}
+            {% if newsitem.description.strip %}
             <tr>
                 <th>Description</th>
                 <td>{{ newsitem.description|truncatewords_html:20}}
                   {% if newsitem.url %}
-                      <br /><a href="{{ newsitem.ur l}}">Read more at {{ newsitem.url }}</a>
+                      <br /><a href="{{ newsitem.url }}">Read more at {{ newsitem.url }}</a>
                   {% endif %}
                 </td>
             </tr>
+            {% endif %}
         {% endblock newsitem_detail_description %}<!-- endblock: newsitem_detail_description -->
         <!-- block newsitem_detail_image_list -->{% block newsitem_detail_image_list %}
             {% for image in images %}
