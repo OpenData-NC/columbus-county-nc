@@ -105,6 +105,7 @@ class RestaurantsScraper(DashboardMixin, ScraperWikiScraper):
             last_updated=datetime.datetime.now(),
             is_public=True,
             has_newsitem_detail=True,
+            allow_charting=True,
         )
         SchemaField.objects.create(
             schema=schema,
