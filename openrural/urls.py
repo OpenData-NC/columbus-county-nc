@@ -17,34 +17,14 @@
 #
 
 from django.conf.urls.defaults import *
-
-from ebpub.db import views as db_views
 from obadmin import admin
-
-from openrural import views
-
 
 admin.autodiscover()
 
-
 urlpatterns = patterns(
     '',
-
     (r'^admin/', include(admin.site.urls)),
-
     (r'^data-dashboard/', include('openrural.data_dashboard.urls')),
-
-    # Override specific ebpub URL to redirect to redirect to another page.
-    url(r'^locations/([-_a-z0-9]{1,32})/([-_a-z0-9]{1,32})/recent/$', 
-        db_views.place_detail_timeline, 
-        {'place_type': 'location', 'show_upcoming': False}, 
-        name='ebpub-location-recent'
-    ),
-    url(r'^locations/([-_a-z0-9]{1,32})/([-_a-z0-9]{1,32})/$', 
-        views.redirect_place_detail, 
-        {'place_type': 'location', 'show_upcoming': False}
-    ),
-
-    # ebpub provides the remaining UI for an OpenBlock site.
+    # ebpub provides all the UI for an openblock site.
     (r'^', include('ebpub.urls')),
 )
