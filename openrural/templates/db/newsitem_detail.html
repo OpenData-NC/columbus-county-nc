@@ -75,9 +75,9 @@
             {% if newsitem.description.strip %}
             <tr>
                 <th>Description</th>
-                <td>{{ newsitem.description|truncatewords_html:20}}
+                <td>{{ newsitem.description|truncatewords_html:20|safe }}
                   {% if newsitem.url %}
-                      <br /><a href="{{ newsitem.url }}">Read more at {{ newsitem.url }}</a>
+                      <br /><a href="{{ newsitem.url }}">Read more</a>
                   {% endif %}
                 </td>
             </tr>

@@ -6,6 +6,7 @@ from openrural.retrieval.corporations import CorporationsScraper
 from openrural.retrieval.addresses import AddressesScraper
 from openrural.retrieval.whiteville_props import PropsScraper
 from openrural.retrieval.whiteville_restaurants import RestaurantsScraper
+from openrural.retrieval.whiteville_news import WhitevilleNewsScraper
 
 
 class CorporationsTask(PeriodicTask):
@@ -57,7 +58,20 @@ class RestaurantInspectionsTask(PeriodicTask):
         logger.info("Stopping restaurant inspections task")
 
 
+class WhitevilleNewsTask(PeriodicTask):
+
+    name = 'openrural.newsreporter'
+    run_every = timedelta(minutes=30)
+
+    def run(self, clear=False):
+        logger = self.get_logger()
+        logger.info("Starting news reporter task")
+        WhitevilleNewsScraper(clear=clear).run()
+        logger.info("Stopping news reporter task")
+
+
 tasks.register(CorporationsTask)
 tasks.register(AddressesTask)
 tasks.register(PropertyTransactionsTask)
 tasks.register(RestaurantInspectionsTask)
+tasks.register(WhitevilleNewsTask)
