@@ -160,6 +160,10 @@ LOGGING['loggers']['eb'] = {'propagate': True, 'level': 'DEBUG'}
 LOGGING['loggers']['data_dashboard'] = {'propagate': True, 'level': 'DEBUG'}
 LOGGING['loggers']['django'] = {'propagate': True, 'level': 'INFO'}
 LOGGING['loggers']['celery'] = {'propagate': True, 'level': 'INFO'}
+LOGGING['loggers']['django.request'] = {'handlers': ['mail_admins'],
+                                        'level': 'ERROR',
+                                        'propagate': False}
+
 CELERYD_HIJACK_ROOT_LOGGER = False
 
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
