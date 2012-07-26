@@ -115,15 +115,14 @@ Server Provisioning and Deployment
 Server Provisioning
 *******************
 
-Use fabric to create a new environment::
+Use fabric to add the SSH keys to the machine::
 
     $ $VIRTUAL_ENV/bin/pip install -q -r $PWD/requirements/dev.txt
     $ fab -H <host> -u ubuntu -i <aws-private-key> create_users
-    $ fab <fab-environment> setup_server:all deploy
 
 Next we bootstrap the server with::
 
-    $ fab staging:columbusco bootstrap deploy load_geo_files
+    $ fab staging setup_server:all deploy load_geo_files
 
 If the nginx configuration is setup to use htpasswd, setup a new user::
 
@@ -134,7 +133,7 @@ Deployment
 
 For regular deployments, simply run::
 
-    $ fab staging:columbusco deploy
+    $ fab staging deploy
 
 You can reset your local database with::
 
