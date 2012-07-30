@@ -11,7 +11,7 @@
             <input type="text" name="q" value="{{ query }}"> <input type="submit" value="Search again">
         </form>
         {% for choice in choices %}
-            <h2>Choose a block of {{ choice.name }}&hellip;</h2>
+            <h2>Choose a block of <a href="{{ choice.street_url }}">{{ choice.name }}</a></h2>
             <ul>
                 {% for block in choice.blocks %}
                     <li><a href="{{ block.url }}">Addresses {{ block.from_num }} to {{ block.to_num }} on {{ block.predir }} {{ block.street_pretty_name }}</a></li>
