@@ -14,7 +14,7 @@
             <h2>Choose a block of {{ choice.name }}&hellip;</h2>
             <ul>
                 {% for block in choice.blocks %}
-                    <li><a href="{{ block.url }}">{{ block.from_num }}-{{ block.to_num }} {{ block.predir }} {{ block.city.title }}</a></li>
+                    <li><a href="{{ block.url }}">Addresses {{ block.from_num }} to {{ block.to_num }} on {{ block.predir }} {{ block.street_pretty_name }}</a></li>
                 {% endfor %}
             </ul>
         {% endfor %}
