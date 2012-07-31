@@ -1,6 +1,7 @@
 import logging
 from optparse import make_option
 import os
+import re
 
 from django.core.management.base import BaseCommand
 from django.contrib.gis.gdal import DataSource
@@ -36,9 +37,9 @@ class ColumbusCountyBlockImporter(BlockImporter):
         block_fields['left_from_num'] = feature.get('FROMLEFT')
         block_fields['left_to_num'] = feature.get('TOLEFT')
         block_fields['street'] = feature.get('STREET').upper().strip()
-        block_fields['predir'] = feature.get('PREDIR').upper().strip()
+        block_fields['predir'] = re.sub('[^NESW]', '', feature.get('PREDIR').upper().strip()) # For compatibility with OpenBlock expectations
         block_fields['suffix'] = feature.get('TYPE').upper().strip()
-        block_fields['postdir'] = feature.get('SUFDIR').upper().strip()
+        block_fields['postdir'] = re.sub('[^NESW]', '', feature.get('SUFDIR').upper().strip()) # For compatibility with OpenBlock expectations
         block_fields['prefix'] = feature.get('PRETYPE').upper().strip()
 
         for side in ['left', 'right']:
