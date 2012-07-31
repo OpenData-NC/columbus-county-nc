@@ -37,9 +37,9 @@ class ColumbusCountyBlockImporter(BlockImporter):
         block_fields['left_from_num'] = feature.get('FROMLEFT')
         block_fields['left_to_num'] = feature.get('TOLEFT')
         block_fields['street'] = feature.get('STREET').upper().strip()
-        block_fields['predir'] = re.sub('[^NESW]', '', feature.get('PREDIR').upper().strip()) # For compatibility with OpenBlock expectations
+        block_fields['predir'] = re.sub('[^NESW]', '', feature.get('PREDIR').upper().strip()) # OpenBlock handles only characters from N, S, E, W
         block_fields['suffix'] = feature.get('TYPE').upper().strip()
-        block_fields['postdir'] = re.sub('[^NESW]', '', feature.get('SUFDIR').upper().strip()) # For compatibility with OpenBlock expectations
+        block_fields['postdir'] = re.sub('[^NESW]', '', feature.get('SUFDIR').upper().strip()) # OpenBlock handles only characters from N, S, E, W
         block_fields['prefix'] = feature.get('PRETYPE').upper().strip()
 
         for side in ['left', 'right']:
