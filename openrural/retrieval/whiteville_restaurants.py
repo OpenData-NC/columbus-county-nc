@@ -86,8 +86,8 @@ class RestaurantsScraper(DashboardMixin, ScraperWikiScraper):
             attrs,
             title=attrs['name'],
             item_date=item_date,
-            location_name=data['ADDR_LINE1'].title(),
-            city=data['ADDR_CITY'].title(),
+            location_name=capwords(data['ADDR_LINE1']),
+            city=capwords(data['ADDR_CITY']),
             state=data['STATE_CODE'],
             zipcode=data['ADDR_ZIP5'],
         )

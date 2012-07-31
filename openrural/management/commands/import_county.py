@@ -4,6 +4,7 @@ import tempfile
 import datetime
 
 from optparse import make_option, OptionParser
+from string import capwords
 
 from django.core.management.base import BaseCommand
 from django.contrib.gis.gdal import DataSource
@@ -184,12 +185,12 @@ class CountyImporter(object):
             if township.name.lower() in city_names:
                 city = Location.objects.get(location_type=self.city_type,
                     pk__in=city_pks, name__iexact=township.name)
-                city.name = '%s town limits' % city.name.title()
+                city.name = '%s town limits' % capwords(city.name)
                 city.slug = slugify(city.name)  # This seems to be expected by some OpenBlock code.
                 city.save()
-                township.name = '%s area' % township.name.title()
+                township.name = '%s area' % capwords(township.name)
             else:
-                township.name = township.name.title()
+                township.name = capwords(township.name)
             township.slug = slugify(township.name)
             township.location = township.location.difference(within_cities)
             township.save()
