@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Every Street in Every City{% endblock %}
+{% block title %}Every Street in Every Community{% endblock %}
 
 {% block breadcrumbs %}{% endblock %}
 
 {% block content %}
     <div id="content">
-        <h1>Every Street in Every City</h1>
-        <p>Select a city/area to browse the streets there.</p>
+        <h1>Every Street in Every Community</h1>
+        <p>Select a community to browse the streets there.</p>
         <ul>
             {% for city in all_cities %}
                 <li><a href="{% url ebpub-street-list city.slug %}">{{ city.name }}</a></li>
