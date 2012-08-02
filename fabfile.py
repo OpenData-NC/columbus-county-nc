@@ -94,9 +94,9 @@ def staging():
 @task
 def production():
     env.environment = 'production'
-    env.hosts = [] # FIXME: Add production hosts
+    env.hosts = ['23.23.224.84']
     env.branch = 'master'
-    env.server_name = '' # FIXME: Add production server name
+    env.server_name = 'columbusco.openrural.org'
     setup_path()
 
 
@@ -465,7 +465,9 @@ def load_db_dump(dump_file):
 @task
 def load_geo_files():
     require('environment')
+    supervisor_command('stop %(environment)s:*' % env)
     manage_run('import_columbus_county -d /tmp/columbusco-shapefiles')
+    supervisor_command('start %(environment)s:*' % env)
 
 
 @task
