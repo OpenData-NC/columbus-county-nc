@@ -35,6 +35,7 @@ INSTALLED_APPS = (
     'openrural',
     'gunicorn',
     'openrural.data_dashboard',
+    'openrural.periodic_tasks',
     'django.contrib.messages',
 ) + INSTALLED_APPS
 TEMPLATE_DIRS = (os.path.join(PROJECT_DIR, 'templates'), ) + TEMPLATE_DIRS

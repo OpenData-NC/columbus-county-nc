@@ -2,6 +2,7 @@ import string
 
 from django import template
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 from ebpub.db.models import Schema
 
@@ -27,12 +28,12 @@ def get_newsitem_full_address(newsitem):
     addr = newsitem.location_name.strip()
     locs = newsitem.location_set.all()
     try:
-        city = locs.filter(location_type__slug='cities').get().name.title().strip()
-    except:
+        city = string.capwords(locs.filter(location_type__slug='cities').get().name)
+    except (ObjectDoesNotExist, MultipleObjectsReturned):
         city = ''
     try:
         zip_code = locs.filter(location_type__slug='zipcodes').get().name.strip()
-    except:
+    except (ObjectDoesNotExist, MultipleObjectsReturned):
         zip_code = ''
 
     if city:

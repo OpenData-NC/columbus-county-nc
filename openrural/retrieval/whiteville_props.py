@@ -5,6 +5,7 @@ import logging
 import datetime
 from optparse import OptionParser
 from tempfile import mkdtemp
+from string import capwords
 
 from django.contrib.gis.gdal import DataSource
 
@@ -69,8 +70,8 @@ class PropsScraper(DashboardMixin, ScraperWikiScraper):
         if item_date and parcel_feature:
             attrs = {
                 'prop': prop_val,
-                'owner_name': data['GRANTEE'].title(),
-                'previous_owner': data['GRANTOR'].title(),
+                'owner_name': capwords(data['GRANTEE']),
+                'previous_owner': capwords(data['GRANTOR']),
                 'acres': '%s' % data['ACRES'],
                 'tax_value': int(data['APPRAISAL']),
                 'sale_amount': int(data['SALE']),
@@ -79,7 +80,7 @@ class PropsScraper(DashboardMixin, ScraperWikiScraper):
 
             transformed_point = parcel_feature.geom.transform(4326, True)
             if addr_feature:
-                location_name = str(addr_feature['FULLADD']).title().strip()
+                location_name = capwords(str(addr_feature['FULLADD']))
                 zipcode = str(addr_feature['ZIP'])
             else:
                 location_name = 'Property %s (address unknown)' % prop_val

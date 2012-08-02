@@ -1,4 +1,5 @@
-{% load eb compress %}
+{% load eb compress static %}
+{% get_static_prefix as STATIC_URL %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="http://www.facebook.com/2008/fbml">
     <head>
@@ -132,7 +133,7 @@
                     </ul>
                     <div id="blox-header-search">
                         <a href="http://www.whiteville.com/search?t=article&amp;l=25&amp;d1=1+year+ago&amp;f=html&amp;advanced=true" class="advanced-search">Advanced Search</a>
-                        <form id="blox-search-form" action="/search" method="get">
+                        <form id="blox-search-form" action="http://www.whiteville.com/search" method="get">
                             <div>
                                 <input type="hidden" name="t" value="article" />
                                 <!--<input type="hidden" name="s" value="start_time" />
@@ -348,18 +349,18 @@
             <!-- This where the footer starts -->
 
             <div id="leaderboard-bottom">
-	           <div id="tncms-region-ads-leaderboard-bottom" class="tncms-region-ads">
+               <div id="tncms-region-ads-leaderboard-bottom" class="tncms-region-ads">
                     <script type="text/javascript" src="http://bloximages.chicago2.vip.townnews.com/whiteville.com/content/tncms/ads/leaderboard-bottom/leaderboard-bottom1.js?_dc=1331319405"></script>
-                    <script type="text/javascript">if(typeof oTNCMS_Ad.setRelative == 'function'){ oTNCMS_Ad.setRelative(); } oTNCMS_Ad.show();
+                    <script type="text/javascript">oTNCMS_Ad.show();
                     </script>
                 </div>
-	            <div id="tncms-region-ads-tile-bottom" class="tncms-region-ads"></div>
+                <div id="tncms-region-ads-tile-bottom" class="tncms-region-ads"></div>
                 <div class="clear"></div>
             </div>
             <div class="clear"></div>
         </div>
         <div id="video-ad" style="display:none">
-	       <div id="tncms-region-ads-video-ad" class="tncms-region-ads"></div>
+           <div id="tncms-region-ads-video-ad" class="tncms-region-ads"></div>
         </div>
         <div class="clear"></div>
 
@@ -409,7 +410,7 @@
 
         <div class="footer-section-block search end">
             <h4>Search</h4>
-            <form id="footer-search" method="get" action="/search">
+            <form id="footer-search" method="get" action="http://www.whiteville.com/search">
                 <p>
                     <!--<input type="hidden" name="s" value="start_time" />
                     <input type="hidden" name="sd" value="desc" />-->
@@ -422,8 +423,8 @@
 
         <div id="searchSectionsFooter">
 
-            <input type="hidden" name="c[]" id="sectionCollectionFooter" value="" />
-            <input type="hidden" name="t" id="typeCollectionFooter" value="" />
+            <input type="hidden" id="sectionCollectionFooter" value="" />
+            <input type="hidden" id="typeCollectionFooter" value="" />
             <div class="col1">
 
                 <input type="checkbox" class="all checked" value="all" checked="checked" />
@@ -479,7 +480,7 @@
 </div>
 </div>
 <div id="print-only-logo" style="display:none;">
-    <img src="global/resources/images/print-logo.gif" />
+    <img src="http://bloximages.chicago2.vip.townnews.com/whiteville.com/content/tncms/live/global/resources/images/print-logo.gif" />
 </div>
 <p class="copyright">
 <strong>&copy; Copyright 2012, <a href="http://www.whiteville.com/">Whiteville.com</a>, Whiteville, NC</strong>. Powered by <a href="http://bloxcms.com" title="BLOX Content Management System" rel="external">BLOX Content Management System</a> from <a href="http://townnews.com" title="TownNews.com BLOX Newspaper Content Management" rel="external">TownNews.com</a>. [<a href="http://www.whiteville.com/site/terms.html">Terms of Use</a> | <a href="http://www.whiteville.com/site/privacy.html">Privacy Policy</a>]

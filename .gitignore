@@ -10,3 +10,4 @@ shapefiles/
 openrural/settings/local.py
 *.DS_Store
 .vagrant
+*.swp

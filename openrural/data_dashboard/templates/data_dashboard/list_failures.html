@@ -32,11 +32,9 @@
                 </td>
             {% endif %}
             <td>{{ geocode.name }}</td>
-            {% if request.user.is_authenticated %}
+            {% if request.user.is_authenticated and request.user.is_staff %}
                 <td>
-                    {% if geocode.news_item and geocode.news_item.id %}
-                        <a href="{% url admin:db_newsitem_change geocode.news_item.id %}">Fix</a>
-                    {% endif %}
+                    <a href="{% url admin:data_dashboard_geocode_change geocode.id %}">Fix</a>
                 </td>
             {% endif %}
         </tr>
