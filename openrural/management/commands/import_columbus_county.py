@@ -37,10 +37,18 @@ class ColumbusCountyBlockImporter(BlockImporter):
         block_fields['left_from_num'] = feature.get('FROMLEFT')
         block_fields['left_to_num'] = feature.get('TOLEFT')
         block_fields['street'] = feature.get('STREET').upper().strip()
-        block_fields['predir'] = re.sub('[^NESW]', '', feature.get('PREDIR').upper().strip()) # OpenBlock handles only characters from N, S, E, W
-        block_fields['suffix'] = feature.get('TYPE').upper().strip()
-        block_fields['postdir'] = re.sub('[^NESW]', '', feature.get('SUFDIR').upper().strip()) # OpenBlock handles only characters from N, S, E, W
         block_fields['prefix'] = feature.get('PRETYPE').upper().strip()
+        block_fields['suffix'] = feature.get('TYPE').upper().strip()
+
+        # For predir and postdir, OpenBlock expects either:
+        #   1) N, S, E, or W;
+        #   2) 2-letter combinations of these (NE, SW, etc); or
+        #   3) blank/Null
+        # In our current shapefiles, most of the data fits this paradigm, but 
+        # there are a few '0' entries present, presumably intended to mean 
+        # Null.
+        block_fields['predir'] = re.sub('[^NESW]', '', feature.get('PREDIR').upper().strip())
+        block_fields['postdir'] = re.sub('[^NESW]', '', feature.get('SUFDIR').upper().strip())
 
         for side in ['left', 'right']:
             if block_fields['%s_from_num' % side] == 0 and not (block_fields['%s_to_num' % side] % 2):
