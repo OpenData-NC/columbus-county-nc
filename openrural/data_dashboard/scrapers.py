@@ -10,6 +10,7 @@ from ebpub import geocoder
 from ebpub.geocoder import GeocodingException, ParsingError, AmbiguousResult
 from ebpub.geocoder.base import full_geocode
 from ebpub.db.models import Schema
+from ebdata.retrieval.utils import convert_entities
 from ebdata.nlp.addresses import parse_addresses
 
 from openrural.data_dashboard.models import Scraper, Run, Geocode
@@ -129,16 +130,44 @@ class DashboardMixin(object):
         self.stats['Geocoded Success'] += 1
         return result['result']
 
-    def geocode_if_needed(self, point, location_name, address_text='',
-                          **kwargs):
-        if location_name:
-            addresses = parse_addresses(location_name)
-            if len(addresses)> 1:
-                self.logger.debug('Parsed multiple addresses %s' % addresses)
-        return super(DashboardMixin, self).geocode_if_needed(point,
-                                                             location_name,
-                                                             address_text='',
-                                                             **kwargs)
+    def geocode_if_needed(self, point, location_name, address_text='', **kwargs):
+        if not point:
+            # If location_name is specified, that's an address string.
+            # Avoid passing it through parse_addresses since that can
+            # corrupt some strings (e.g. "449 A D Hinson Rd --> 449 A").
+            # address_text on the other hand is a block of (likely scraped html)
+            # text that may contain an address. Use parse_addresses on that to
+            # see if any likely addresses can be extracted.
+            if location_name:
+                addrs = [location_name]
+            else:
+                text = convert_entities(address_text)
+                addrs = [a[0] for a in parse_addresses(text)]
+
+            for addr in addrs:
+                try:
+                    result = self.geocode(addr, **kwargs)
+                    if result is not None:
+                        point = result['point']
+                        self.logger.debug("internally geocoded %r" % addr)
+                        # TODO: what if it's a Place?
+                        if not location_name:
+                            location_name = result['address']
+                        break
+                except:
+                    self.logger.exception('uncaught geocoder exception on %r\n' % addr)
+
+        if point and not location_name:
+            # Fall back to reverse-geocoding.
+            from ebpub.geocoder import reverse
+            try:
+                block, distance = reverse.reverse_geocode(point)
+                self.logger.debug("Reverse-geocoded point to %r" % block.pretty_name)
+                location_name = block.pretty_name
+            except reverse.ReverseGeocodeError:
+                location_name = None
+
+        return (point, location_name)
 
     def update_existing(self, newsitem, new_values, new_attributes):
         new_values.pop('convert_to_block', None)
