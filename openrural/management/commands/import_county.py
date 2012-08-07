@@ -179,15 +179,8 @@ class CountyImporter(object):
             pk__in=city_pks).values_list('name', flat=True)
         city_names = [name.lower() for name in city_names]
         for township in townships:
-            # If a same-named city already exists, then:
-            #   1. Rename the township to "Cityname area."
-            #   2. Rename the city to "Cityname town limits."
+            # If a same-named city already exists, then rename the township to "Cityname area."
             if township.name.lower() in city_names:
-                city = Location.objects.get(location_type=self.city_type,
-                    pk__in=city_pks, name__iexact=township.name)
-                city.name = '%s town limits' % capwords(city.name)
-                city.slug = slugify(city.name)  # This seems to be expected by some OpenBlock code.
-                city.save()
                 township.name = '%s area' % capwords(township.name)
             else:
                 township.name = capwords(township.name)
