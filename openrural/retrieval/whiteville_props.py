@@ -90,7 +90,7 @@ class PropsScraper(DashboardMixin, ScraperWikiScraper):
                 old_record,
                 attrs,
                 title=location_name,
-                url=addr_feature['PhotoImage'] if addr_feature else '',
+                url=str(addr_feature['PhotoImage']) if addr_feature else '',
                 item_date=item_date,
                 location=transformed_point.geos,
                 location_name=location_name,
