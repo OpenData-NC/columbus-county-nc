@@ -37,9 +37,9 @@ def get_newsitem_full_address(newsitem):
         zip_code = ''
 
     if city:
-        full_addr = '{0}, {1}, NC {2}'.format(addr, city, zip_code).strip()
+        full_addr = u'{0}, {1}, NC {2}'.format(addr, city, zip_code).strip()
     else:
-        full_addr = '{0}, NC {1}'.format(addr, zip_code).strip()
+        full_addr = u'{0}, NC {1}'.format(addr, zip_code).strip()
 
     return full_addr
 
