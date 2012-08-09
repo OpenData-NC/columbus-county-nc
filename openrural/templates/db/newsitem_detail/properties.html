@@ -22,11 +22,26 @@
     <tr>
         <th>Photo</th>
         <td>
-            {% if newsitem.url %}
-                <a href="{{ newsitem.url }}"><img width="240" src="{{ newsitem.url }}" alt="{{ newsitem.title }}" /></a>
-            {% else %}
-                <img width="175" src="{{ STATIC_URL}}images/property_image_placeholder.png" />
-            {% endif %}
+            {% comment %}
+            The sorl thumbnail tags conflict with that of easy_thumbnails, 
+            which is used by OpenBlock. We're getting away with this only 
+            because we put sorl.thumbnail first in INSTALLED_APPS, and 
+            OpenBlock never uses the easy_thumbnails template tags.  In other 
+            words, this code is teetering on the edge of a cliff of doom! :-O
+            {% endcomment %}
+            {% load thumbnail %}
+
+            {% comment %}
+            The URLs in our properties data are generally in all caps. Without
+            using the |lower filter, sorl interprets the address relative to
+            the internal MEDIA_ROOT. At this time the URLs in our data seem to 
+            be case-insensitive.
+            {% endcomment %}
+            {% thumbnail newsitem.url|lower "240" as im %}
+                <a href="{{ newsitem.url|lower }}"><img width="240" src="{{ im.url }}" /></a>
+            {% empty %}
+                {% if newsitem.url %}<a href="{{ newsitem.url }}">{% endif %}<img width="240" src="{{ STATIC_URL }}/images/property_image_placeholder.png" />{% if newsitem.url %}</a>{% endif %}
+            {% endthumbnail %}
         </td>
     </tr>
 {% endblock newsitem_detail_description %}<!-- endblock: newsitem_detail_description -->

@@ -37,6 +37,12 @@ INSTALLED_APPS = (
     'openrural.data_dashboard',
     'openrural.periodic_tasks',
     'django.contrib.messages',
+    # Important: sorl.thumbnail should be added before easy_thumbnails!
+    # The template tags of the two apps conflict. We want to use sorl's 
+    # template tags, which we can get away with because OpenBlock code
+    # doesn't use the template tags of easy_thumbnails. Be careful when
+    # attempting to change thumbnail code!
+    'sorl.thumbnail',
 ) + INSTALLED_APPS
 TEMPLATE_DIRS = (os.path.join(PROJECT_DIR, 'templates'), ) + TEMPLATE_DIRS
 ROOT_URLCONF = 'openrural.urls'
