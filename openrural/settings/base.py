@@ -107,6 +107,9 @@ PASSWORD_RESET_SALT = '%s%s'
 
 EB_MEDIA_URL = '' # leave at '' for development
 
+# Override MEDIA_URL from ebpub default settings (which is is /uploads/)
+MEDIA_URL = '/media/'
+
 # This is used as a "From:" in e-mails sent to users.
 GENERIC_EMAIL_SENDER = 'no-reply@' + EB_DOMAIN
 
