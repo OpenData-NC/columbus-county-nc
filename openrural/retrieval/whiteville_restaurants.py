@@ -71,7 +71,7 @@ class RestaurantsScraper(DashboardMixin, ScraperWikiScraper):
                 return None
 
     def save(self, old_record, data, detail_record):
-        item_date = data['ACTIVITY_DATE']
+        item_date = datetime.datetime.strptime(data['ACTIVITY_DATE'], "%Y-%m-%d").date()
         status = data['STATUS_CODE']
         attrs = {
             'name': capwords(data['FAC_NAME']),

@@ -14,27 +14,29 @@
 {% if schema %}
     <h2>Name: {{ schema.plural_name|capfirst }}</h2>
 
-    {% if schema.newitem_set or num_failures %}
-    <ul class="details">
-        {% if schema.newsitem_set %}
-        <li>
-            <strong>News Items:</strong>
-            {% with schema.newsitem_set.count as count %}
-                {{ count }}
-                {% if request.user.is_authenticated and count > 0 %}
-                    (<a href="{% url 'delete_scraper_news_items' scraper.slug %}">delete all</a>)
-                {% endif %}
-            {% endwith %}
+    {% with schema.newsitem_set.exists as newsitems_exist %}
+        {% if newsitems_exist or num_failures %}
+        <ul class="details">
+            {% if newsitems_exist %}
+            <li>
+                <strong>News Items:</strong>
+                {% with schema.newsitem_set.count as count %}
+                    {{ count }}
+                    {% if request.user.is_staff and count > 0 %}
+                        (<a href="{% url 'delete_scraper_news_items' scraper.slug %}">delete all</a>)
+                    {% endif %}
+                {% endwith %}
 
-        </li>
+            </li>
+            {% endif %}
+            {% if num_failures %}
+            <li>
+                <strong>Failures:</strong> <a href='{% url 'list_failures' scraper.slug %}'>{{ num_failures }}</a>
+            </li>
+            {% endif %}
+        </ul>
         {% endif %}
-        {% if num_failures %}
-        <li>
-            <strong>Failures:</strong> <a href='{% url 'list_failures' scraper.slug %}'>{{ num_failures }}</a>
-        </li>
-        {% endif %}
-    </ul>
-    {% endif %}
+    {% endwith %}
 {% endif %}
 
 <form action='' method='GET'>

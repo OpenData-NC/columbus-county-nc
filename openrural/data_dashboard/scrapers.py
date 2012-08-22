@@ -87,31 +87,48 @@ class DashboardMixin(object):
             self.run.save()
         self.end_run()
 
+    def ensure_geocode_log_exists(self, **kwargs):
+        city = kwargs.get('city', '')
+        zipcode = kwargs.get('zipcode', '')
+        location_name = kwargs.get('location_name', '')
+        if city is None:
+            city = ''
+        if zipcode is None:
+            zipcode = ''
+        if location_name is None:
+            location_name = ''
+        if not self.geocode_log:
+            self.geocode_log = Geocode(
+                run=self.run,
+                scraper=self.schema_slugs[0],
+            )
+        if location_name:
+            self.geocode_log.location = location_name
+        if city:
+            self.geocode_log.city = city
+        if zipcode:
+            self.geocode_log.zipcode = zipcode
+
+    def save_and_clear_geocode_log(self):
+        self.geocode_log.save()
+        self.geocode_log = None
+
     def create_newsitem(self, attributes, **kwargs):
         """Override to associate NewsItem to Geocode object"""
         news_item = super(DashboardMixin, self).create_newsitem(attributes,
                                                                 **kwargs)
-        if self.geocode_log is None:
-            self.geocode_log = Geocode(
-                run=self.run,
-                scraper=self.schema_slugs[0],
-                location=news_item.location_name,
-                name='No Geocode',
-                success=False,
-                city=kwargs.get('city', ''),
-                zipcode = kwargs.get('zipcode', ''),
-            )
+        self.ensure_geocode_log_exists(**kwargs)
         self.geocode_log.news_item = news_item
-        self.geocode_log.save()
-        self.geocode_log = None
+        self.save_and_clear_geocode_log()
         return news_item
 
     def geocode(self, location_name, **kwargs):
+        self.ensure_geocode_log_exists(location_name=location_name, **kwargs)
         self.stats['Geocoded'] += 1
         try:
             result = full_geocode(location_name, guess=True, **kwargs)
         except (geocoder.GeocodingException, geocoder.ParsingError, NoReverseMatch) as e:
-            self.geocode_log.success = False
+            self.geocode_log.status = 'failure'
             self.geocode_log.name = type(e).__name__
             self.stats['Geocode Exception - %s' % type(e).__name__] += 1
             self.geocode_log.description += '\n\n%s' % traceback.format_exc()
@@ -119,30 +136,18 @@ class DashboardMixin(object):
             return None
         self.geocode_log.description += '\n\n%s' % pprint.pformat(result)
         if result['ambiguous'] is True:
-            self.geocode_log.success = False
+            self.geocode_log.status = 'failure'
             self.geocode_log.name = 'Ambiguous %s' % result['type']
             self.stats['Geocode Exception - %s' % self.geocode_log.name] += 1
             self.logger.error('Ambiguous result for %s' % location_name)
             return None
+        self.geocode_log.status = 'success'
         self.stats['Geocoded Success'] += 1
         return result['result']
 
     def geocode_if_needed(self, point, location_name, address_text='', **kwargs):
-        city = kwargs.get('city', '')
-        zipcode = kwargs.get('zipcode', '')
-        if city is None:
-            city = ''
-        if zipcode is None:
-            zipcode = ''
-        if not self.geocode_log and location_name:
-            self.geocode_log = Geocode(
-                run=self.run,
-                scraper=self.schema_slugs[0],
-                location=location_name,
-                city=city,
-                zipcode=zipcode,
-            )
-            self.geocode_log.description = pprint.pformat(kwargs)
+        self.ensure_geocode_log_exists(location_name=location_name, **kwargs)
+        self.geocode_log.description = pprint.pformat(kwargs)
         if not point:
             # If location_name is specified, that's an address string.
             # Avoid passing it through parse_addresses since that can
@@ -189,3 +194,9 @@ class DashboardMixin(object):
         return super(DashboardMixin, self).update_existing(newsitem,
                                                            new_values,
                                                            new_attributes)
+
+    def create_or_upate(self, old_record, attributes, **kwargs):
+        self.ensure_geocode_log_exists(**kwargs)
+        news_item = super(DashboardMixin, self).create_or_update(old_record, attributes, **kwargs)
+        self.geocode_log.news_item = news_item
+        self.save_and_clear_geocode_log()

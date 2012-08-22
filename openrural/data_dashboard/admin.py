@@ -18,12 +18,12 @@ class StatAdmin(admin.ModelAdmin):
 
 
 class GeocodeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'run', 'date', 'success', 'location', 'name',
+    list_display = ('id', 'run', 'date', 'status', 'location', 'name',
                     'zipcode')
-    list_filter = ('success', 'date', 'name', 'scraper', 'zipcode')
+    list_filter = ('status', 'date', 'name', 'scraper', 'zipcode')
     search_fields = ('location', 'description')
     ordering = ('-date',)
-    readonly_fields = ('success', 'name', 'run', 'news_item', 'scraper',
+    readonly_fields = ('status', 'name', 'run', 'news_item', 'scraper',
                        'zipcode')
     form = GeocodeForm
     formfield_overrides = {
@@ -33,7 +33,7 @@ class GeocodeAdmin(admin.ModelAdmin):
         obj.news_item.location = form.cleaned_data['result']['point']
         obj.news_item.save()
         obj.name = ''
-        obj.success = True
+        obj.status = 'success'
         obj.save()
 
 

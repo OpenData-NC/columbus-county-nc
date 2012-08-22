@@ -70,7 +70,7 @@ class AddressesScraper(DashboardMixin, ShapefileScraper):
                 scraper=self.schema_slugs[0],
                 location=location_name,
                 name='No Geocode',
-                success=False,
+                status='failure',
             )
         self.geocode_log.save()
         self.logger.debug('Skipping news item creation... (faster)')

@@ -50,6 +50,9 @@ class Stat(models.Model):
 
 
 class Geocode(models.Model):
+    STATUS_CHOICES = (('unneeded', 'Unneeded'),
+                      ('success', 'Success'),
+                      ('failure', 'Failure'))
     run = models.ForeignKey(Run, related_name='geocodes')
     news_item = models.ForeignKey(NewsItem, related_name='geocodes', null=True,
                                   blank=True)
@@ -58,9 +61,9 @@ class Geocode(models.Model):
     location = models.CharField(max_length=1024)
     city = models.CharField(max_length=255, blank=True, default='')
     zipcode = models.CharField(max_length=16, blank=True, default='')
-    success = models.BooleanField(default=True)
     name = models.CharField(max_length=255, blank=True, db_index=True)
     description = models.TextField(blank=True)
+    status = models.CharField(choices=STATUS_CHOICES, max_length=32, default='unneeded')
 
     def __unicode__(self):
         if self.name:

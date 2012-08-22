@@ -47,7 +47,7 @@ def view_scraper(request, scraper_slug):
         form = dashboard_forms.RunListFilter(initial={'statuses': statuses})
     runs = scraper.runs.filter(status__in=statuses).order_by('-date')
     num_failures = dd.Geocode.objects.filter(scraper=scraper.slug,
-            success=False).count()
+            status='failure').count()
     context = {'scraper': scraper,
                'runs': runs,
                'breadcrumbs': crumbs,
@@ -94,7 +94,7 @@ def view_run(request, scraper_slug, run_id):
                    reverse('view_scraper', args=[scraper_slug])))
     crumbs.append(('Run %d' % run.pk,
                    reverse('view_run', args=[scraper_slug, run_id])))
-    num_failures = run.geocodes.filter(success=False).count()
+    num_failures = run.geocodes.filter(status='failure').count()
     context = {'run': run,
                'stats': run.stats.order_by('name'),
                'breadcrumbs': crumbs,
@@ -115,10 +115,11 @@ def list_failures(request, scraper_slug, run_id=None):
                        reverse('view_run', args=[scraper_slug, run_id])))
     crumbs.append(('Failures', ''))
     if run:
-        geocodes_list = run.geocodes.filter(success=False).select_related()
+        geocodes_list = run.geocodes.filter(status='failure').select_related()
     else:
         geocodes_list = dd.Geocode.objects.filter(scraper=scraper.slug,
-                success=False).select_related()
+                status='failure').select_related()
+
     if request.GET:
         form = dashboard_forms.GeocodeFailuresSearch(request.GET)
         if form.is_valid():
