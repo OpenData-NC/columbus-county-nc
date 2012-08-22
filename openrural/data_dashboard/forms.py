@@ -15,7 +15,7 @@ class GoogleMapsLink(forms.TextInput):
 
     def render(self, name, value, attrs=None):
         html = super(GoogleMapsLink, self).render(name, value, attrs=None)
-        location = urllib.urlencode({'q': value})
+        location = urllib.urlencode({'q': value.encode('utf-8')})
         link = "http://maps.google.com/maps?{0}".format(location)
         html += "&nbsp;&nbsp;<a href='{0}'>Google Map</a>".format(link)
         return mark_safe(html)
