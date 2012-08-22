@@ -98,19 +98,16 @@ class DashboardMixin(object):
                 location=news_item.location_name,
                 name='No Geocode',
                 success=False,
+                city=kwargs.get('city', ''),
+                zipcode = kwargs.get('zipcode', ''),
             )
         self.geocode_log.news_item = news_item
         self.geocode_log.save()
+        self.geocode_log = None
         return news_item
 
     def geocode(self, location_name, **kwargs):
         self.stats['Geocoded'] += 1
-        self.geocode_log = Geocode(
-            run=self.run,
-            scraper=self.schema_slugs[0],
-            location=location_name,
-        )
-        self.geocode_log.description = pprint.pformat(kwargs)
         try:
             result = full_geocode(location_name, guess=True, **kwargs)
         except (geocoder.GeocodingException, geocoder.ParsingError, NoReverseMatch) as e:
@@ -131,6 +128,21 @@ class DashboardMixin(object):
         return result['result']
 
     def geocode_if_needed(self, point, location_name, address_text='', **kwargs):
+        city = kwargs.get('city', '')
+        zipcode = kwargs.get('zipcode', '')
+        if city is None:
+            city = ''
+        if zipcode is None:
+            zipcode = ''
+        if not self.geocode_log and location_name:
+            self.geocode_log = Geocode(
+                run=self.run,
+                scraper=self.schema_slugs[0],
+                location=location_name,
+                city=city,
+                zipcode=zipcode,
+            )
+            self.geocode_log.description = pprint.pformat(kwargs)
         if not point:
             # If location_name is specified, that's an address string.
             # Avoid passing it through parse_addresses since that can

@@ -81,10 +81,11 @@ class PropsScraper(DashboardMixin, ScraperWikiScraper):
             transformed_point = parcel_feature.geom.transform(4326, True)
             if addr_feature:
                 location_name = capwords(str(addr_feature['FULLADD']))
+                city = capwords(str(addr_feature['CITY']))
                 zipcode = str(addr_feature['ZIP'])
             else:
                 location_name = 'Property %s (address unknown)' % prop_val
-                zipcode = ''
+                city = zipcode = ''
 
             self.create_or_update(
                 old_record,
@@ -94,7 +95,8 @@ class PropsScraper(DashboardMixin, ScraperWikiScraper):
                 item_date=item_date,
                 location=transformed_point.geos,
                 location_name=location_name,
-                zipcode=zipcode
+                city=city,
+                zipcode=zipcode,
             )
 
     def parse_date(self, float_value):

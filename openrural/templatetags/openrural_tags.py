@@ -25,16 +25,35 @@ def reorder_cities_list(context):
 
 @register.simple_tag
 def get_newsitem_full_address(newsitem):
+    city = zip_code = ''
+    geocodes_qs = newsitem.geocodes.exclude(city='', zipcode='')
+    if geocodes_qs.exists():
+        geocode = geocodes_qs[0]
+        city = geocode.city
+        zip_code = geocode.zipcode
+    else:
+        geocodes_qs = newsitem.geocodes.exclude(city='')
+        if geocodes_qs.exists():
+            goecode = geocodes_qs[0]
+            city = geocode.city
+        geocodes_qs = newsitem.geocodes.exclude(zipcode='')
+        if geocodes_qs.exists():
+            geocode = geocodes_qs[0]
+            zip_code = geocode.zip_code
+
     addr = newsitem.location_name.strip()
     locs = newsitem.location_set.all()
-    try:
-        city = string.capwords(locs.filter(location_type__slug='cities').get().name)
-    except (ObjectDoesNotExist, MultipleObjectsReturned):
-        city = ''
-    try:
-        zip_code = locs.filter(location_type__slug='zipcodes').get().name.strip()
-    except (ObjectDoesNotExist, MultipleObjectsReturned):
-        zip_code = ''
+    if not city:
+        try:
+            city = string.capwords(locs.filter(location_type__slug='cities').get().name)
+        except (ObjectDoesNotExist, MultipleObjectsReturned):
+            pass
+
+    if not zip_code:
+        try:
+            zip_code = locs.filter(location_type__slug='zipcodes').get().name.strip()
+        except (ObjectDoesNotExist, MultipleObjectsReturned):
+            pass
 
     if city:
         full_addr = u'{0}, {1}, NC {2}'.format(addr, city, zip_code).strip()

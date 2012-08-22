@@ -67,7 +67,7 @@ class WhitevilleNewsScraper(DashboardMixin, RssListDetailScraper, NewsItemListDe
             'title': record['title'],
             'description': description,
             'url': record['link']
-       }
+        }
         return cleaned
 
     def save(self, old_record, list_record, detail_record):

@@ -56,13 +56,14 @@ class Geocode(models.Model):
     date = models.DateTimeField(auto_now_add=True, db_index=True)
     scraper = models.CharField(max_length=255, db_index=True)
     location = models.CharField(max_length=1024)
-    zipcode = models.CharField(max_length=16, blank=True)
+    city = models.CharField(max_length=255, blank=True, default='')
+    zipcode = models.CharField(max_length=16, blank=True, default='')
     success = models.BooleanField(default=True)
     name = models.CharField(max_length=255, blank=True, db_index=True)
     description = models.TextField(blank=True)
 
     def __unicode__(self):
         if self.name:
-            return "{0}: {1}".format(self.name, self.location)
+            return u"{0}: {1}".format(self.name, self.location)
         else:
-            return self.location
+            return unicode(self.location)
