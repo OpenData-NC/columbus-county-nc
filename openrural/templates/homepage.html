@@ -4,52 +4,52 @@
 {% block breadcrumbs %}{% endblock %}
 
 {% block content %}
-<h1>Welcome to OpenRural</h1>
-		<div id="homepage-search">
-		  <h2>Search local news</h2>
-			{% set_search_placeholder "" as placeholder %}
-			<form action="{% url ebpub-search %}" method="get" onsubmit="if ($j('#homepage-searchinput').val() == '{{ placeholder }}') return false; return true;">
-				<input id="homepage-searchinput" type="text" name="q" value="e.g. Zipcode, City, Address" onfocus="if (this.value == 'e.g. Zipcode, City, Address') { this.value = ''; }" onblur="if (this.value == '') { this.value = 'e.g. Zipcode, City, Address'; }" /> <input type="submit" value="Search" />
-			</form>
-		</div><!--/ #homepage-search -->
+        <h1>Welcome to {% get_product_title %}</h1>
+        <h3>{% get_product_description %}</h3>
 
-		<div id="nav-location">
+        <div id="homepage-search">
+            <h2>Search local news</h2>
+            {% set_search_placeholder "" as placeholder %}
+            <form action="{% url ebpub-search %}" method="get" onsubmit="if ($j('#homepage-searchinput').val() == '{{ placeholder }}') return false; return true;">
+                <input id="homepage-searchinput" type="text" name="q" value="e.g. Zipcode, City, Address" onfocus="if (this.value == 'e.g. Zipcode, City, Address') { this.value = ''; }" onblur="if (this.value == '') { this.value = 'e.g. Zipcode, City, Address'; }" /> <input type="submit" value="Search" />
+            </form>
+        </div><!--/ #homepage-search -->
 
-		<div id="mapwrapper">
-		<script type="text/javascript">
-		  	{% autoescape off %}
+        <div id="nav-location">
 
-		  	function loadMap() {
-  		  		var config = {{ map_configuration }};
-				config.center = [{{ default_lon }}, {{ default_lat }}];
-				config.zoom = {{ default_zoom }};
-				return new OBMap(config);
-  			}
+        <div id="mapwrapper">
+            <script type="text/javascript">
+                {% autoescape off %}
+                function loadMap() {
+                    var config = {{ map_configuration }};
+                    config.center = [{{ default_lon }}, {{ default_lat }}];
+                    config.zoom = {{ default_zoom }};
+                    return new OBMap(config);
+                }
+              {% endautoescape %}
+            </script>
+            {% include "richmaps/richmap.html" %}
+        </div><!-- end mapwrapper -->
 
-  			{% endautoescape %}
-		 </script>
-		{% include "richmaps/richmap.html" %}
-		</div><!-- end mapwrapper -->
-
-		<div id="intro-explore">
-			<h2>Find news near you</h2>
-			<ul class="location-type-list">
-				{% for location_type in location_type_list %}
-					{% with location_type.name|add:','|add:location_type.plural_name as name %}
-						<li><a href="{{ location_type.url }}"><strong class="number">{{ location_type.count|intcomma }}</strong> {{ location_type.count|pluralize:name }}</a></li>
-					{% endwith %}
-				{% endfor %}
-			</ul>
-			<h2>Find by news topic</h2>
-			<ul class="location-type-list">
-			{% get_schema_list %}
-			{% for schema in schema_list %}
-				{% if schema.newsitem_set.count > 0 %}
-					<li><a href="{% url ebpub-schema-filter schema.slug %}"><strong>{{ schema.newsitem_set.count }}</strong> {{ schema.plural_name|capfirst }}</a></li>
-				{% endif %}
-			{% endfor %}
-			</ul>
-		</div><!--/ #intro-explore-->
-	</div><!-- end nav-location -->
+        <div id="intro-explore">
+            <h2>Find news near you</h2>
+            <ul class="location-type-list">
+                {% for location_type in location_type_list %}
+                    {% with location_type.name|add:','|add:location_type.plural_name as name %}
+                        <li><a href="{{ location_type.url }}"><strong class="number">{{ location_type.count|intcomma }}</strong> {{ location_type.count|pluralize:name }}</a></li>
+                    {% endwith %}
+                {% endfor %}
+            </ul>
+            <h2>Find by news topic</h2>
+            <ul class="location-type-list">
+                {% get_schema_list %}
+                {% for schema in schema_list %}
+                    {% if schema.newsitem_set.count > 0 %}
+                        <li><a href="{% url ebpub-schema-filter schema.slug %}"><strong>{{ schema.newsitem_set.count }}</strong> {{ schema.plural_name|capfirst }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div><!--/ #intro-explore-->
+    </div><!-- end nav-location -->
 
 {% endblock content %}

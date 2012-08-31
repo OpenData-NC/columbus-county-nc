@@ -125,3 +125,13 @@ def truncatechars(value, arg):
             return value[:length].rsplit(' ', 1)[0].rstrip() + '...'
     else:
         return value
+
+
+@register.simple_tag
+def get_product_title():
+    return getattr(settings, 'OPENRURAL_PRODUCT_TITLE', '')
+
+
+@register.simple_tag
+def get_product_description():
+    return getattr(settings, 'OPENRURAL_PRODUCT_DESCRIPTION', '')

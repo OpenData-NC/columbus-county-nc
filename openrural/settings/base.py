@@ -185,3 +185,6 @@ PROJECT_TEMPLATES = True
 
 # Email address which the public can use to contact the editor
 OPENRURAL_EDITOR_EMAIL = 'openrural@unc.edu'
+
+OPENRURAL_PRODUCT_TITLE = 'My Community'
+OPENRURAL_PRODUCT_DESCRIPTION = 'News and Data for Columbus County, NC'
