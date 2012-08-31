@@ -45,7 +45,7 @@
                 {% get_schema_list %}
                 {% for schema in schema_list %}
                     {% if schema.newsitem_set.count > 0 %}
-                        <li><a href="{% url ebpub-schema-filter schema.slug %}"><strong>{{ schema.newsitem_set.count }}</strong> {{ schema.plural_name|capfirst }}</a></li>
+                        <li><a href="{% url ebpub-schema-detail schema.slug %}"><strong>{{ schema.newsitem_set.count }}</strong> {{ schema.plural_name|capfirst }}</a></li>
                     {% endif %}
                 {% endfor %}
             </ul>
