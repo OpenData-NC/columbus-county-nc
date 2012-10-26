@@ -38,7 +38,7 @@ INSTALLED_APPS = (
     'openrural.periodic_tasks',
     'django.contrib.messages',
     # Important: sorl.thumbnail should be added before easy_thumbnails!
-    # The template tags of the two apps conflict. We want to use sorl's 
+    # The template tags of the two apps conflict. We want to use sorl's
     # template tags, which we can get away with because OpenBlock code
     # doesn't use the template tags of easy_thumbnails. Be careful when
     # attempting to change thumbnail code!
@@ -188,3 +188,5 @@ OPENRURAL_EDITOR_EMAIL = 'openrural@unc.edu'
 
 OPENRURAL_PRODUCT_TITLE = 'My Community'
 OPENRURAL_PRODUCT_DESCRIPTION = 'News and Data for Columbus County, NC'
+
+GOOGLE_USERNAME = 'whiteville@openrural.org'

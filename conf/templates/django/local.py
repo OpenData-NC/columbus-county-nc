@@ -18,6 +18,8 @@ PASSWORD_RESET_SALT = '{{ password_reset_salt }}%s%s'
 
 DEBUG = {% if debug %}True{% else %}False{% endif %}
 
+GOOGLE_PASSWORD = '{{ google_password }}'
+
 if not PROJECT_TEMPLATES:
     path = os.path.join(PROJECT_DIR, 'templates')
     dirs = list(TEMPLATE_DIRS)

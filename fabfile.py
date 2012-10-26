@@ -28,7 +28,7 @@ env.disable_known_hosts = True
 env.ssh_port = 2222
 env.forward_agent = True
 env.password_names = ['broker_password', 'password_create_salt',
-                      'password_reset_salt']
+                      'password_reset_salt', 'google_password']
 
 # Additional settings for argyle
 env.ARGYLE_TEMPLATE_DIRS = (
