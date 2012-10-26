@@ -73,7 +73,7 @@ class WhitevilleNewsTask(PeriodicTask):
 
 class WhitevilleSchoolsTask(PeriodicTask):
 
-    name = 'openrural.school'
+    name = 'openrural.schools'
     run_every = timedelta(days=1)
 
     def run(self, clear=False):
