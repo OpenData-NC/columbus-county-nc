@@ -1,0 +1,10 @@
+{% extends 'db/newsitem_detail.html' %}
+
+{% block newsitem_detail_description %}
+    {% if newsitem.url %}
+        <tr>
+            <th>Report Card</th>
+            <td><a href="{{ newsitem.url }}">{{ newsitem.item_date.year|add:-1 }} - {{ newsitem.item_date.year }}</a></td>
+        </tr>
+    {% endif %}
+{% endblock newsitem_detail_description %}
