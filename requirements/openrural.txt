@@ -11,3 +11,4 @@ kombu==2.1.2
 amqplib==1.0.2
 anyjson==0.3.1
 sorl-thumbnail==11.12
+gdata==2.0.8
