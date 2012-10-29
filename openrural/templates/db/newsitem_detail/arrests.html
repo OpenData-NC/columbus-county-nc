@@ -1,0 +1,14 @@
+{% extends 'db/newsitem_detail.html' %}
+{% load openrural_tags %}
+
+{% block newsitem_detail_location %}
+    <tr>
+        <th>Current Address</th>
+        <td>
+            {% if location_url %}<a href="{{ location_url }}">{% endif %}
+                {% get_newsitem_full_address newsitem %}
+            {% if location_url %}</a>{% endif %}
+            {% if not newsitem.location %}<p>This location couldn't be mapped.</p>{% endif %}
+        </td>
+    </tr>
+{% endblock newsitem_detail_location %}

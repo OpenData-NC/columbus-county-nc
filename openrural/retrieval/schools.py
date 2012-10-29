@@ -1,8 +1,4 @@
 import datetime
-from optparse import OptionParser
-import sys
-
-from django.conf import settings
 
 from ebpub.db.models import NewsItem, Schema, SchemaField
 
@@ -18,46 +14,19 @@ class WhitevilleSchoolsScraper(DashboardMixin, GoogleSpreadsheetScraper):
 
     # Google Spreadsheets settings.
     spreadsheet_id = '0AhFobZtWx47pdEIwTWZCcEVTbE82TXNlNkRZMW5iTHc'
-    worksheet_id = 'od6'
-    username = getattr(settings, 'GOOGLE_USERNAME')
-    password = getattr(settings, 'GOOGLE_PASSWORD')
+    attribute_names = ('leaname', 'schoolname', 'gradespan', 'expectedgrowth',
+            'metalltargetsforannualmeasurableobjectives', 'highgrowth',
+            'performancecomposite', 'abcstatus')
+    match_names = ('leaname', 'schoolname')
 
     # Date that the schools data was initially made available.
     # All school NewsItems will share this item_date.
     item_date = datetime.datetime(2012, 8, 2)
 
-    def existing_record(self, record):
-        """
-        Returns the existing news item if one exists for this item_date,
-        schoolname, and leaname.
-        """
-        qs = NewsItem.objects.filter(schema__id=self.schema.id,
-                item_date=self.item_date)
-        if qs.exists():
-            for name in ('leaname', 'schoolname'):
-                qs = qs.by_attribute(self.schema_fields[name], record[name])
-            if qs.count() == 1:
-                return qs.get()
-        return None
-
     def save(self, old_record, list_record, detail_record):
-        attributes = {}  # SchemaField values.
-        for name in ('leaname', 'schoolname', 'gradespan', 'expectedgrowth',
-                'metalltargetsforannualmeasurableobjectives', 'highgrowth',
-                'performancecomposite', 'abcstatus'):
-            value = list_record[name].strip()
-            field = self.schema_fields[name[:32]]
-            if field.datatype == 'bool':
-                if value.lower() == 'yes':
-                    value = True
-                elif value.lower() == 'no':
-                    value = False
-                else:
-                    value = None
-            attributes[name[:32]] = value
-        item = self.create_or_update(
+        self.create_or_update(
             old_record=old_record,
-            attributes=attributes,
+            attributes=self._get_attributes(list_record),
             title=list_record.get('schoolname', ''),
             item_date=self.item_date,
             url=list_record.get('moreinformation', None),
@@ -158,16 +127,3 @@ class WhitevilleSchoolsScraper(DashboardMixin, GoogleSpreadsheetScraper):
             is_searchable=False,
             display_order=8,
         )
-
-
-def main():
-    parser = OptionParser()
-    parser.add_option('-c', '--clear', help='Reset schema',
-            action='store_true', dest='clear')
-    add_verbosity_options(parser)
-    opts, args = parser.parse_args(sys.argv)
-    WhitevilleSchoolsScraper(clear=opts.clear).run()
-
-
-if __name__ == '__main__':
-    sys.exit(main())

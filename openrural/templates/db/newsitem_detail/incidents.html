@@ -1,0 +1,8 @@
+{% extends 'db/newsitem_detail.html' %}
+
+{% block newsitem_detail_date %}
+    <tr>
+        <th>{{ newsitem.schema.date_name|capfirst }}</th>
+        <td>{{ newsitem.item_date }} at {{ newsitem.attributes.datetimereported }}</td>
+    </tr>
+{% endblock newsitem_detail_date %}
